@@ -57,7 +57,7 @@ class DataPacket(object):
         vals = []
         for var in self._pack:
             vals.append(getattr(self, var))
-        return struct.pack(self._format, *vals) + FlarePacket._eop
+        return struct.pack(self._format, *vals) + DataPacket.__eop
     
     def unpack(self, data):
     
