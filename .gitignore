@@ -1,1 +1,6 @@
 *.pyc
+bin
+include
+lib
+dist
+malibu.egg-info
