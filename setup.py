@@ -26,7 +26,7 @@ setup(
         "License :: Public Domain",
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules"
-    ]
-    keywords = 'malibu development database configuration'
+    ],
+    keywords = 'malibu development database configuration',
     packages = ['malibu']
 )
