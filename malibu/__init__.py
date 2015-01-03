@@ -1,1 +1,6 @@
-__version__ = '0.1.0-2'
+from malibu.config import *
+from malibu.connection import *
+from malibu.database import *
+from malibu.util import *
+
+__version__ = '0.1.0-3'
