@@ -6,16 +6,12 @@ import malibu
 
 here = path.abspath(path.dirname(__file__))
 
-with open(path.join(here, 'README.md'), encoding = 'utf-8') as f:
-    long_description = f.read()
-
 setup(
     name = 'malibu',
     version = malibu.__version__,
     description = "maiome's library of utilities",
-    long_description = long_description,
 
-    url = "http://phabricator.maio.me/diffusion/MBU",
+    url = "http://phabricator.maio.me/tag/malibu",
     author = "maiome development",
     author_email = "sean.johnson@maio.me",
     
