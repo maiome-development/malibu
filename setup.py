@@ -1,10 +1,6 @@
 from setuptools import setup, find_packages
-from codecs import open
-from os import path
 
 import malibu
-
-here = path.abspath(path.dirname(__file__))
 
 setup(
     name = 'malibu',
@@ -12,7 +8,7 @@ setup(
     description = "maiome's library of utilities",
 
     url = "http://phabricator.maio.me/tag/malibu",
-    author = "maiome development",
+    author = "Sean Johnson",
     author_email = "sean.johnson@maio.me",
     
     license = "Unlicense",
@@ -24,5 +20,6 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules"
     ],
     keywords = 'malibu development database configuration',
-    packages = ['malibu']
+    packages = ['malibu'],
+    zip_safe = True
 )
