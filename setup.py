@@ -19,7 +19,11 @@ setup(
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules"
     ],
-    packages = ['malibu'],
+    packages = ['malibu',
+                'malibu.config',
+                'malibu.connection',
+                'malibu.database',
+                'malibu.util'],
     package_dir = {'malibu': 'malibu'},
     zip_safe = True
 )
