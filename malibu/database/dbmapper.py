@@ -4,6 +4,10 @@ import sqlite3, types
 
 class DBMapper(object):
 
+    FETCH_ONE = 'one'
+    FETCH_MANY = 'many'
+    FETCH_ALL = 'all'
+    
     def __init__(self, db, keys, keytypes, options = {'primaryIndex' : 0, 'autoincrIndex' : True}):
 
         self._db = db
@@ -22,7 +26,7 @@ class DBMapper(object):
         self.__generate_setters()
         self.__generate_properties()
 
-    def __execute(self, cur, sql, fetch = 'one', limit = -1, args = ()):
+    def __execute(self, cur, sql, fetch = FETCH_ONE, limit = -1, args = ()):
         
         query = sql
         try:
@@ -36,12 +40,12 @@ class DBMapper(object):
         try: cur.execute(query)
         except (sqlite3.ProgrammingError): cur.execute(query, args)
 
-        if fetch == 'one':
+        if fetch == DBMapper.FETCH_ONE:
             return cur.fetchone()
-        elif fetch == 'many':
+        elif fetch == DBMapper.FETCH_MANY:
             if limit == -1: limit = cur.arraysize
             return cur.fetchmany(size = limit)
-        elif fetch == 'all':
+        elif fetch == DBMapper.FETCH_ALL:
             return cur.fetchall()
         else:
             return cur.fetchall()
@@ -51,7 +55,7 @@ class DBMapper(object):
         cur = self._db.cursor()
         query = "pragma table_info(%s)" % (self._table)
 
-        return self.__execute(cur, query, fetch = 'all')
+        return self.__execute(cur, query, fetch = DBMapper.FETCH_ALL)
 
     def __generate_structure(self):
 
@@ -163,6 +167,10 @@ class DBMapper(object):
             whc.append("%s=?" % (pair[0]))
         query = "select * from %s where %s" % (self._table, ','.join(whc))
         result = self.__execute(cur, query, args = vals)
+        if result is None:
+            for key in self._keys:
+                setattr(self, "_%s" % (key), None)
+            return
         for key, dbv in zip(self._keys, result):
             setattr(self, "_%s" % (key), dbv)
 
