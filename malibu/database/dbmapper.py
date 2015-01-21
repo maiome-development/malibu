@@ -4,10 +4,54 @@ import sqlite3, types
 
 class DBMapper(object):
 
+    # FETCH Constants for __execute()
+
     FETCH_ONE = 'one'
     FETCH_MANY = 'many'
     FETCH_ALL = 'all'
     
+    # Placeholder for database options (static methods)
+
+    _options = None
+
+    @classmethod
+    def set_db_options(cls, db, keys, ktypes, options = {'primaryIndex' : 0, 'autoincrIndex' : True}):
+
+        cls._options = {}
+        cls._options['database'] = db
+        cls._options['keys'] = keys
+        cls._options['keytypes'] = ktypes
+        cls._options['options'] = options
+
+    @classmethod
+    def load(cls, **kw):
+
+        if cls._options is None:
+            raise Exception('Static database options have not been set.')
+
+        dbo = cls._options
+        obj = cls(dbo['database'])
+        cur = dbo['database'].cursor()
+
+        keys = []
+        vals = []
+        for key, val in kw.iteritems():
+            keys.append(key)
+            vals.append(val)
+        whc = []
+        for pair in zip(keys, vals):
+            whc.append("%s=?" % (pair[0]))
+        query = "select * from %s where %s" % (obj._table, ','.join(whc))
+        result = obj.__execute(cur, query, args = vals)
+        if result is None:
+            for key in dbo['keys']:
+                setattr(obj, "_%s" % (key), None)
+            return
+        for key, dbv in zip(dbo['keys'], result):
+            setattr(obj, "_%s" % (key), dbv)
+
+        return obj
+
     def __init__(self, db, keys, keytypes, options = {'primaryIndex' : 0, 'autoincrIndex' : True}):
 
         self._db = db
@@ -154,25 +198,6 @@ class DBMapper(object):
         self.__execute(cur, query, args = vals)
         setattr(self, "_%s" % (self._primary), cur.lastrowid)
 
-    def load(self, **kw):
-
-        cur = self._db.cursor()
-        keys = []
-        vals = []
-        for key, val in kw.iteritems():
-            keys.append(key)
-            vals.append(val)
-        whc = []
-        for pair in zip(keys, vals):
-            whc.append("%s=?" % (pair[0]))
-        query = "select * from %s where %s" % (self._table, ','.join(whc))
-        result = self.__execute(cur, query, args = vals)
-        if result is None:
-            for key in self._keys:
-                setattr(self, "_%s" % (key), None)
-            return
-        for key, dbv in zip(self._keys, result):
-            setattr(self, "_%s" % (key), dbv)
 
     def save(self):
 

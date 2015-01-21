@@ -40,11 +40,11 @@ class DBMapperTestCase(unittest.TestCase):
         del dbm
 
         dbm = DBMap(self.db)
-        dbm.load(test_col = "Test")
+        record = DBMap.load(id = load_id)
 
-        self.assertEquals(dbm._test_col, "Test")
-        self.assertEquals(dbm._example, True)
-        self.assertEquals(dbm._description, "This is a test.")
+        self.assertEquals(record._test_col, "Test")
+        self.assertEquals(record._example, True)
+        self.assertEquals(record._description, "This is a test.")
 
 class DBMap(dbmapper.DBMapper):
 
@@ -52,5 +52,7 @@ class DBMap(dbmapper.DBMapper):
 
         keys = ['id', 'test_col', 'example', 'description']
         ktypes = ['integer', 'text', 'boolean', 'text']
+
+        DBMap.set_db_options(db, keys, ktypes)
 
         dbmapper.DBMapper.__init__(self, db, keys, ktypes)
