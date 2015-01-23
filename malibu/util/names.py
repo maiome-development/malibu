@@ -10,14 +10,14 @@ __adjectives__ = [ "smelly", "firey", "naughty", "sad", "frazzled", "excited",
         "fervent", "ravishing", "riveting", "peculiar", "cross", "smashed",
         "ridiculous", "pontiferous", "offended", "overzealous", "jealous",
         "freaky", "comical", "creepy", "disturbed", "massive", "bigoted",
-        "ecstatic", "rowdy", "friendly" ]
+        "ecstatic", "rowdy", "friendly", "enlightened", "failing" ]
 
 __nouns__ = [ "feynman", "einstein", "roadrunner", "tacocat", "grump", "fish",
         "michael", "bishop", "charlie", "metcalfe", "babbage", "zuckerberg",
         "nicholas", "priest", "doge", "pimp", "drone", "worker", "voltorb",
         "bulbasaur", "king", "bay", "transformers", "johnson", "baby",
         "charmander", "mew", "axel", "wayne", "charles", "jessica", "clarice",
-        "doctor", "horton", "ballmer", "jobs", "gates" ]
+        "doctor", "horton", "ballmer", "jobs", "gates", "failfish" ]
 
 def get_simple_name():
 

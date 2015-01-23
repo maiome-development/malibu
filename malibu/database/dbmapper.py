@@ -52,6 +52,34 @@ class DBMapper(object):
 
         return obj
 
+    @classmethod
+    def new(cls, **kw):
+
+        if cls._options is None:
+            raise Exception('Static database options have not been set.')
+
+        dbo = cls._options
+        obj = cls(dbo['database'])
+        cur = dbo['database'].cursor()
+        obj.create()
+
+        keys = []
+        vals = []
+        for key, val in kw.iteritems():
+            keys.append(key)
+            vals.append(val)
+        anonvals = []
+        for val in vals:
+            anonvals.append('?')
+        query = "insert into %s (%s) values (%s)" % (obj._table, ','.join(keys), ','.join(anonvals))
+        result = obj.__execute(cur, query, args = vals)
+        if result is None:
+            for key, val in zip(keys, vals):
+                if key not in obj._keys: continue
+                setattr(obj, "_%s" % (key), val)
+
+        return obj
+
     def __init__(self, db, keys, keytypes, options = {'primaryIndex' : 0, 'autoincrIndex' : True}):
 
         self._db = db

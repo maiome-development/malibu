@@ -46,6 +46,35 @@ class DBMapperTestCase(unittest.TestCase):
         self.assertEquals(record._example, True)
         self.assertEquals(record._description, "This is a test.")
 
+    def recordNew_test(self):
+
+        dbm = DBMap(self.db)
+
+        record = DBMap.new(test_col = "Test", example = False, description = "This is not a test.")
+
+        self.assertEquals(record._test_col, "Test")
+        self.assertEquals(record._example, False)
+        self.assertEquals(record._description, "This is not a test.")
+
+    def recordNewLoad_test(self):
+
+        dbm = DBMap(self.db)
+
+        record = DBMap.new(test_col = "Test", example = False, description = "This is not a test.")
+
+        self.assertEquals(record._test_col, "Test")
+        self.assertEquals(record._example, False)
+        self.assertEquals(record._description, "This is not a test.")
+
+        record.save()
+        del record
+
+        record = DBMap.load(test_col = "Test")
+
+        self.assertEquals(record._test_col, "Test")
+        self.assertEquals(record._example, False)
+        self.assertEquals(record._description, "This is not a test.")
+
 class DBMap(dbmapper.DBMapper):
 
     def __init__(self, db):
