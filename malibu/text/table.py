@@ -86,17 +86,18 @@ class TextTable(object):
 
     def add_data_list(self, el):
 
-        """ add_data_list adds a list of data to the table rows.
+        """ add_data_list adds a list of data to the table. this is primarily
+            suitable for single-column data sets.
         """
 
-        if len(el) > self._columns:
-            el = el[0:self._columns - 1]
-        elif len(el) < self._columns:
-            col_diff = (self._columns - len(el)) + 1
-            col_fill = len(el)
-            for idx in xrange(coll_fill, col_diff):
-                el[idx] = ''
-        self._row_data.append(el)
+        #if len(el) > self._columns:
+        #    el = el[0:self._columns - 1]
+        #elif len(el) < self._columns:
+        #    col_diff = (self._columns - len(el)) + 1
+        #    col_fill = len(el)
+        #    for idx in xrange(coll_fill, col_diff):
+        #        el[idx] = ''
+        [self._row_data.append((elm,)) for elm in el]
 
     def add_data_csv_file(self, fobj):
 
