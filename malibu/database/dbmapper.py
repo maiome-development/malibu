@@ -103,6 +103,26 @@ class DBMapper(object):
 
         return [cls.load(**pair) for pair in load_pairs]
 
+    @classmethod
+    def find_all(cls):
+
+        if cls._options is None:
+            raise Exception('Static database options have not been set.')
+        
+        dbo = cls._options
+        obj = cls(dbo['database'])
+        cur = dbo['database'].cursor()
+
+        query = "select * from %s" % (obj._table)
+        result = obj.__execute(cur, query, fetch = DBMapper.FETCH_ALL)
+
+        pkey = dbo['keys'][dbo['options']['primaryIndex']]
+        load_pairs = []
+        for row in result:
+            load_pairs.append({pkey : row[dbo['options']['primaryIndex']]})
+
+        return [cls.load(**pair) for pair in load_pairs]
+
     def __init__(self, db, keys, keytypes, options = {'primaryIndex' : 0, 'autoincrIndex' : True}):
 
         self._db = db

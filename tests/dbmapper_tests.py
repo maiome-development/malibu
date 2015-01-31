@@ -87,6 +87,19 @@ class DBMapperTestCase(unittest.TestCase):
         self.assertEquals(len(result), 2)
         self.assertEquals(result[0]._test_col, "TestA")
         self.assertEquals(result[1]._test_col, "TestB")
+    
+    def recordFindAll_test(self):
+
+        dbm = DBMap(self.db)
+
+        DBMap.new(test_col = "TestA", example = False, description = "This is not a test.")
+        DBMap.new(test_col = "TestB", example = False, description = "This is still not a test.")
+
+        result = DBMap.find_all()
+        
+        self.assertEquals(len(result), 2)
+        self.assertEquals(result[0]._test_col, "TestA")
+        self.assertEquals(result[1]._test_col, "TestB")
 
 class DBMap(dbmapper.DBMapper):
 
