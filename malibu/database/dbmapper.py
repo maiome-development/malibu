@@ -41,7 +41,7 @@ class DBMapper(object):
         whc = []
         for pair in zip(keys, vals):
             whc.append("%s=?" % (pair[0]))
-        query = "select * from %s where %s" % (obj._table, ','.join(whc))
+        query = "select * from %s where (%s)" % (obj._table, ' and '.join(whc))
         result = obj.__execute(cur, query, args = vals)
         if result is None:
             for key in dbo['keys']:
@@ -61,7 +61,6 @@ class DBMapper(object):
         dbo = cls._options
         obj = cls(dbo['database'])
         cur = dbo['database'].cursor()
-        obj.create()
 
         keys = []
         vals = []
@@ -73,12 +72,8 @@ class DBMapper(object):
             anonvals.append('?')
         query = "insert into %s (%s) values (%s)" % (obj._table, ','.join(keys), ','.join(anonvals))
         result = obj.__execute(cur, query, args = vals)
-        if result is None:
-            for key, val in zip(keys, vals):
-                if key not in obj._keys: continue
-                setattr(obj, "_%s" % (key), val)
-
-        return obj
+        
+        return cls.load(**kw)
 
     def __init__(self, db, keys, keytypes, options = {'primaryIndex' : 0, 'autoincrIndex' : True}):
 
