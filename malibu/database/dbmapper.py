@@ -101,7 +101,7 @@ class DBMapper(object):
         for row in result:
             load_pairs.append({pkey : row[dbo['options']['primaryIndex']]})
 
-        return DBResultList([cls.load(**pair) for pair in load_pairs])
+        return dbresult.DBResultList([cls.load(**pair) for pair in load_pairs])
 
     @classmethod
     def find_all(cls):
@@ -121,7 +121,7 @@ class DBMapper(object):
         for row in result:
             load_pairs.append({pkey : row[dbo['options']['primaryIndex']]})
 
-        return DBResultList([cls.load(**pair) for pair in load_pairs])
+        return dbresult.DBResultList([cls.load(**pair) for pair in load_pairs])
 
     def __init__(self, db, keys, keytypes, options = {'primaryIndex' : 0, 'autoincrIndex' : True}):
 
