@@ -35,7 +35,6 @@ class DBMapperTestCase(unittest.TestCase):
         dbm.set_test_col("Test")
         dbm.set_example(True)
         dbm.set_description("This is a test.")
-        dbm.save()
         
         del dbm
 
@@ -66,7 +65,6 @@ class DBMapperTestCase(unittest.TestCase):
         self.assertEquals(record._example, False)
         self.assertEquals(record._description, "This is not a test.")
 
-        record.save()
         del record
 
         record = DBMap.load(test_col = "Test")
@@ -154,6 +152,50 @@ class DBMapperTestCase(unittest.TestCase):
         self.assertEquals(result[0]._test_col, "TestA")
         self.assertEquals(result[1]._test_col, "TestB")
 
+    def recordJoin_test(self):
+
+        dbm = DBMap(self.db)
+        dbl = DBMapLink(self.db)
+
+        DBMap.new(test_col = "TestA", example = False, description = "This is not a test.")
+        DBMap.new(test_col = "TestB", example = False, description = "This is still not a test.")
+
+        id_a = DBMap.load(test_col = "TestA").get_id()
+        id_b = DBMap.load(test_col = "TestB").get_id()
+
+        DBMapLink.new(map_id = id_a, some_text = "This definitely is not a test.")
+        DBMapLink.new(map_id = id_b, some_text = "This might be a test.")
+        DBMapLink.new(map_id = id_a, some_text = "This could be a test.")
+
+        result = DBMap.join(DBMapLink, "id", "map_id")
+
+        self.assertEquals(len(result), 3)
+        self.assertEquals(result[0][0]._id, 1)
+        self.assertEquals(result[0][1]._id, 1)
+        self.assertEquals(result[1][0]._id, 2)
+        self.assertEquals(result[1][1]._id, 2)
+        self.assertEquals(result[2][0]._id, 1)
+        self.assertEquals(result[2][1]._id, 3)
+    
+    def recordJoinFilter_test(self):
+
+        dbm = DBMap(self.db)
+        dbl = DBMapLink(self.db)
+
+        DBMap.new(test_col = "TestA", example = False, description = "This is not a test.")
+        DBMap.new(test_col = "TestB", example = False, description = "This is still not a test.")
+
+        id_a = DBMap.load(test_col = "TestA").get_id()
+        id_b = DBMap.load(test_col = "TestB").get_id()
+
+        DBMapLink.new(map_id = id_a, some_text = "This definitely is not a test.")
+        DBMapLink.new(map_id = id_b, some_text = "This might be a test.")
+        DBMapLink.new(map_id = id_a, some_text = "This could be a test.")
+
+        result = DBMap.join(DBMapLink, "id", "map_id")
+
+        self.assertEquals(len(result), 3)
+
 class DBMap(dbmapper.DBMapper):
 
     def __init__(self, db):
@@ -162,5 +204,16 @@ class DBMap(dbmapper.DBMapper):
         ktypes = ['integer', 'text', 'boolean', 'text']
 
         DBMap.set_db_options(db, keys, ktypes)
+
+        dbmapper.DBMapper.__init__(self, db, keys, ktypes)
+
+class DBMapLink(dbmapper.DBMapper):
+
+    def __init__(self, db):
+
+        keys = ['id', 'map_id', 'some_text']
+        ktypes = ['integer', 'integer', 'text']
+
+        DBMapLink.set_db_options(db, keys, ktypes)
 
         dbmapper.DBMapper.__init__(self, db, keys, ktypes)
