@@ -17,6 +17,9 @@ class DBMapper(object):
     @classmethod
     def set_db_options(cls, db, keys, ktypes, options = {'primaryIndex' : 0, 'autoincrIndex' : True}):
 
+#        if cls._options is not None:
+#            return
+        
         cls._options = {}
         cls._options['database'] = db
         cls._options['keys'] = keys
@@ -84,6 +87,7 @@ class DBMapper(object):
         dbo = cls._options
         obj = cls(dbo['database'])
         cur = dbo['database'].cursor()
+        primaryKey = dbo['keys'][dbo['options']['primaryIndex']]
 
         keys = []
         vals = []
@@ -93,15 +97,14 @@ class DBMapper(object):
         whc = []
         for pair in zip(keys, vals):
             whc.append('%s=?' % (pair[0]))
-        query = "select * from %s where (%s)" % (obj._table, ' and '.join(whc))
+        query = "select %s from %s where (%s)" % (primaryKey, obj._table, ' and '.join(whc))
         result = obj.__execute(cur, query, args = vals, fetch = DBMapper.FETCH_ALL)
         
-        pkey = dbo['keys'][dbo['options']['primaryIndex']]
         load_pairs = []
         for row in result:
-            load_pairs.append({pkey : row[dbo['options']['primaryIndex']]})
+            load_pairs.append({primaryKey : row[dbo['options']['primaryIndex']]})
 
-        return dbresult.DBResultList([cls.load(**pair) for pair in load_pairs])
+        return DBResultList([cls.load(**pair) for pair in load_pairs])
 
     @classmethod
     def find_all(cls):
@@ -112,16 +115,42 @@ class DBMapper(object):
         dbo = cls._options
         obj = cls(dbo['database'])
         cur = dbo['database'].cursor()
+        primaryKey = dbo['keys'][dbo['options']['primaryIndex']]
 
-        query = "select * from %s" % (obj._table)
+        query = "select %s from %s" % (primaryKey, obj._table)
         result = obj.__execute(cur, query, fetch = DBMapper.FETCH_ALL)
 
-        pkey = dbo['keys'][dbo['options']['primaryIndex']]
         load_pairs = []
         for row in result:
-            load_pairs.append({pkey : row[dbo['options']['primaryIndex']]})
+            load_pairs.append({primaryKey : row[dbo['options']['primaryIndex']]})
 
-        return dbresult.DBResultList([cls.load(**pair) for pair in load_pairs])
+        return DBResultList([cls.load(**pair) for pair in load_pairs])
+
+    @classmethod
+    def join(cls, cond, a, b):
+
+        if cls._options is None or cond._options is None:
+            raise Exception('Static database options have not been set.')
+
+        dba = cls._options
+        obja = cls(dba['database'])
+        dbb = cond._options
+        objb = cond(dbb['database'])
+        cur = dba['database'].cursor()
+        primaryKeyA = dba['keys'][dba['options']['primaryIndex']]
+        primaryKeyB = dbb['keys'][dba['options']['primaryIndex']]
+
+        query = "select A.%s, B.%s from %s as A join %s as B on A.%s=B.%s" % (
+                    primaryKeyA, primaryKeyB, obja._table, objb._table, a, b)
+        result = obja.__execute(cur, query, fetch = DBMapper.FETCH_ALL)
+
+        load_pair_a = []
+        load_pair_b = []
+        for row in result:
+            load_pair_a.append({primaryKeyA : row[0]})
+            load_pair_b.append({primaryKeyB : row[1]})
+
+        return zip([cls.load(**pair) for pair in load_pair_a], [cond.load(**pair) for pair in load_pair_b])
 
     def __init__(self, db, keys, keytypes, options = {'primaryIndex' : 0, 'autoincrIndex' : True}):
 
@@ -273,3 +302,83 @@ class DBMapper(object):
     def save(self):
 
         self._db.commit()
+
+class DBResultList(list):
+
+    def __init__(self, extend = None):
+
+        if isinstance(extend, list):
+            for item in extend:
+                if isinstance(item, DBMapper):
+                    self.append(item)
+                else: continue
+
+    def filter_equals(self, key, val):
+        """ filter_equals(key, val) ->
+              filters database find result based on
+              key-value equality.
+        """
+
+        res = DBResultList()
+
+        for dbo in self:
+            try:
+                if getattr(dbo, "_%s" % (key)) == val:
+                    res.append(dbo)
+                else: continue
+            except: continue
+
+        return res
+
+    def filter_iequals(self, key, val):
+        """ filter_iequals(key, val) ->
+              filters database find result based on
+              case insensitive key-value equality.
+              assumes that db attribute and val are strings.
+        """
+
+        res = DBResultList()
+
+        for dbo in self:
+            try:
+                if getattr(dbo, "_%s" % (key)).lower() == val.lower():
+                    res.append(dbo)
+                else: continue
+            except: continue
+
+        return res
+
+    def filter_inequals(self, key, val):
+        """ filter_inequals(key, val) ->
+              filters database find result based on
+              key-value inequality.
+        """
+
+        res = DBResultList()
+
+        for dbo in self:
+            try:
+                if getattr(dbo, "_%s" % (key)) != val:
+                    res.append(dbo)
+                else: continue
+            except: continue
+
+        return res
+
+    def filter_regex(self, key, regex):
+        """ filter_regex(key, regex) ->
+              filters database find result based on
+              regex value matching.
+        """
+
+        res = DBResultList()
+
+        for dbo in self:
+            try:
+                if re.match(regex, getattr(dbo, "_%s" % (key))) != None:
+                    res.append(dbo)
+                else: continue
+            except: continue
+
+        return res
+
