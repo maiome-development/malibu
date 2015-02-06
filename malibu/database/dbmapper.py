@@ -295,10 +295,6 @@ class DBMapper(object):
         self.__execute(cur, query, args = vals)
         setattr(self, "_%s" % (self._primary), cur.lastrowid)
 
-    def save(self):
-
-        self._db.commit()
-
 class DBResultList(list):
 
     def __init__(self, extend = None):
@@ -401,6 +397,7 @@ class DBJoinResultList(list):
                 try:
                     if getattr(dbo, "_%s" % (key)) == val:
                         res.append(dbo)
+                        break
                     else: continue
                 except: continue
 
@@ -420,6 +417,7 @@ class DBJoinResultList(list):
                 try:
                     if getattr(dbo, "_%s" % (key)).lower() == val.lower():
                         res.append(dbo)
+                        break
                     else: continue
                 except: continue
 
@@ -438,6 +436,7 @@ class DBJoinResultList(list):
                 try:
                     if getattr(dbo, "_%s" % (key)) != val:
                         res.append(dbo)
+                        break
                     else: continue
                 except: continue
 
@@ -456,6 +455,7 @@ class DBJoinResultList(list):
                 try:
                     if re.match(regex, getattr(dbo, "_%s" % (key))):
                         res.append(dbo)
+                        break
                     else: continue
                 except: continue
 
