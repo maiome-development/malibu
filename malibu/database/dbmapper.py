@@ -17,9 +17,6 @@ class DBMapper(object):
     @classmethod
     def set_db_options(cls, db, keys, ktypes, options = {'primaryIndex' : 0, 'autoincrIndex' : True}):
 
-#        if cls._options is not None:
-#            return
-        
         cls._options = {}
         cls._options['database'] = db
         cls._options['keys'] = keys
@@ -298,7 +295,6 @@ class DBMapper(object):
         self.__execute(cur, query, args = vals)
         setattr(self, "_%s" % (self._primary), cur.lastrowid)
 
-
     def save(self):
 
         self._db.commit()
@@ -381,4 +377,88 @@ class DBResultList(list):
             except: continue
 
         return res
+
+class DBJoinResultList(list):
+
+    def __init__(self, extend = None):
+
+        if isinstance(extend, list):
+            for item in extend:
+                if isinstance(item, tuple):
+                    self.append(item)
+                else: continue
+
+    def filter_equals(self, key, val):
+        """ filter_equals(key, val) ->
+              filters database join result based on
+              key-value equality.
+        """
+
+        res = DBResultList()
+
+        for dbpair in self:
+            for dbo in dbpair:
+                try:
+                    if getattr(dbo, "_%s" % (key)) == val:
+                        res.append(dbo)
+                    else: continue
+                except: continue
+
+        return res
+
+    def filter_iequals(self, key, val):
+        """ filter_iequals(key, val) ->
+              filters database join result based on
+              case insensitive key-value equality.
+              assumes that db attribute and val are strings.
+        """
+
+        res = DBResultList()
+
+        for dbpair in self:
+            for dbo in dbpair:
+                try:
+                    if getattr(dbo, "_%s" % (key)).lower() == val.lower():
+                        res.append(dbo)
+                    else: continue
+                except: continue
+
+        return res
+
+    def filter_inequals(self, key, val):
+        """ filter_inequals(key, val) ->
+              filters database join result based on
+              key-value inequality.
+        """
+
+        res = DBResultList()
+
+        for dbpair in self:
+            for dbo in dbpair:
+                try:
+                    if getattr(dbo, "_%s" % (key)) != val:
+                        res.append(dbo)
+                    else: continue
+                except: continue
+
+        return res
+
+    def filter_regex(self, key, regex):
+        """ filter_regex(key, regex) ->
+              filters database find result based on
+              regex value matching.
+        """
+
+        res = DBResultList()
+
+        for dbpair in self:
+            for dbo in dbpair:
+                try:
+                    if re.match(regex, getattr(dbo, "_%s" % (key))):
+                        res.append(dbo)
+                    else: continue
+                except: continue
+
+        return res
+
 
