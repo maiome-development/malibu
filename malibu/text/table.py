@@ -16,6 +16,7 @@ class TextTable(object):
         # Header data should be simple; it should be no more than a list of 
         # strings naming each column header.
         self._header_data = []
+
         # Row data should be internally stored in a zipped-set form, or, as a
         # list of tuples, which each tuple containing all the entries for a 
         # single row.
@@ -36,12 +37,11 @@ class TextTable(object):
     def add_data_dict(self, el):
 
         """ add_data_dict only really makes sense to use when there is a 
-            single pair mapping (eg., key => value) or a two column
+            single pair mapping (eg., key, value) or a two column
             display.  If that is not that case, add_data_ztup is a better
-            choice.
-        """
+            choice. """
 
-        if not isinsance(el, dict): return
+        if not isinstance(el, dict): return
 
         self._rows = len(el)
 
@@ -59,8 +59,7 @@ class TextTable(object):
                 (x2, y2, z2),
                     ...
                 (xn, yn, zn)
-              ]
-        """
+              ] """
 
         if not isinstance(el, list): return
 
@@ -79,24 +78,15 @@ class TextTable(object):
     def add_data_kv(self, k, v):
 
         """ add_data_kv is a simplified add_data_dict for pushing a data pair onto the
-            row list on-the-fly. only effective for two-column data sets.
-        """
+            row list on-the-fly. only effective for two-column data sets. """
 
         self._row_data.append((k, v,))
 
     def add_data_list(self, el):
 
         """ add_data_list adds a list of data to the table. this is primarily
-            suitable for single-column data sets.
-        """
+            suitable for single-column data sets. """
 
-        #if len(el) > self._columns:
-        #    el = el[0:self._columns - 1]
-        #elif len(el) < self._columns:
-        #    col_diff = (self._columns - len(el)) + 1
-        #    col_fill = len(el)
-        #    for idx in xrange(coll_fill, col_diff):
-        #        el[idx] = ''
         [self._row_data.append((elm,)) for elm in el]
 
     def add_data_csv_file(self, fobj):
@@ -122,15 +112,13 @@ class TextTable(object):
 
     def __transpose_list(self, li):
         
-        """ performs a simple transposition on a list.
-        """
+        """ performs a simple transposition on a list. """
 
         return map(list, zip(*li))
 
     def __calculate_row_max(self):
 
-        """ calculates the max size of the rows so the table has uniform column sizes.
-        """
+        """ calculates the max size of the rows so the table has uniform column sizes. """
 
         __sizes = []
 
@@ -143,8 +131,7 @@ class TextTable(object):
 
     def __format_divider(self):
 
-        """ returns the table divider.
-        """
+        """ returns the table divider. """
 
         s = ""
         col_sizes = self.__calculate_row_max()
@@ -161,8 +148,7 @@ class TextTable(object):
 
     def __pad_left(self, txt, length):
 
-        """ pads a string to be length characters long, from left.
-        """
+        """ pads a string to be length characters long, from left. """
 
         s = []
 
@@ -177,8 +163,7 @@ class TextTable(object):
 
     def __format_header_data(self):
 
-        """ formats the header data.
-        """
+        """ formats the header data. """
 
         lines = []
         col_sizes = self.__calculate_row_max()
@@ -199,8 +184,7 @@ class TextTable(object):
 
     def __format_table_data(self):
 
-        """ formats the table data.
-        """
+        """ formats the table data. """
 
         lines = []
         col_sizes = self.__calculate_row_max()
@@ -221,8 +205,7 @@ class TextTable(object):
 
     def format(self):
 
-        """ format the table and return the string.
-        """
+        """ format the table and return the string. """
 
         lines = []
         divider = self.__format_divider()

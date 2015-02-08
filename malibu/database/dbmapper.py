@@ -9,13 +9,29 @@ class DBMapper(object):
     FETCH_ONE = 'one'
     FETCH_MANY = 'many'
     FETCH_ALL = 'all'
-    
+   
+    # INDEX Constants for options dictionary.
+
+    INDEX_PRIMARY = 'primaryIndex'
+    INDEX_AUTOINCR = 'autoincrIndex'
+    INDEX_UNIQUE = 'uniqueIndices'
+
     # Placeholder for database options (static methods)
 
     _options = None
+    __default_options = {
+            INDEX_PRIMARY : 0,
+            INDEX_AUTOINCR : True,
+            INDEX_UNIQUE : []
+    }
 
+    @staticmethod
+    def get_default_options():
+
+        return DBMapper.__default_options
+    
     @classmethod
-    def set_db_options(cls, db, keys, ktypes, options = {'primaryIndex' : 0, 'autoincrIndex' : True}):
+    def set_db_options(cls, db, keys, ktypes, options = __default_options):
 
         cls._options = {}
         cls._options['database'] = db
@@ -84,7 +100,7 @@ class DBMapper(object):
         dbo = cls._options
         obj = cls(dbo['database'])
         cur = dbo['database'].cursor()
-        primaryKey = dbo['keys'][dbo['options']['primaryIndex']]
+        primaryKey = dbo['keys'][dbo['options'][DBMapper.INDEX_PRIMARY]]
 
         keys = []
         vals = []
@@ -99,7 +115,7 @@ class DBMapper(object):
         
         load_pairs = []
         for row in result:
-            load_pairs.append({primaryKey : row[dbo['options']['primaryIndex']]})
+            load_pairs.append({primaryKey : row[dbo['options'][DBMapper.INDEX_PRIMARY]]})
 
         return DBResultList([cls.load(**pair) for pair in load_pairs])
 
@@ -112,14 +128,14 @@ class DBMapper(object):
         dbo = cls._options
         obj = cls(dbo['database'])
         cur = dbo['database'].cursor()
-        primaryKey = dbo['keys'][dbo['options']['primaryIndex']]
+        primaryKey = dbo['keys'][dbo['options'][DBMapper.INDEX_PRIMARY]]
 
         query = "select %s from %s" % (primaryKey, obj._table)
         result = obj.__execute(cur, query, fetch = DBMapper.FETCH_ALL)
 
         load_pairs = []
         for row in result:
-            load_pairs.append({primaryKey : row[dbo['options']['primaryIndex']]})
+            load_pairs.append({primaryKey : row[dbo['options'][DBMapper.INDEX_PRIMARY]]})
 
         return DBResultList([cls.load(**pair) for pair in load_pairs])
 
@@ -134,8 +150,8 @@ class DBMapper(object):
         dbb = cond._options
         objb = cond(dbb['database'])
         cur = dba['database'].cursor()
-        primaryKeyA = dba['keys'][dba['options']['primaryIndex']]
-        primaryKeyB = dbb['keys'][dba['options']['primaryIndex']]
+        primaryKeyA = dba['keys'][dba['options'][DBMapper.INDEX_PRIMARY]]
+        primaryKeyB = dbb['keys'][dba['options'][DBMapper.INDEX_PRIMARY]]
 
         query = "select A.%s, B.%s from %s as A join %s as B on A.%s=B.%s" % (
                     primaryKeyA, primaryKeyB, obja._table, objb._table, a, b)
@@ -149,7 +165,7 @@ class DBMapper(object):
 
         return zip([cls.load(**pair) for pair in load_pair_a], [cond.load(**pair) for pair in load_pair_b])
 
-    def __init__(self, db, keys, keytypes, options = {'primaryIndex' : 0, 'autoincrIndex' : True}):
+    def __init__(self, db, keys, keytypes, options = __default_options):
 
         self._db = db
         self._options = options
@@ -158,9 +174,10 @@ class DBMapper(object):
         self._keys = keys
         self._keytypes = keytypes
 
-        self._primary_ind = self._options['primaryIndex']
-        self._autoincr_ind = self._options['autoincrIndex']
+        self._primary_ind = self._options[DBMapper.INDEX_PRIMARY]
+        self._autoincr_ind = self._options[DBMapper.INDEX_AUTOINCR]
         self._primary = self._keys[self._primary_ind]
+        self._unique_keys = self._options[DBMapper.INDEX_UNIQUE]
 
         self.__generate_structure()
         self.__generate_getters()
@@ -214,6 +231,8 @@ class DBMapper(object):
                         typarr.append("%s %s primary key autoincrement" % (pair[0], pair[1]))
                     else:
                         typarr.append("%s %s primary key" % (pair[0], pair[1]))
+                elif pair[0] in self._unique_keys:
+                    typarr.append("%s %s unique" % (pair[0], pair[1]))
                 else:
                     # identifier type
                     typarr.append("%s %s" % (pair[0], pair[1]))
