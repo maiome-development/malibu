@@ -3,6 +3,7 @@
 import malibu, sqlite3, unittest
 from malibu.database import dbmapper
 from nose.tools import *
+from sqlite3 import IntegrityError
 
 class DBMapperTestCase(unittest.TestCase):
 
@@ -196,6 +197,22 @@ class DBMapperTestCase(unittest.TestCase):
 
         self.assertEquals(len(result), 3)
 
+    def recordUniqueConstraint_test(self):
+
+        dbo = DBMap(self.db)
+        dbo = DBMapLink(self.db)
+
+        DBMap.new(test_col = "TestA", example = False, description = "This is not a test.")
+        DBMap.new(test_col = "TestB", example = False, description = "This is still not a test.")
+
+        id_a = DBMap.load(test_col = "TestA").get_id()
+        id_b = DBMap.load(test_col = "TestB").get_id()
+
+        DBMapLink.new(map_id = id_a, some_text = "This definitely is not a test.", map_val = 'test')
+        DBMapLink.new(map_id = id_b, some_text = "This might be a test.", map_val = 'notatest')
+        
+        self.assertRaises(IntegrityError, DBMapLink.new, **{'map_id' : id_a, 'some_text' : "This could be a test.", 'map_val' : 'test'})
+
 class DBMap(dbmapper.DBMapper):
 
     def __init__(self, db):
@@ -211,9 +228,12 @@ class DBMapLink(dbmapper.DBMapper):
 
     def __init__(self, db):
 
-        keys = ['id', 'map_id', 'some_text']
-        ktypes = ['integer', 'integer', 'text']
+        keys = ['id', 'map_id', 'some_text', 'map_val']
+        ktypes = ['integer', 'integer', 'text', 'text']
 
         DBMapLink.set_db_options(db, keys, ktypes)
+
+        options = dbmapper.DBMapper.get_default_options()
+        options[dbmapper.DBMapper.INDEX_UNIQUE].append('map_val')
 
         dbmapper.DBMapper.__init__(self, db, keys, ktypes)
