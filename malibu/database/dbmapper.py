@@ -479,5 +479,3 @@ class DBJoinResultList(list):
                 except: continue
 
         return res
-
-

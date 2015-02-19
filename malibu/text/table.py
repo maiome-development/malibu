@@ -105,10 +105,10 @@ class TextTable(object):
             line = line.strip().split(",")
             if not data_flag:
                 self._columns = len(line)
-                self.add_header_list(line)
+                self.add_header(*line)
                 data_flag = True
                 continue
-            self.add_data_list(line)
+            self._row_data.append(tuple(line))
 
     def __transpose_list(self, li):
         
@@ -122,7 +122,7 @@ class TextTable(object):
 
         __sizes = []
 
-        for row in self._row_data + self._header_data:
+        for row in self._row_data:
             __sizes.append([len(el) for el in row])
 
         __sizes = self.__transpose_list(__sizes)
