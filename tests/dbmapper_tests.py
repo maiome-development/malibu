@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.7
 
-import malibu, sqlite3, unittest
+import malibu, sqlite3, unittest, json
 from malibu.database import dbmapper
 from nose.tools import *
 from sqlite3 import IntegrityError
@@ -9,7 +9,7 @@ class DBMapperTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.db = sqlite3.connect(":memory:")
+        self.db = dbmapper.DBMapper.connect_database(":memory:")
     
     def tearDown(self):
 
@@ -213,12 +213,26 @@ class DBMapperTestCase(unittest.TestCase):
         
         self.assertRaises(IntegrityError, DBMapLink.new, **{'map_id' : id_a, 'some_text' : "This could be a test.", 'map_val' : 'test'})
 
+    def recordJsonConv_test(self):
+
+        dbo = DBMap(self.db)
+        
+        DBMap.new(test_col = "TestA", example = False, description = "This is not a test.", \
+                stuff = json.dumps(['a', 'b', 'c']))
+
+        obj_a = DBMap.load(test_col = "TestA")
+
+        a_vals = obj_a.get_stuff()
+
+        self.assertIsInstance(a_vals, list)
+        self.assertListEqual(a_vals, ['a', 'b', 'c'])
+
 class DBMap(dbmapper.DBMapper):
 
     def __init__(self, db):
 
-        keys = ['id', 'test_col', 'example', 'description']
-        ktypes = ['integer', 'text', 'boolean', 'text']
+        keys = ['id', 'test_col', 'example', 'description', 'stuff']
+        ktypes = ['integer', 'text', 'boolean', 'text', 'json']
 
         DBMap.set_db_options(db, keys, ktypes)
 
@@ -234,6 +248,6 @@ class DBMapLink(dbmapper.DBMapper):
         options = dbmapper.DBMapper.get_default_options()
         options[dbmapper.DBMapper.INDEX_UNIQUE].append('map_val')
 
-        DBMapLink.set_db_options(db, keys, ktypes)
+        DBMapLink.set_db_options(db, keys, ktypes, options = options)
 
         dbmapper.DBMapper.__init__(self, db, keys, ktypes)
