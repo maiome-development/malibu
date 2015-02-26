@@ -170,13 +170,11 @@ class DBMapperTestCase(unittest.TestCase):
 
         result = DBMap.join(DBMapLink, "id", "map_id")
 
-        self.assertEquals(len(result), 3)
+        self.assertEquals(len(result), 2)
         self.assertEquals(result[0][0]._id, 1)
-        self.assertEquals(result[0][1]._id, 1)
-        self.assertEquals(result[1][0]._id, 2)
+        self.assertEquals(result[0][1]._id, 2)
+        self.assertEquals(result[1][0]._id, 1)
         self.assertEquals(result[1][1]._id, 2)
-        self.assertEquals(result[2][0]._id, 1)
-        self.assertEquals(result[2][1]._id, 3)
     
     def recordJoinFilter_test(self):
 
@@ -195,7 +193,9 @@ class DBMapperTestCase(unittest.TestCase):
 
         result = DBMap.join(DBMapLink, "id", "map_id")
 
-        self.assertEquals(len(result), 3)
+        self.assertEquals(len(result), 2)
+        self.assertEquals(len(result[0]), 3)
+        self.assertEquals(len(result[1]), 3)
 
     def recordUniqueConstraint_test(self):
 

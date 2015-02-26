@@ -19,9 +19,9 @@ __nouns__ = [ "feynman", "einstein", "roadrunner", "tacocat", "grump", "fish",
         "charmander", "mew", "axel", "wayne", "charles", "jessica", "clarice",
         "doctor", "horton", "ballmer", "jobs", "gates", "failfish" ]
 
-def get_simple_name():
+def get_simple_name(delim = '_'):
 
     adj = random.choice(__adjectives__)
     noun = random.choice(__nouns__)
 
-    return '_'.join([adj, noun])
+    return delim.join([adj, noun])

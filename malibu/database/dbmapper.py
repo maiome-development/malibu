@@ -172,7 +172,7 @@ class DBMapper(object):
             load_pair_a.append({primaryKeyA : row[0]})
             load_pair_b.append({primaryKeyB : row[1]})
 
-        return zip([cls.load(**pair) for pair in load_pair_a], [cond.load(**pair) for pair in load_pair_b])
+        return (DBResultList([cls.load(**pair) for pair in load_pair_a]), DBResultList([cond.load(**pair) for pair in load_pair_b]),)
 
     def __init__(self, db, keys, keytypes, options = __default_options):
 
@@ -399,92 +399,5 @@ class DBResultList(list):
                     res.append(dbo)
                 else: continue
             except: continue
-
-        return res
-
-class DBJoinResultList(list):
-
-    def __init__(self, extend = None):
-
-        if isinstance(extend, list):
-            for item in extend:
-                if isinstance(item, tuple):
-                    self.append(item)
-                else: continue
-
-    def filter_equals(self, key, val):
-        """ filter_equals(key, val) ->
-              filters database join result based on
-              key-value equality.
-        """
-
-        res = DBResultList()
-
-        for dbpair in self:
-            for dbo in dbpair:
-                try:
-                    if getattr(dbo, "_%s" % (key)) == val:
-                        res.append(dbo)
-                        break
-                    else: continue
-                except: continue
-
-        return res
-
-    def filter_iequals(self, key, val):
-        """ filter_iequals(key, val) ->
-              filters database join result based on
-              case insensitive key-value equality.
-              assumes that db attribute and val are strings.
-        """
-
-        res = DBResultList()
-
-        for dbpair in self:
-            for dbo in dbpair:
-                try:
-                    if getattr(dbo, "_%s" % (key)).lower() == val.lower():
-                        res.append(dbo)
-                        break
-                    else: continue
-                except: continue
-
-        return res
-
-    def filter_inequals(self, key, val):
-        """ filter_inequals(key, val) ->
-              filters database join result based on
-              key-value inequality.
-        """
-
-        res = DBResultList()
-
-        for dbpair in self:
-            for dbo in dbpair:
-                try:
-                    if getattr(dbo, "_%s" % (key)) != val:
-                        res.append(dbo)
-                        break
-                    else: continue
-                except: continue
-
-        return res
-
-    def filter_regex(self, key, regex):
-        """ filter_regex(key, regex) ->
-              filters database find result based on
-              regex value matching.
-        """
-
-        res = DBResultList()
-
-        for dbpair in self:
-            for dbo in dbpair:
-                try:
-                    if re.match(regex, getattr(dbo, "_%s" % (key))):
-                        res.append(dbo)
-                        break
-                    else: continue
-                except: continue
 
         return res
