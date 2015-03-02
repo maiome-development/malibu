@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.7
 
-import sqlite3, types, re, json
+import sqlite3, types, re, json, copy
 from malibu.database import dbtypeconv
 
 class DBMapper(object):
@@ -29,7 +29,7 @@ class DBMapper(object):
     @staticmethod
     def get_default_options():
 
-        return DBMapper.__default_options
+        return copy.deepcopy(DBMapper.__default_options)
     
     @staticmethod
     def connect_database(dbpath):
