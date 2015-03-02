@@ -234,9 +234,11 @@ class DBMap(dbmapper.DBMapper):
         keys = ['id', 'test_col', 'example', 'description', 'stuff']
         ktypes = ['integer', 'text', 'boolean', 'text', 'json']
 
-        DBMap.set_db_options(db, keys, ktypes)
+        options = DBMap.get_default_options()
+        
+        DBMap.set_db_options(db, keys, ktypes, options = options)
 
-        dbmapper.DBMapper.__init__(self, db, keys, ktypes)
+        dbmapper.DBMapper.__init__(self, db, keys, ktypes, options = options)
 
 class DBMapLink(dbmapper.DBMapper):
 
@@ -245,9 +247,9 @@ class DBMapLink(dbmapper.DBMapper):
         keys = ['id', 'map_id', 'some_text', 'map_val']
         ktypes = ['integer', 'integer', 'text', 'text']
 
-        options = dbmapper.DBMapper.get_default_options()
-        options[dbmapper.DBMapper.INDEX_UNIQUE].append('map_val')
-
+        options = DBMapLink.get_default_options()
+        options[dbmapper.DBMapper.INDEX_UNIQUE].add('map_val')
+        
         DBMapLink.set_db_options(db, keys, ktypes, options = options)
 
-        dbmapper.DBMapper.__init__(self, db, keys, ktypes)
+        dbmapper.DBMapper.__init__(self, db, keys, ktypes, options = options)

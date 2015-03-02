@@ -17,13 +17,13 @@ class DBMapper(object):
     INDEX_AUTOINCR = 'autoincrIndex'
     INDEX_UNIQUE = 'uniqueIndices'
 
-    # Placeholder for database options (static methods)
+    # Global variables for static database methods
 
     _options = None
     __default_options = {
             INDEX_PRIMARY : 0,
             INDEX_AUTOINCR : True,
-            INDEX_UNIQUE : []
+            INDEX_UNIQUE : set()
     }
 
     @staticmethod
@@ -42,11 +42,16 @@ class DBMapper(object):
     @classmethod
     def set_db_options(cls, db, keys, ktypes, options = __default_options):
 
-        cls._options = {}
-        cls._options['database'] = db
-        cls._options['keys'] = keys
-        cls._options['keytypes'] = ktypes
-        cls._options['options'] = options
+        if cls._options is None:
+            cls._options = {}
+            cls._options['database'] = db
+            cls._options['keys'] = keys
+            cls._options['keytypes'] = ktypes
+            cls._options['options'] = options
+        else:
+            cls._options['database'] = db
+            cls._options['keys'] = keys
+            cls._options['keytypes'] = ktypes
 
     @classmethod
     def load(cls, **kw):
