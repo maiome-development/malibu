@@ -39,7 +39,8 @@ class TextTable(object):
         """ add_data_dict only really makes sense to use when there is a 
             single pair mapping (eg., key, value) or a two column
             display.  If that is not that case, add_data_ztup is a better
-            choice. """
+            choice.
+        """
 
         if not isinstance(el, dict): return
 
@@ -59,7 +60,8 @@ class TextTable(object):
                 (x2, y2, z2),
                     ...
                 (xn, yn, zn)
-              ] """
+              ]
+        """
 
         if not isinstance(el, list): return
 
@@ -78,14 +80,16 @@ class TextTable(object):
     def add_data_kv(self, k, v):
 
         """ add_data_kv is a simplified add_data_dict for pushing a data pair onto the
-            row list on-the-fly. only effective for two-column data sets. """
+            row list on-the-fly. only effective for two-column data sets.
+        """
 
         self._row_data.append((k, v,))
 
     def add_data_list(self, el):
 
         """ add_data_list adds a list of data to the table. this is primarily
-            suitable for single-column data sets. """
+            suitable for single-column data sets.
+        """
 
         [self._row_data.append((elm,)) for elm in el]
 
@@ -93,7 +97,8 @@ class TextTable(object):
 
         """ add_data_csv_file loads data from a comma-separated value file.  the first
             row is the header, everything else is actual data.  works if the file is
-            provided or if a string containing the filename is given. """
+            provided or if a string containing the filename is given.
+        """
 
         if isinstance(fobj, str):
             try: fobj = open(fobj, 'r')
@@ -112,13 +117,16 @@ class TextTable(object):
 
     def __transpose_list(self, li):
         
-        """ performs a simple transposition on a list. """
+        """ performs a simple transposition on a list.
+            used for calculating row sizes and maxes.
+        """
 
         return map(list, zip(*li))
 
     def __calculate_row_max(self):
 
-        """ calculates the max size of the rows so the table has uniform column sizes. """
+        """ calculates the max size of the rows so the table has uniform column sizes.
+        """
 
         __sizes = []
 
@@ -131,7 +139,8 @@ class TextTable(object):
 
     def __format_divider(self):
 
-        """ returns the table divider. """
+        """ returns the table divider.
+        """
 
         s = ""
         col_sizes = self.__calculate_row_max()
@@ -148,7 +157,8 @@ class TextTable(object):
 
     def __pad_left(self, txt, length):
 
-        """ pads a string to be length characters long, from left. """
+        """ pads a string to be length characters long, from left.
+        """
 
         s = []
 
@@ -163,7 +173,8 @@ class TextTable(object):
 
     def __format_header_data(self):
 
-        """ formats the header data. """
+        """ formats the header data.
+        """
 
         lines = []
         col_sizes = self.__calculate_row_max()
@@ -184,7 +195,8 @@ class TextTable(object):
 
     def __format_table_data(self):
 
-        """ formats the table data. """
+        """ formats the table data.
+        """
 
         lines = []
         col_sizes = self.__calculate_row_max()
@@ -205,7 +217,8 @@ class TextTable(object):
 
     def format(self):
 
-        """ format the table and return the string. """
+        """ format the table and return the string.
+        """
 
         lines = []
         divider = self.__format_divider()
