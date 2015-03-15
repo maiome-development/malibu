@@ -47,7 +47,8 @@ class ConfigurationSection(dict):
     
         try:
             val = self.get(key)
-            return val.split(delimiter) if len(val) > 0 else default
+            l = val.split(delimiter) if len(val) > 0 else default
+            return [item.strip() for item in l]
         except: return default
 
     def get_string(self, key, default = ""):
@@ -109,7 +110,7 @@ class SectionPromise(object):
     def resolve(self):
     
         section = self.config.get_section(self.section)
-        link = self.onfig.get_section(self.link)
+        link = self.config.get_section(self.link)
         target = section.get(self.key)
 
         if isinstance(target, list):
@@ -193,8 +194,11 @@ class Configuration(object):
             fobj = open(filename, 'r')
             self._filename = filename
             self.load_file(fobj)
-        except:
-            raise InputError("Invalid filename '%s'." % (filename))
+            fobj.close()
+        except IOError as e:
+            raise ValueError("Invalid filename '%s'." % (filename))
+        except: 
+            raise
 
     def load_file(self, fobj):
         """ load a file and read in the categories and variables
@@ -202,8 +206,10 @@ class Configuration(object):
 
         if self.loaded: self.__container.clear()
         section_name = None
+        option_key = None
+        option_value = None
 
-        for line in f.readlines():
+        for line in fobj.readlines():
             line = line.strip('\n').lstrip()
         
             if line.startswith('#') or line.startswith('//') or line.startswith(';'):
@@ -218,51 +224,56 @@ class Configuration(object):
                 set = line.split('=')
                 l = len(set[0])
                 # strip whitespace
-                set[0] = set[0].strip()
-                set[1] = set[1].lstrip() if set[1] is not '' or ' ' else None
+                option_key = set[0].strip()
+                option_value = set[1].lstrip() if set[1] is not '' or ' ' else None
                 
-                if set[1][-1] == ';': set[1] = set[1][0:-1]
+                if option_value[-1] == ';': option_value = option_value[0:-1]
                 section = self.get_section(section_name)
                 
-                if set[1].startswith('+'): # typed reference / variable
-                    decl = set[1].split(':')
-                    datatype = decl[0][1:]
-                    value = decl[1]
+                if option_value.startswith('+'): # typed reference / variable
+                    dobj_type = option_value.split(':')[0][1:]
+                    if len(option_value.split(':')) > 2:
+                        dobj_value = ':'.join(option_value.split(':')[1:])
+                    else:
+                        dobj_value = option_value.split(':')[1]
                     
-                    if datatype.lower() == 'file':
+                    if dobj_type.lower() == 'file':
                         try:
-                            section.set(set[0], open(value, 'r'))
+                            section.set(option_key, open(dobj_value, 'r'))
                         except:
-                            try: section.set(set[0], open(value, 'w+'))
-                            except: section.set(set[0], None)
-                    elif datatype.lower() == 'url':
-                        try: section.set(set[0], urlopen(value))
-                        except: section.set(set[0], None)
-                    elif datatype.lower() == 'list':
-                        try: listdata = json.loads('%s' % (value))
-                        except: listdata = []
-                        repl = []
-                        for item in listdata:
+                            try: section.set(option_key, open(dobj_value, 'w+'))
+                            except: section.set(option_key, None)
+                    elif dobj_type.lower() == 'url' or dobj_type.lower() == "uri":
+                        try: section.set(option_key, urlopen(dobj_value).read())
+                        except: 
+                            raise
+                            section.set(option_key, None)
+                    elif dobj_type.lower() == 'list':
+                        try: dobj_list = json.loads('%s' % (dobj_value))
+                        except: dobj_list = []
+                        dobj_repl = []
+                        for item in dobj_list:
                             if item.startswith('@'):
                                 link_name = item[1:]
                                 if not self.get_section(link_name):
-                                    repl.append(SectionPromise(self, section_name, set[0], link_name))
+                                    dobj_repl.append(SectionPromise(self, section_name, option_key, link_name))
                                 else:
                                     link = self.get_section(link_name)
-                                    repl.append(link)
-                            else: repl.append(item)
-                        section.set(set[0], repl)
-                elif set[1].startswith('@'): # linked reference / section reference
-                    link_name = set[1][1:]
+                                    dobj_repl.append(link)
+                            else: dobj_repl.append(item)
+                        section.set(option_key, dobj_repl)
+                    else:
+                        section.set(option_key, option_value)
+                elif option_value.startswith('@'): # section reference
+                    link_name = option_value[1:]
                     if not self.get_section(link_name):
-                        section.set(set[0], SectionPromise(self, section_name, set[0], link_name))
+                        section.set(option_key, SectionPromise(self, section_name, option_key, link_name))
                     else:
                         link = self.get_section(link_name)
-                        section.set(set[0], link)
-                else: section.set(set[0], set[1])
+                        section.set(option_key, link)
+                else: section.set(option_key, option_value)
                 continue
             else:
                 continue
         self.__resolve_links()
         self.loaded = True
-        f.close()
