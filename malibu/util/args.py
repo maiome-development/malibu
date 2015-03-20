@@ -32,6 +32,7 @@ class ArgumentParser(object):
         self._opt_types = {}
         self._mapping = mapping
         self._descriptions = {}
+        self._aliases = {}
         self.options = {}
         self.parameters = []
 
@@ -52,6 +53,27 @@ class ArgumentParser(object):
 
         self._mapping[option] = map_name
 
+    def add_option_alias(self, option, alias):
+        """
+            Adds an alias for a short option to a long option or for multiple
+            long options.
+        """
+
+        self._aliases[option] = alias
+
+        if option in self._descriptions:
+            self._descriptions.remove(option)
+
+        if alias in self._descriptions:
+            description = self._descriptions[alias]
+            self._descriptions.remove(alias)
+            alias_keys = [option]
+            if isinstance(alias, list):
+                alias_keys.extend(alias)
+            else:
+                alias_keys.append(alias)
+            self._descriptions.update({ alias_keys : description })
+
     def add_option_description(self, option, description):
         """
             Adds a helpful description for an argument. Is returned when 
@@ -67,17 +89,22 @@ class ArgumentParser(object):
         """
 
         processed_descriptions = {}
-        for option, description in self._descriptions.iteritems():
-            if len(option) == 1: # This is a flag. Append a dash.
-                option = '-' + option
-                processed_descriptions.update({ option : description })
-            elif len(option) > 1 and option.startswith('--'): # Option. Append blindly.
-                processed_descriptions.update({ option : description })
-            elif len(option) > 1 and not option.startswith('--'): # Option. Append double-dash.
-                option = '--' + option
-                processed_descriptions.update({ option : description })
-            else: # What is this? Blindly append.
-                processed_descriptions.update({ option : description })
+        for options, description in self._descriptions.iteritems():
+            if not isinstance(options, list):
+                options = [options]
+            processed_options = []
+            for option in options:
+                if len(option) == 1: # This is a flag. Append a dash.
+                    option = '-' + option
+                    processed_options.append(option)
+                elif len(option) > 1 and option.startswith('--'): # Option. Append blindly.
+                    processed_options.append(option)
+                elif len(option) > 1 and not option.startswith('--'): # Option. Append double-dash.
+                    option = '--' + option
+                    processed_options.append(option)
+                else: # What is this? Blindly append.
+                    processed_options.append(option)
+            processed_descriptions.update({ processed_options : description })
 
         return processed_descriptions
 
