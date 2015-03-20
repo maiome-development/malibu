@@ -9,4 +9,8 @@ of the projects that are in development under the maiome namespace.
  connection.packets -> an extendible packet implementation for use with the other connection classes.
  connection.server -> a structure-packet based connection server.
  database.dbmapper -> a reflective/introspective ORM used for simple object relations in SQLite (and maybe others).
+ database.dbtypeconv -> a series of sqlite "middlewares" to do useful type conversions.
+ text.table -> relatively simple text table formatter that allows formatting of data in different ways.
+ util.args -> flexible command line argument parser.
+ util.names -> simple random name generator.
  util.scheduler -> a simple tick-based scheduler suitable for use in ticking event loops.
