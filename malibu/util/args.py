@@ -62,11 +62,11 @@ class ArgumentParser(object):
         self._aliases[option] = alias
 
         if option in self._descriptions:
-            self._descriptions.remove(option)
+            self._descriptions.pop(option)
 
         if alias in self._descriptions:
             description = self._descriptions[alias]
-            self._descriptions.remove(alias)
+            self._descriptions.pop(alias)
             alias_keys = [option]
             if isinstance(alias, list):
                 alias_keys.extend(alias)
