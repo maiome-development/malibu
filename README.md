@@ -1,7 +1,9 @@
 maiome's library of utilities
 =============================
 
-this is a library of semi-useful and hopefully reusable utilities used within a few
+Build status: https://phabricator.maio.me/harbormaster/query/M66HrtGGrY6u/
+
+This is a library of semi-useful and hopefully reusable utilities used within a few
 of the projects that are in development under the maiome namespace.
 
 - config.configuration -> a "simple" config reader with section promises and special types.
