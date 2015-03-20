@@ -104,7 +104,7 @@ class ArgumentParser(object):
                     processed_options.append(option)
                 else: # What is this? Blindly append.
                     processed_options.append(option)
-            processed_descriptions.update({ processed_options : description })
+            processed_descriptions.update({ description : processed_options })
 
         return processed_descriptions
 
