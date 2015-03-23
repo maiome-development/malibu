@@ -1,7 +1,7 @@
 [main]
 a = b
 b = 2
-c = +uri:http://genesis.maio.me/crypto.txt
+c = http://genesis.maio.me/crypto.txt
 d = @test
 
 [test]

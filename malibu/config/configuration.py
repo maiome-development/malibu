@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import copy, urllib2, json
+from contextlib import closing
 from urllib2 import urlopen
 
 """ We need to write some better documentation for this crap.
@@ -105,10 +106,22 @@ class SectionPromise(object):
         self.section = section
         self.key = key
         self.link = link
+        self.__fulfilled = False
+
         SectionPromise.promises.append(self)
+
+    def __str__(self):
+        """ Convert directly to a string for recreating the link
+            during config write.  Better for serialization.
+        """
+
+        return '@' + self.link
 
     def resolve(self):
     
+        if self.__fulfilled:
+            return
+        
         section = self.config.get_section(self.section)
         link = self.config.get_section(self.link)
         target = section.get(self.key)
@@ -119,6 +132,10 @@ class SectionPromise(object):
             section.set(self.key, target)
         else:
             section.set(self.key, link)
+
+        # Preserve the promise for writing back out.
+        section.set("_%s_promise" % (self.key), self)
+        self.__fulfilled = True
 
 class Configuration(object):
     """ 
@@ -131,6 +148,9 @@ class Configuration(object):
         """
 
         self.__container = ConfigurationSection()
+        
+        self._filename = None
+
         self.loaded = False
         
     def __add_section(self, section_name):
@@ -183,6 +203,34 @@ class Configuration(object):
         self.unload()
         self.load(self._filename)
     
+    def save(self, filename = None):
+
+        if filename is None:
+            filename = self._filename
+
+        if filename is None:
+            raise ValueError('No filename specified and no stored filename.')
+
+        with closing(open(filename, 'w')) as config:
+            for section, smap in self.__container.iteritems():
+                config.write("[%s]\n" % (section))
+                for key, value in smap.iteritems():
+                    if isinstance(value, list):
+                        value = "+list:" + json.dumps(value)
+                    elif isinstance(value, ConfigurationSection):
+                        if "_%s_promise" % (key) in smap:
+                            value = str(smap["_%s_promise" % (key)])
+                        else:
+                            value = str(value)
+                    elif isinstance(value, SectionPromise):
+                        continue
+                    elif isinstance(value, file):
+                        value = "+file:" + value.name
+                    else:
+                        value = str(value)
+                    config.write("%s = %s\n" % (key, value))
+                config.write("\n")
+
     def load(self, filename):
         """
             load(filename)
