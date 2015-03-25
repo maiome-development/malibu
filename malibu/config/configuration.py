@@ -57,7 +57,7 @@ class ConfigurationSection(dict):
         try:
             if str(self.get(key)) == '!None': return None
             return str(self.get(key)) or default
-        except: raise
+        except: return default
     
     def get_int(self, key, default = None):
     
