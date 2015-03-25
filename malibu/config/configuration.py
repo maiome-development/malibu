@@ -272,7 +272,7 @@ class Configuration(object):
                 # This is the beginning of a section tag.
                 section_name = line[1:-1]
                 if not self.get_section(section_name):
-                    self.__add_section(section_name)
+                    self.add_section(section_name)
                 continue
             elif '=' in line:
                 set = line.split('=')
