@@ -153,21 +153,6 @@ class Configuration(object):
 
         self.loaded = False
         
-    def __add_section(self, section_name):
-        """ adds a new configuration section to the main dictionary.
-        """
-        
-        section = ConfigurationSection()
-        self.__container.set(section_name, section)
-        
-        return section
-    
-    def __remove_section(self, section_name):
-        """ removes a section from the main dictionary.
-        """
-        
-        del self.__container[section_name]
-
     def __resolve_links(self):
         """ resolves all linked references.
         """
@@ -176,6 +161,27 @@ class Configuration(object):
             promise.resolve()
         
         SectionPromise.promises = []
+
+    def add_section(self, section_name):
+        """ adds a new configuration section to the main dictionary.
+        """
+        
+        section = ConfigurationSection()
+        self.__container.set(section_name, section)
+        
+        return section
+    
+    def remove_section(self, section_name):
+        """ removes a section from the main dictionary.
+        """
+        
+        del self.__container[section_name]
+    
+    def sections(self):
+        """ returns a list of all sections in the configuration.
+        """
+
+        return self.__container.keys()
 
     def has_section(self, section_name):
         """ return if x has a section
