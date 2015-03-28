@@ -94,6 +94,9 @@ class ArgumentParser(object):
                 paraml = param[2:]
                 if '=' in paraml:
                     param, value = paraml.split('=')
+                    # Automatically store a PARAMETERIZED option type, if none exists.
+                    if param not in self._opt_types:
+                        self.add_option_type(param, ArgumentParser.OPTION_PARAMETERIZED)
                 else:
                     param = paraml
                 store_as = param

@@ -211,7 +211,7 @@ class DBMapperTestCase(unittest.TestCase):
         DBMapLink.new(map_id = id_a, some_text = "This definitely is not a test.", map_val = 'test')
         DBMapLink.new(map_id = id_b, some_text = "This might be a test.", map_val = 'notatest')
         
-        self.assertRaises(IntegrityError, DBMapLink.new, **{'map_id' : id_a, 'some_text' : "This could be a test.", 'map_val' : 'test'})
+        self.assertRaises(dbmapper.DBMapperException, DBMapLink.new, **{'map_id' : id_a, 'some_text' : "This could be a test.", 'map_val' : 'test'})
 
     def recordJsonConv_test(self):
 
