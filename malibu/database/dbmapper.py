@@ -57,7 +57,7 @@ class DBMapper(object):
     def load(cls, **kw):
 
         if cls._options is None:
-            raise Exception('Static database options have not been set.')
+            raise DBMapperException('Static database options have not been set.')
 
         dbo = cls._options
         obj = cls(dbo['database'])
@@ -86,7 +86,7 @@ class DBMapper(object):
     def new(cls, **kw):
 
         if cls._options is None:
-            raise Exception('Static database options have not been set.')
+            raise DBMapperException('Static database options have not been set.')
 
         dbo = cls._options
         obj = cls(dbo['database'])
@@ -109,7 +109,7 @@ class DBMapper(object):
     def find(cls, **kw):
 
         if cls._options is None:
-            raise Exception('Static database options have not been set.')
+            raise DBMapperException('Static database options have not been set.')
         
         dbo = cls._options
         obj = cls(dbo['database'])
@@ -137,7 +137,7 @@ class DBMapper(object):
     def find_all(cls):
 
         if cls._options is None:
-            raise Exception('Static database options have not been set.')
+            raise DBMapperException('Static database options have not been set.')
         
         dbo = cls._options
         obj = cls(dbo['database'])
@@ -157,7 +157,7 @@ class DBMapper(object):
     def join(cls, cond, a, b):
 
         if cls._options is None or cond._options is None:
-            raise Exception('Static database options have not been set.')
+            raise DBMapperException('Static database options have not been set.')
 
         dba = cls._options
         obja = cls(dba['database'])
@@ -210,7 +210,10 @@ class DBMapper(object):
         except: pass
 
         try: cur.execute(query)
-        except (sqlite3.ProgrammingError): cur.execute(query, args)
+        except (sqlite3.ProgrammingError):
+            try: cur.execute(query, args)
+            except e:
+                raise DBMapperException("Error while executing query [%s]" % (query), e)
 
         if fetch == DBMapper.FETCH_ONE:
             return cur.fetchone()
@@ -406,3 +409,19 @@ class DBResultList(list):
             except: continue
 
         return res
+
+class DBMapperException(Exception):
+
+    def __init__(self, message, cause = None):
+
+        if cause is not None:
+            super(DBMapperException, self).__init__(message + u', caused by ' + repr(cause))
+        elif cause is None:
+            super(DBMapperException, self).__init__(message)
+
+        self.message = message
+        self.cause = cause
+
+    def __str__(self):
+
+        return repr(self.message) + u', caused by ' + repr(self.cause)
