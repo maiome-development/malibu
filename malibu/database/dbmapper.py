@@ -212,9 +212,9 @@ class DBMapper(object):
         try: cur.execute(query)
         except (sqlite3.ProgrammingError):
             try: cur.execute(query, args)
-            except e:
+            except Exception as e:
                 raise DBMapperException("Error while executing query [%s]" % (query), cause = e)
-        except e:
+        except Exception as e:
             raise DBMapperException("Error while executing query [%s]" % (query), cause = e)
 
         if fetch == DBMapper.FETCH_ONE:
