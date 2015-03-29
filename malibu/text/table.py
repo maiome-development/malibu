@@ -68,6 +68,7 @@ class TextTable(object):
         self._rows = len(el)
 
         for row in el:
+            row = [str(item) for item in row]
             if len(row) > self._columns:
                 row = row[0:self._columns - 1]
             elif len(row) < self._columns:
@@ -165,7 +166,7 @@ class TextTable(object):
         if len(txt) < length:
             diff = length - len(txt) - 1
             [s.append(" ") for i in xrange(0, diff)]
-            s.append(txt + " ")
+            s.append(''.join(txt) + " ")
         elif len(txt) == length:
             s.append(txt)
 
