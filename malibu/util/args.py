@@ -33,8 +33,8 @@ class ArgumentParser(object):
         self.__args = args
         
         self._default_types = {
-                PARAM_SHORT : OPTION_SINGLE,
-                PARAM_LONG  : OPTION_SINGLE
+                ArgumentParser.PARAM_SHORT : ArgumentParser.OPTION_SINGLE,
+                ArgumentParser.PARAM_LONG  : ArgumentParser.OPTION_SINGLE
         }
         self._opt_types = {}
         self._mapping = mapping
