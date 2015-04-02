@@ -33,7 +33,7 @@ class ArgumentParser(object):
         self.__args = args
         
         self._default_types = {
-                PARAM_SHORT : OPTION_SINGLE
+                PARAM_SHORT : OPTION_SINGLE,
                 PARAM_LONG  : OPTION_SINGLE
         }
         self._opt_types = {}
