@@ -115,6 +115,8 @@ class ArgumentParser(object):
                         self.add_option_type(param, ArgumentParser.OPTION_PARAMETERIZED)
                 else:
                     param = paraml
+                    if param not in self._opt_types:
+                        self.add_option_type(param, self._default_types[ArgumentParser.PARAM_LONG])
                 store_as = param
                 if param in self._mapping:
                     self.options.update({ self._mapping[param] : True })
@@ -124,15 +126,6 @@ class ArgumentParser(object):
                 if param in self._opt_types:
                     ptype = self._opt_types[param]
                     if ptype == ArgumentParser.OPTION_PARAMETERIZED:
-                        if '=' in paraml: # Option is long and contains the value.
-                            self.options.update({ store_as : value })
-                            waiting_argument = None
-                        else:
-                            waiting_argument = store_as
-                else:
-                    ptype = self._default_types[ArgumentParser.PARAM_SHORT]
-                    if ptype == ArgumentParser.OPTION_PARAMETERIZED:
-                        waiting_argument = store_as
                         if '=' in paraml: # Option is long and contains the value.
                             self.options.update({ store_as : value })
                             waiting_argument = None
@@ -153,7 +146,7 @@ class ArgumentParser(object):
                             waiting_argument = store_as
             else: # Option parameter or command parameter.
                 if waiting_argument is not None:
-                    self.options[waiting_argument] = param
+                    self.options.update({ waiting_argument : param })
                     waiting_argument = None
                 else:
                     self.parameters.append(param)
