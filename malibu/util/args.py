@@ -7,6 +7,9 @@ class ArgumentParser(object):
     OPTION_SINGLE = 1
     OPTION_PARAMETERIZED = 2
 
+    PARAM_SHORT = 1
+    PARAM_LONG = 2
+
     @classmethod
     def from_argv(cls):
         """
@@ -29,19 +32,32 @@ class ArgumentParser(object):
 
         self.__args = args
         
+        self._default_types = {
+                PARAM_SHORT : OPTION_SINGLE
+                PARAM_LONG  : OPTION_SINGLE
+        }
         self._opt_types = {}
         self._mapping = mapping
         self._descriptions = {}
         self.options = {}
         self.parameters = []
 
-    def add_option_type(self, option, type = OPTION_SINGLE):
+    def set_default_param_type(self, param, opt = OPTION_SINGLE):
+        """
+            Sets the default type map that a parameter will be treated as.
+            Can help force more uniform arguments without having to pre-define
+            options.
+        """
+
+        self._default_types[param] = opt
+
+    def add_option_type(self, option, opt = OPTION_SINGLE):
         """
             Adds a type mapping to a specific option. Allowed types are 
             OPTION_SINGLE and OPTION_PARAMETERIZED.
         """
 
-        self._opt_types[option] = type
+        self._opt_types[option] = opt
 
     def add_option_mapping(self, option, map_name):
         """
@@ -108,6 +124,15 @@ class ArgumentParser(object):
                 if param in self._opt_types:
                     ptype = self._opt_types[param]
                     if ptype == ArgumentParser.OPTION_PARAMETERIZED:
+                        if '=' in paraml: # Option is long and contains the value.
+                            self.options.update({ store_as : value })
+                            waiting_argument = None
+                        else:
+                            waiting_argument = store_as
+                else:
+                    ptype = self._default_types[ArgumentParser.PARAM_SHORT]
+                    if ptype == ArgumentParser.OPTION_PARAMETERIZED:
+                        waiting_argument = store_as
                         if '=' in paraml: # Option is long and contains the value.
                             self.options.update({ store_as : value })
                             waiting_argument = None
