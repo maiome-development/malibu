@@ -20,7 +20,7 @@ class ArgumentParserTestCase(unittest.TestCase):
         args = ['-c', 'filename.txt']
 
         ap = ArgumentParser(args, mapping = {'c' : 'create'})
-        ap.add_option_type('c', type = ArgumentParser.OPTION_PARAMETERIZED)
+        ap.add_option_type('c', opt = ArgumentParser.OPTION_PARAMETERIZED)
         ap.parse()
 
         self.assertEquals(ap.options['create'], 'filename.txt')
@@ -31,9 +31,9 @@ class ArgumentParserTestCase(unittest.TestCase):
 
         ap = ArgumentParser(args)
         ap.add_option_mapping('c', 'create')
-        ap.add_option_type('c', type = ArgumentParser.OPTION_PARAMETERIZED)
+        ap.add_option_type('c', opt = ArgumentParser.OPTION_PARAMETERIZED)
 
-        ap.add_option_type('syntax', type = ArgumentParser.OPTION_PARAMETERIZED)
+        ap.add_option_type('syntax', opt = ArgumentParser.OPTION_PARAMETERIZED)
 
         ap.add_option_mapping('w', 'watch')
         ap.parse()
