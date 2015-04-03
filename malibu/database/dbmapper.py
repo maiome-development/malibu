@@ -333,6 +333,18 @@ class DBMapper(object):
         self.__execute(cur, query, args = vals)
         setattr(self, "_%s" % (self._primary), cur.lastrowid)
 
+    def delete(self):
+
+        cur = self._db.cursor()
+       
+        qst = "%s=?" % (self._keys[self._primary_ind])
+        primary_val = getattr(self, "_%s" % (self._keys[self._primary_ind]))
+
+        query = "delete from %s where (%s)" % (self._table, qst)
+        self.__execute(cur, query, args = (primary_val,) )
+
+        del self
+
 class DBResultList(list):
 
     def __init__(self, extend = None):

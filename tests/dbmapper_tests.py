@@ -26,6 +26,23 @@ class DBMapperTestCase(unittest.TestCase):
         self.assertEquals(dbm._example, True)
         self.assertEquals(dbm._description, "This is a test.")
 
+    def recordDelete_test(self):
+
+        dbm = DBMap(self.db)
+
+        DBMap.new(test_col = "Test", example = False, 
+                description = "This could potentially be a test.")
+
+        record = DBMap.find(test_col = "Test", example = False)
+
+        self.assertNotEquals(len(record), 0)
+
+        record = record[0]
+        record.delete()
+
+        record = DBMap.find(test_col = "Test", example = False)
+        self.assertEquals(len(record), 0)
+
     def recordLoad_test(self):
 
         dbm = DBMap(self.db)
