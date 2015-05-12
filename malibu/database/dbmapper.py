@@ -16,14 +16,16 @@ class DBMapper(object):
     INDEX_PRIMARY = 'primaryIndex'
     INDEX_AUTOINCR = 'autoincrIndex'
     INDEX_UNIQUE = 'uniqueIndices'
+    GENERATE_FTS_VT = 'genFTSVTs'
 
     # Global variables for static database methods
 
     _options = None
     __default_options = {
-            INDEX_PRIMARY : 0,
-            INDEX_AUTOINCR : True,
-            INDEX_UNIQUE : set()
+            INDEX_PRIMARY   : 0,
+            INDEX_AUTOINCR  : True,
+            INDEX_UNIQUE    : set(),
+            GENERATE_FTS_VT : False # Do NOT generate FTS by default.
     }
 
     @staticmethod
@@ -154,6 +156,30 @@ class DBMapper(object):
         return DBResultList([cls.load(**pair) for pair in load_pairs])
 
     @classmethod
+    def search(cls, param):
+
+        if cls._options is None:
+            raise DBMapperException('Static database options have not been set.')
+
+        if not cls._options['options'][DBMapper.GENERATE_FTS_VT]:
+            raise DBMapperException('Full-text search table not enabled on this table.')
+
+        dbo = cls._options
+        obj = cls(dbo['database'])
+        cur = dbo['database'].cursor()
+
+        query = """select docid from _search_%s where _search_%s match \"?\"""" % \
+                (obj._table, obj._table)
+
+        result = obj.__execute(cur, query, args = [param], fetch = DBMapper.FETCH_ALL)
+
+        load_pairs = []
+        for row in result:
+            load_pairs.append({cls._options['keys'][0] : row[0]})
+
+        return DBResultList([cls.load(**pair) for pair in load_pairs])
+
+    @classmethod
     def join(cls, cond, a, b):
 
         if cls._options is None or cond._options is None:
@@ -227,10 +253,11 @@ class DBMapper(object):
         else:
             return cur.fetchall()
 
-    def __get_table_info(self):
+    def __get_table_info(self, table = None):
 
+        table = self._table if table is None else table
         cur = self._db.cursor()
-        query = "pragma table_info(%s)" % (self._table)
+        query = "pragma table_info(%s)" % (table)
 
         return self.__execute(cur, query, fetch = DBMapper.FETCH_ALL)
 
@@ -280,6 +307,32 @@ class DBMapper(object):
                 query = "alter table %s add column %s" % (self._table, defn)
                 cur = self._db.cursor()
                 self.__execute(cur, query)
+
+        # generate full text search table that corresponds with this dbo, if requested
+        if self._options[DBMapper.GENERATE_FTS_VT]:
+            if len(self.__get_table_info("_search_%s" % (self._table))) == 0:
+                # fts4 table doesn't exist, make it.
+                query = "create virtual table _search_%s using fts4(%s, content='%s')" % \
+                        (self._table, ','.join(self._keys), self._table)
+                self.__execute(cur, query)
+                # create pre/post update/delete triggers for cascading updates on content mod
+                # XXX - [trigger warning] DO WE NEED THE TRIGGERS
+                query = "create trigger _%s_bu before update on %s begin delete from _search_%s where docid=old.rowid; end;" % \
+                        (self._table, self._table, self._table)
+                self.__execute(cur, query)
+                query = "create trigger _%s_bd before delete on %s begin delete from _search_%s where docid=old.rowid; end;" % \
+                        (self._table, self._table, self._table)
+                self.__execute(cur, query)
+                search_keys = ','.join(['docid'] + self._keys[1:])
+                target_keys = ','.join(['new.%s' % (vkey) for vkey in self._keys])
+                query = "create trigger _%s_au after update on %s begin insert into _search_%s(%s) values(%s); end;" % \
+                        (self._table, self._table, self._table, search_keys, target_keys)
+                self.__execute(cur, query)
+                query = "create trigger _%s_ai after insert on %s begin insert into _search_%s(%s) values(%s); end;" % \
+                        (self._table, self._table, self._table, search_keys, target_keys)
+                self.__execute(cur, query)
+
+        self._db.commit()
 
     def __generate_getters(self):
 

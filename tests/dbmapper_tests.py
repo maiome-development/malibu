@@ -244,6 +244,26 @@ class DBMapperTestCase(unittest.TestCase):
         self.assertIsInstance(a_vals, list)
         self.assertListEqual(a_vals, ['a', 'b', 'c'])
 
+    def recordSearch_test(self):
+
+        dbo = DBMap(self.db)
+        dbo = DBMapLink(self.db)
+
+        DBMap.new(test_col = "TestA", example = False, description = "This is not a test.")
+        DBMap.new(test_col = "TestB", example = False, description = "This is still not a test.")
+
+        id_a = DBMap.load(test_col = "TestA").get_id()
+        id_b = DBMap.load(test_col = "TestB").get_id()
+
+        DBMapLink.new(map_id = id_a, some_text = "This definitely is not a test.", map_val = 'test')
+        DBMapLink.new(map_id = id_b, some_text = "This might be a test.", map_val = 'notatest')
+        
+        matches = DBMap.search("Test")
+        self.assertEquals(len(matches), 2)
+
+        matches = DBMap.search("still")
+        self.assertEquals(len(matches), 1)
+
 class DBMap(dbmapper.DBMapper):
 
     def __init__(self, db):
@@ -252,7 +272,8 @@ class DBMap(dbmapper.DBMapper):
         ktypes = ['integer', 'text', 'boolean', 'text', 'json']
 
         options = DBMap.get_default_options()
-        
+        options[dbmapper.DBMapper.GENERATE_FTS_VT] = True
+
         DBMap.set_db_options(db, keys, ktypes, options = options)
 
         dbmapper.DBMapper.__init__(self, db, keys, ktypes, options = options)
