@@ -311,6 +311,7 @@ class DBMapper(object):
         # generate full text search table that corresponds with this dbo, if requested
         if self._options[DBMapper.GENERATE_FTS_VT]:
             if len(self.__get_table_info("_search_%s" % (self._table))) == 0:
+                cur = self._db.cursor()
                 # fts4 table doesn't exist, make it.
                 query = "create virtual table _search_%s using fts4(%s, content='%s')" % \
                         (self._table, ','.join(self._keys), self._table)
