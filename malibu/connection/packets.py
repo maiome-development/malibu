@@ -1,7 +1,7 @@
-#!/usr/bin/env python2.7
 import struct, time, hmac
 
 __packets__ = ['DataPacket']
+
 
 def match_packet(data):
 
@@ -14,10 +14,12 @@ def match_packet(data):
             return p
         except (struct.error) as e: continue
 
+
 def match_packets(data):
 
     for packet in data.split(DataPacket.__eop):
         yield match_packet(packet)
+
 
 def register_packet(clsname):
 
@@ -25,6 +27,7 @@ def register_packet(clsname):
     except: return
 
     __packets__.append(clsname)
+
 
 class DataPacket(object):
 
@@ -52,6 +55,7 @@ class DataPacket(object):
             else:
                 raise struct.error("Data indexes do not match pack indexes.")
         except (struct.error) as e: raise
+
     def pack(self):
     
         vals = []

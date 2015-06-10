@@ -1,13 +1,13 @@
-#!/usr/bin/env python
-
 import copy, urllib2, json
 from contextlib import closing
 from urllib2 import urlopen
+
 
 """ We need to write some better documentation for this crap.
     Either that, or we just need to re-write the configuration stuff
     from scratch and actually document it this time.
 """
+
 
 class ConfigurationSection(dict):
     """ modified dictionary that returns none for invalid keys

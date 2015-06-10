@@ -1,7 +1,6 @@
-#!/usr/bin/env python2.7
-
 import sqlite3, types, re, json, copy
 from malibu.database import dbtypeconv
+
 
 class DBMapper(object):
 
@@ -399,6 +398,7 @@ class DBMapper(object):
 
         del self
 
+
 class DBResultList(list):
 
     def __init__(self, extend = None):
@@ -477,6 +477,7 @@ class DBResultList(list):
             except: continue
 
         return res
+
 
 class DBMapperException(Exception):
 

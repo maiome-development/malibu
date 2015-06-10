@@ -1,7 +1,6 @@
-#!/usr/bin/env python2.7
-
 import socket, struct, ssl, time, collections
 from packets import *
+
 
 class TCPConnection(object):
 

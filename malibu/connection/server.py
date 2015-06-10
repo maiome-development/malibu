@@ -1,7 +1,6 @@
-#!/usr/bin/env python2.7
-
 import socket, ssl, select, collections, time
 from connection import TCPConnection
+
 
 class TCPServer(object):
 

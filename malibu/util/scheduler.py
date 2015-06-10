@@ -1,7 +1,6 @@
-#!/usr/bin/env python2.7
-
 import datetime, traceback
 from datetime import datetime, timedelta
+
 
 class Scheduler(object):
     __instance = None
@@ -64,6 +63,7 @@ class Scheduler(object):
                 if not job.is_recurring():
                     self.remove_job(job.get_name())
     
+
 class SchedulerJob(object):
 
     def __init__(self, name, function, delta, recurring = False):
@@ -73,7 +73,7 @@ class SchedulerJob(object):
         self._function = function
         self._delta = delta
         self._recurring = recurring
-	self._last_traceback = None
+    	self._last_traceback = None
         
         self._eta = delta
     
@@ -114,6 +114,7 @@ class SchedulerJob(object):
         
         if self._recurring:
             self._eta += self._delta
+
 
 class SchedulerException(Exception):
 

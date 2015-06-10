@@ -1,6 +1,5 @@
-#!/usr/bin/env python2.7
-
 import random
+
 
 __adjectives__ = [ "smelly", "firey", "naughty", "sad", "frazzled", "excited", 
         "gross", "chipper", "nasty", "nosey", "pokey", "frustrated", "glum",
@@ -18,6 +17,7 @@ __nouns__ = [ "feynman", "einstein", "roadrunner", "tacocat", "grump", "fish",
         "bulbasaur", "king", "bay", "transformers", "johnson", "baby",
         "charmander", "mew", "axel", "wayne", "charles", "jessica", "clarice",
         "doctor", "horton", "ballmer", "jobs", "gates", "failfish" ]
+
 
 def get_simple_name(delim = '_'):
 
