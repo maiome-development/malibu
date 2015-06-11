@@ -29,11 +29,21 @@ class DBMapper(object):
 
     @staticmethod
     def get_default_options():
+        """ DBMapper.get_default_options()
+
+            Returns a deep copy of the default options dictionary for 
+            modification in subclasses.
+        """
 
         return copy.deepcopy(DBMapper.__default_options)
     
     @staticmethod
     def connect_database(dbpath):
+        """ DBMapper.connect_database(dbpath)
+
+            Connects to a database at 'dbpath' and installs the json
+            type converter "middleware" into the database system.
+        """
 
         dbtypeconv.install_json_converter()
         __db = sqlite3.connect(dbpath, detect_types = sqlite3.PARSE_DECLTYPES)
@@ -42,6 +52,13 @@ class DBMapper(object):
 
     @classmethod
     def set_db_options(cls, db, keys, ktypes, options = __default_options):
+        """ DBMapper.set_db_options(db       => database instance
+                                    keys     => list of keys
+                                    ktypes   => list of key types
+                                    options  => options dictionary (optional))
+
+            Sets options for a subclasses DBMapper context.
+        """
 
         if cls._options is None:
             cls._options = {}
@@ -56,6 +73,15 @@ class DBMapper(object):
 
     @classmethod
     def load(cls, **kw):
+        """ DBMapper.load(**kw)
+
+            Loads a *single* row from the database and populates it into
+            the context cls this method was called under.
+            
+            If the database returns more than one row for the kwarg query,
+            this method will only return the first result! If you want a 
+            list of matching rows, use find() or search().
+        """
 
         if cls._options is None:
             raise DBMapperException('Static database options have not been set.')
@@ -85,6 +111,13 @@ class DBMapper(object):
 
     @classmethod
     def new(cls, **kw):
+        """ DBMapper.new(**kw)
+
+            Creates a new contextual instance and returns the object.
+            Only parameters defined in the kwargs will be passed in to 
+            the record creation query, as there is no support for default
+            values yet. (06/11/15)
+        """
 
         if cls._options is None:
             raise DBMapperException('Static database options have not been set.')
@@ -108,6 +141,12 @@ class DBMapper(object):
 
     @classmethod
     def find(cls, **kw):
+        """ DBMapper.find(**kw)
+
+            Searches for a set of records that match the query built by
+            the contents of the kwargs and returns a filterable list of
+            contextualized results that can be modified.
+        """
 
         if cls._options is None:
             raise DBMapperException('Static database options have not been set.')
@@ -136,6 +175,12 @@ class DBMapper(object):
 
     @classmethod
     def find_all(cls):
+        """ DBMapper.find_all()
+
+            Finds all rows that belong to a table and returns a filterable
+            list of contextualized results. Please note that the list that
+            is returned can be empty, but it should never be none.
+        """
 
         if cls._options is None:
             raise DBMapperException('Static database options have not been set.')
@@ -156,6 +201,28 @@ class DBMapper(object):
 
     @classmethod
     def search(cls, param):
+        """ DBMapper.search(param)
+
+            This function will return a list of results that match the given
+            param for a full text query. The search parameter should be in the
+            form of a sqlite full text query, as defined here: 
+              http://www.sqlite.org/fts3.html#section_3
+            
+            As an example, suppose your table looked like this:
+
+              +----+---------+----------------+
+              | id |   name  |    description |
+              +----+---------+----------------+
+              | 1  |  linux  |   some magic   |
+              | 2  | freebsd | daemonic magic |
+              | 3  | windows |   tomfoolery   |
+              +----+---------+----------------+
+            
+            A full text query for "name:linux magic" would return the first
+            row because the name is linux and the description contains "magic".
+            A full text query just for "description:magic" would return both
+            rows one and two because the descriptions contain the word "magic".
+        """
 
         if cls._options is None:
             raise DBMapperException('Static database options have not been set.')
@@ -180,6 +247,13 @@ class DBMapper(object):
 
     @classmethod
     def join(cls, cond, a, b):
+        """ DBMapper.join(cond => other table to join on
+                          a    => left column to join
+                          b    => right column to join)
+
+            Performs a sqlite join on two tables. Returns the join results
+            in a filterable list.
+        """
 
         if cls._options is None or cond._options is None:
             raise DBMapperException('Static database options have not been set.')
@@ -224,7 +298,17 @@ class DBMapper(object):
         self.__generate_properties()
 
     def __execute(self, cur, sql, fetch = FETCH_ONE, limit = -1, args = ()):
-        
+        """ __execute(self,
+                      cur      => pointer to database cursor
+                      sql      => sql query to execute
+                      fetch    => amount of results to fetch
+                      limit    => query limit if not use FETCH_ONE
+                      args     => query arguments to parse in)
+            
+            Filters, quotes, and executes the provided sql query and returns
+            a list of database rows.
+        """
+
         query = sql
         try:
             if len(args) >= 1:
@@ -253,6 +337,10 @@ class DBMapper(object):
             return cur.fetchall()
 
     def __get_table_info(self, table = None):
+        """ __get_table_info(self, table)
+
+            Returns pragma information for a table.
+        """
 
         table = self._table if table is None else table
         cur = self._db.cursor()
@@ -261,6 +349,11 @@ class DBMapper(object):
         return self.__execute(cur, query, fetch = DBMapper.FETCH_ALL)
 
     def __generate_structure(self):
+        """ __generate_structure(self)
+
+            Generates table structure for determining column updates and
+            search information.
+        """
 
         # use pragma constructs to get table into
         tblinfo = self.__get_table_info()
@@ -335,6 +428,11 @@ class DBMapper(object):
         self._db.commit()
 
     def __generate_getters(self):
+        """ __generate_getters(self)
+
+            Generates magical getter methods for pull data from the 
+            underlying database.
+        """
 
         for _key in self._keys:
             def getter_templ(self, __key = _key):
