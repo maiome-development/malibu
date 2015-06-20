@@ -135,9 +135,13 @@ class DBMapper(object):
         for val in vals:
             anonvals.append('?')
         query = "insert into %s (%s) values (%s)" % (obj._table, ','.join(keys), ','.join(anonvals))
-        result = obj.__execute(cur, query, args = vals)
-        
-        return cls.load(**kw)
+        obj.__execute(cur, query, args = vals)
+       
+        res = cls.find(**kw)
+        if len(res) == 0:
+            return None
+        else:
+            return res[0]
 
     @classmethod
     def find(cls, **kw):

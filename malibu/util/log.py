@@ -1,32 +1,38 @@
 import logging, malibu
+
 from logging import handlers
+
 from malibu.config import configuration
 from malibu.util import get_caller
 
 class LoggingDriver(object):
 
-    CONFIG_SECTION = "logging"
+    __instances = {}
 
-    __instance = None
+    @classmethod
+    def get_instance(cls, name = None):
 
-    @staticmethod
-    def get_instance():
-
-        if not LoggingDriver.__instance:
-            return None
-
-        return LoggingDriver.__instance
-
-    @staticmethod
-    def get_logger(name = None):
-
-        if not LoggingDriver.get_instance():
-            return None
+        if name is None:
+            # Assume that we are using the logger driver that was built for 
+            # this package.
+            name = get_caller().split('.')[0]
         
+        if not cls.__instances or name not in cls.__instances:
+            return None
+
+        return cls.__instances[name]
+
+    @classmethod
+    def get_logger(cls, name = None):
+
         if name is None:
             name = get_caller()
+            root = name.split('.')[0]
 
-        return LoggingDriver.get_instance().__get_logger(name = name)
+        if not cls.get_instance(name = root):
+            return None
+        
+        return cls.get_instance(name = root).get_logger(name = name)
     
     def __init__(self, config = {}, name = None):
         """ __init__(self, config = {}, name = None)
@@ -46,7 +52,8 @@ class LoggingDriver(object):
         if not name:
             self.name = get_caller().split('.')[0]
 
-        self.__logfile = self.__config.get_string("logfile", "/var/log/iocage-api.log")
+        self.__logfile = self.__config.get_string("logfile", 
+                "/var/log/{}.log".format(self.name))
         self.__loglevel = self.__config.get_string("loglevel", "INFO").upper()
         self.__stream = self.__config.get_bool("console_log", True)
 
@@ -55,7 +62,7 @@ class LoggingDriver(object):
             raise TypeError("Invalid log level: {}".format(
                 self.__config.get_string("loglevel", "INFO").upper()))
 
-        LoggingDriver.__instance = self
+        LoggingDriver.__instances[self.name] = self
 
         self.__setup_logger()
 
@@ -89,7 +96,9 @@ class LoggingDriver(object):
 
             logger.addHandler(stream_logger)
 
-    def __get_logger(self, name = None):
+        logger.info(" --> Logfile is opened at: {}".format(self.__logfile))
+
+    def get_logger(self, name = None):
         """ get_logger(self, name = None)
 
             Will return a logger object for a specific namespace. 
