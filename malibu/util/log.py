@@ -23,7 +23,7 @@ class LoggingDriver(object):
         return cls.__instances[name]
 
     @classmethod
-    def get_logger(cls, name = None):
+    def find_logger(cls, name = None):
 
         if name is None:
             name = get_caller()
