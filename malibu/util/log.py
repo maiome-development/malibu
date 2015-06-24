@@ -13,10 +13,10 @@ class LoggingDriver(object):
     def get_instance(cls, name = None):
 
         if name is None:
-            # Assume that we are using the logger driver that was built for 
+            # Assume that we are using the logger driver that was built for
             # this package.
             name = get_caller().split('.')[0]
-        
+
         if not cls.__instances or name not in cls.__instances:
             return None
 
@@ -31,11 +31,32 @@ class LoggingDriver(object):
 
         if not cls.get_instance(name = root):
             return None
-        
+
         return cls.get_instance(name = root).get_logger(name = name)
+
+    @classmethod
+    def from_config(cls, config, name = None):
+
+        if not name:
+            name = get_caller().split('.')[0]
+        else:
+            name = name
+
+        logfile = config.get_string("logfile",
+                "/var/log/{}.log".format(name))
+        loglevel = config.get_string("loglevel", "INFO").upper()
+        stream = config.get_bool("console_log", True)
+
+        loglevel = getattr(logging, loglevel, None)
+        if not isinstance(loglevel, int):
+            raise TypeError("Invalid log level: {}".format(
+                config.get_string("loglevel", "INFO").upper()))
+
+        return cls(logfile = logfile, loglevel = loglevel, stream = stream,
+                   name = name)
     
-    def __init__(self, config = {}, name = None):
-        """ __init__(self, config = {}, name = None)
+    def __init__(self, logfile, loglevel, stream, name = None):
+        """ __init__(self, name = None)
 
             Initializes the logging driver and loads necessary config
             values from the ConfigurationSection that should be passed
@@ -43,24 +64,17 @@ class LoggingDriver(object):
             default name or from the base module name of the package.
         """
 
-        if not isinstance(config, configuration.ConfigurationSection):
-            raise TypeError("Config should be of type "
-                    "malibu.config.configuration.ConfigurationSection.")
-        
-        self.__config = config
-
         if not name:
             self.name = get_caller().split('.')[0]
+        else:
+            self.name = name
 
-        self.__logfile = self.__config.get_string("logfile", 
-                "/var/log/{}.log".format(self.name))
-        self.__loglevel = self.__config.get_string("loglevel", "INFO").upper()
-        self.__stream = self.__config.get_bool("console_log", True)
+        self.__logfile = logfile
+        self.__stream = stream
 
-        self.__loglevel = getattr(logging, self.__loglevel, None)
+        self.__loglevel = getattr(logging, loglevel, None)
         if not isinstance(self.__loglevel, int):
-            raise TypeError("Invalid log level: {}".format(
-                self.__config.get_string("loglevel", "INFO").upper()))
+            raise TypeError("Invalid log level: {}".format(loglevel))
 
         LoggingDriver.__instances[self.name] = self
 
@@ -101,7 +115,7 @@ class LoggingDriver(object):
     def get_logger(self, name = None):
         """ get_logger(self, name = None)
 
-            Will return a logger object for a specific namespace. 
+            Will return a logger object for a specific namespace.
             If name parameter is None, get_logger will use call
             stack inspection to get the namespace of the last caller.
         """
