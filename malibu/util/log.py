@@ -72,9 +72,12 @@ class LoggingDriver(object):
         self.__logfile = logfile
         self.__stream = stream
 
-        self.__loglevel = getattr(logging, loglevel, None)
-        if not isinstance(self.__loglevel, int):
-            raise TypeError("Invalid log level: {}".format(loglevel))
+        if isinstance(loglevel, int):
+            self.__loglevel = loglevel
+        else:
+            self.__loglevel = getattr(logging, loglevel, None)
+            if not isinstance(self.__loglevel, int):
+                raise TypeError("Invalid log level: {}".format(loglevel))
 
         LoggingDriver.__instances[self.name] = self
 
