@@ -3,49 +3,43 @@ from contextlib import closing
 from urllib2 import urlopen
 
 
-""" We need to write some better documentation for this crap.
-    Either that, or we just need to re-write the configuration stuff
-    from scratch and actually document it this time.
-"""
-
-
 class ConfigurationSection(dict):
     """ modified dictionary that returns none for invalid keys
     """
-    
+
     def __init__(self):
 
         dict.__init__(self)
-        
+
         self.mutable = True
-    
+
     def __getitem__(self, key):
-    
+
         try: return dict.__getitem__(self, key)
         except (IndexError, KeyError) as e:
             raise KeyError("Unknown configuration key '%s'." % (key))
-    
+
     def __setitem__(self, key, value):
-    
+
         if self.mutable:
             self.update({ key: value })
         else:
             raise AttributeError("This section is not mutable.")
-    
+
     def set_mutable(self, mutable):
-    
+
         self.mutable = mutable
-    
+
     def set(self, key, value):
-    
+
         return self.__setitem__(key, value)
-    
+
     def get(self, key):
-    
+
         return self.__getitem__(key)
-    
+
     def get_list(self, key, delimiter = ",", default = []):
-    
+
         try:
             val = self.get(key)
             l = val.split(delimiter) if len(val) > 0 else default
@@ -53,19 +47,19 @@ class ConfigurationSection(dict):
         except: return default
 
     def get_string(self, key, default = ""):
-    
+
         try:
             if str(self.get(key)) == '!None': return None
             return str(self.get(key)) or default
         except: return default
-    
+
     def get_int(self, key, default = None):
-    
+
         try: return int(self.get(key)) or default
         except: return default
-    
+
     def get_bool(self, key, default = False):
-    
+
         try:
             val = self.get(key) or default
             if isinstance(val, bool):
@@ -92,16 +86,17 @@ class ConfigurationSection(dict):
                 return default
         except: return default
 
+
 class SectionPromise(object):
     """ this is a configuration section promise
         to make resolution of linked sections post-load
         easier.
     """
-    
+
     promises = []
-    
+
     def __init__(self, config, section, key, link):
-        
+
         self.config = config
         self.section = section
         self.key = key
@@ -118,10 +113,10 @@ class SectionPromise(object):
         return '@' + self.link
 
     def resolve(self):
-    
+
         if self.__fulfilled:
             return
-        
+
         section = self.config.get_section(self.section)
         link = self.config.get_section(self.link)
         target = section.get(self.key)
@@ -137,8 +132,9 @@ class SectionPromise(object):
         section.set("_%s_promise" % (self.key), self)
         self.__fulfilled = True
 
+
 class Configuration(object):
-    """ 
+    """
         This definitely needs to be documented.
     """
 
@@ -148,35 +144,35 @@ class Configuration(object):
         """
 
         self.__container = ConfigurationSection()
-        
+
         self._filename = None
 
         self.loaded = False
-        
+
     def __resolve_links(self):
         """ resolves all linked references.
         """
-        
+
         for promise in SectionPromise.promises:
             promise.resolve()
-        
+
         SectionPromise.promises = []
 
     def add_section(self, section_name):
         """ adds a new configuration section to the main dictionary.
         """
-        
+
         section = ConfigurationSection()
         self.__container.set(section_name, section)
-        
+
         return section
-    
+
     def remove_section(self, section_name):
         """ removes a section from the main dictionary.
         """
-        
+
         del self.__container[section_name]
-    
+
     def sections(self):
         """ returns a list of all sections in the configuration.
         """
@@ -194,21 +190,21 @@ class Configuration(object):
         """
 
         return self.__container[section_name] if self.__container.__contains__(section_name) else None
-    
+
     def unload(self):
         """ unload an entire configuration
         """
 
         self.__container.clear()
         self.loaded = False
-    
+
     def reload(self):
         """ reload the configuration from the initially specified file
         """
 
         self.unload()
         self.load(self._filename)
-    
+
     def save(self, filename = None):
 
         if filename is None:
@@ -240,7 +236,7 @@ class Configuration(object):
     def load(self, filename):
         """
             load(filename)
-            
+
             filename -> name of the file to load.
         """
 
@@ -251,7 +247,7 @@ class Configuration(object):
             fobj.close()
         except IOError as e:
             raise ValueError("Invalid filename '%s'." % (filename))
-        except: 
+        except:
             raise
 
     def load_file(self, fobj):
@@ -265,7 +261,7 @@ class Configuration(object):
 
         for line in fobj.readlines():
             line = line.strip('\n').lstrip()
-        
+
             if line.startswith('#') or line.startswith('//') or line.startswith(';'):
                 continue
             elif line.startswith('[') and line.endswith(']'):
@@ -275,36 +271,42 @@ class Configuration(object):
                     self.add_section(section_name)
                 continue
             elif '=' in line:
-                set = line.split('=')
-                l = len(set[0])
+                s = line.split('=')
+                l = len(s[0])
                 # strip whitespace
-                option_key = set[0].strip()
-                option_value = set[1].lstrip() if set[1] is not '' or ' ' else None
-                
-                if option_value[-1] == ';': option_value = option_value[0:-1]
+                option_key = s[0].strip()
+                option_value = s[1].strip() if s[1] is not '' else None
+
+                if option_value is not None and option_value[-1] == ';':
+                    option_value = option_value[0:-1]
                 section = self.get_section(section_name)
-                
+
                 if option_value.startswith('+'): # typed reference / variable
                     dobj_type = option_value.split(':')[0][1:]
                     if len(option_value.split(':')) > 2:
                         dobj_value = ':'.join(option_value.split(':')[1:])
                     else:
                         dobj_value = option_value.split(':')[1]
-                    
+
                     if dobj_type.lower() == 'file':
                         try:
                             section.set(option_key, open(dobj_value, 'r'))
                         except:
-                            try: section.set(option_key, open(dobj_value, 'w+'))
-                            except: section.set(option_key, None)
+                            try:
+                                section.set(option_key, open(dobj_value, 'w+'))
+                            except:
+                                section.set(option_key, None)
                     elif dobj_type.lower() == 'url' or dobj_type.lower() == "uri":
-                        try: section.set(option_key, urlopen(dobj_value).read())
-                        except: 
+                        try:
+                            section.set(option_key, urlopen(dobj_value).read())
+                        except:
                             raise
-                            section.set(option_key, None)
+                        section.set(option_key, None)
                     elif dobj_type.lower() == 'list':
-                        try: dobj_list = json.loads('%s' % (dobj_value))
-                        except: dobj_list = []
+                        try:
+                            dobj_list = json.loads('%s' % (dobj_value))
+                        except:
+                            dobj_list = []
                         dobj_repl = []
                         for item in dobj_list:
                             if item.startswith('@'):
@@ -325,7 +327,8 @@ class Configuration(object):
                     else:
                         link = self.get_section(link_name)
                         section.set(option_key, link)
-                else: section.set(option_key, option_value)
+                else:
+                    section.set(option_key, option_value)
                 continue
             else:
                 continue
