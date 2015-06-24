@@ -277,9 +277,13 @@ class Configuration(object):
                 option_key = s[0].strip()
                 option_value = s[1].strip() if s[1] is not '' else None
 
-                if option_value is not None and option_value[-1] == ';':
+                if option_value and option_value[-1] == ';':
                     option_value = option_value[0:-1]
                 section = self.get_section(section_name)
+
+                if not option_value:
+                    section.set(option_key, option_value)
+                    continue
 
                 if option_value.startswith('+'): # typed reference / variable
                     dobj_type = option_value.split(':')[0][1:]
