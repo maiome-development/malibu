@@ -13,14 +13,12 @@ class LoggingDriver(object):
     def get_instance(cls, name = None):
 
         if name is None:
-            # Assume that we are using the logger driver that was built for
-            # this package.
             name = get_caller().split('.')[0]
 
         if not cls.__instances or name not in cls.__instances:
             return None
 
-        return cls.__instances[name]
+        return cls.__instances.get(name)
 
     @classmethod
     def find_logger(cls, name = None):
@@ -28,6 +26,8 @@ class LoggingDriver(object):
         if name is None:
             name = get_caller()
             root = name.split('.')[0]
+        else:
+            root = name
 
         if not cls.get_instance(name = root):
             return None
@@ -43,7 +43,8 @@ class LoggingDriver(object):
             name = name
 
         logfile = config.get_string("logfile",
-                "/var/log/{}.log".format(name))
+                                    "/var/log/{}.log".format(
+                                        name))
         loglevel = config.get_string("loglevel", "INFO").upper()
         stream = config.get_bool("console_log", True)
 
@@ -52,8 +53,8 @@ class LoggingDriver(object):
             raise TypeError("Invalid log level: {}".format(
                 config.get_string("loglevel", "INFO").upper()))
 
-        return cls(logfile = logfile, loglevel = loglevel, stream = stream,
-                   name = name)
+        return cls(logfile = logfile, loglevel = loglevel,
+                   stream = stream, name = name)
     
     def __init__(self, logfile, loglevel, stream, name = None):
         """ __init__(self, name = None)
@@ -79,7 +80,7 @@ class LoggingDriver(object):
             if not isinstance(self.__loglevel, int):
                 raise TypeError("Invalid log level: {}".format(loglevel))
 
-        LoggingDriver.__instances[self.name] = self
+        LoggingDriver.__instances.update({self.name :self})
 
         self.__setup_logger()
 
@@ -114,6 +115,9 @@ class LoggingDriver(object):
             logger.addHandler(stream_logger)
 
         logger.info(" --> Logfile is opened at: {}".format(self.__logfile))
+        logger.info(" --> Console / streaming logs: {}".format(
+            "enabled" if self.__stream else "disabled"))
+        logger.info(" --> Logging at level: {}".format(self.__loglevel))
 
     def get_logger(self, name = None):
         """ get_logger(self, name = None)
