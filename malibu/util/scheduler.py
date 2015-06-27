@@ -1,4 +1,4 @@
-import datetime, traceback
+import datetime, sys, traceback
 from datetime import datetime, timedelta
 
 
@@ -59,7 +59,7 @@ class Scheduler(object):
                     job.execute()
                     job.set_traceback(None)
                 except:
-                    job.set_traceback(traceback.extract_frame())
+                    job.set_traceback(traceback.extract_tb(sys.last_traceback))
                 if not job.is_recurring():
                     self.remove_job(job.get_name())
     
