@@ -1,0 +1,16 @@
+image: python:2.7-wheezy
+git:
+  path: github.com/maiome-development/malibu.git
+script:
+  - virtualenv .
+  - source bin/activate
+  - pip install -r requirements.txt
+  - python ./setup.py nosetests
+  - python ./setup.py sdist --formats gztar -q
+notify:
+  webhook:
+    urls:
+      - https://webhooks.gitter.im/e/14f9d84a0684d1f204c2
+    on_started: true
+    on_success: true
+    on_failure: true
