@@ -13,6 +13,19 @@ class ConfigurationSection(dict):
 
         self.mutable = True
 
+    def __getattr__(self, key):
+
+        try: return dict.__getitem__(self, key)
+        except (IndexError, KeyError) as e:
+            raise KeyError("Unknown configuration key '%s'." % (key))
+
+    def __setattr__(self, key, value):
+
+        if self.mutable:
+            self.update({ key: value })
+        else:
+            raise AttributeError("This section is not mutable.")
+
     def __getitem__(self, key):
 
         try: return dict.__getitem__(self, key)
@@ -173,6 +186,7 @@ class Configuration(object):
 
         del self.__container[section_name]
 
+    @property
     def sections(self):
         """ returns a list of all sections in the configuration.
         """
