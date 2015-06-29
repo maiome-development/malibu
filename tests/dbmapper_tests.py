@@ -1,16 +1,15 @@
-#!/usr/bin/env python2.7
-
 import malibu, sqlite3, unittest, json
 from malibu.database import dbmapper
 from nose.tools import *
 from sqlite3 import IntegrityError
+
 
 class DBMapperTestCase(unittest.TestCase):
 
     def setUp(self):
 
         self.db = dbmapper.DBMapper.connect_database(":memory:")
-    
+
     def tearDown(self):
 
         self.db.close()
@@ -30,7 +29,7 @@ class DBMapperTestCase(unittest.TestCase):
 
         dbm = DBMap(self.db)
 
-        DBMap.new(test_col = "Test", example = False, 
+        DBMap.new(test_col = "Test", example = False,
                 description = "This could potentially be a test.")
 
         record = DBMap.find(test_col = "Test", example = False)
@@ -53,7 +52,7 @@ class DBMapperTestCase(unittest.TestCase):
         dbm.set_test_col("Test")
         dbm.set_example(True)
         dbm.set_description("This is a test.")
-        
+
         del dbm
 
         dbm = DBMap(self.db)
@@ -99,11 +98,11 @@ class DBMapperTestCase(unittest.TestCase):
         DBMap.new(test_col = "TestB", example = False, description = "This is still not a test.")
 
         result = DBMap.find(example = False)
-        
+
         self.assertEquals(len(result), 2)
         self.assertEquals(result[0]._test_col, "TestA")
         self.assertEquals(result[1]._test_col, "TestB")
-    
+
     def recordFindAll_test(self):
 
         dbm = DBMap(self.db)
@@ -112,7 +111,7 @@ class DBMapperTestCase(unittest.TestCase):
         DBMap.new(test_col = "TestB", example = False, description = "This is still not a test.")
 
         result = DBMap.find_all()
-        
+
         self.assertEquals(len(result), 2)
         self.assertEquals(result[0]._test_col, "TestA")
         self.assertEquals(result[1]._test_col, "TestB")
@@ -126,7 +125,7 @@ class DBMapperTestCase(unittest.TestCase):
 
         result = DBMap.find_all()
         result = result.filter_equals("test_col", "TestA")
-        
+
         self.assertEquals(len(result), 1)
         self.assertEquals(result[0]._test_col, "TestA")
 
@@ -139,7 +138,7 @@ class DBMapperTestCase(unittest.TestCase):
 
         result = DBMap.find_all()
         result = result.filter_iequals("test_col", "testa")
-        
+
         self.assertEquals(len(result), 1)
         self.assertEquals(result[0]._test_col, "TestA")
 
@@ -152,7 +151,7 @@ class DBMapperTestCase(unittest.TestCase):
 
         result = DBMap.find_all()
         result = result.filter_inequals("test_col", "TestB")
-        
+
         self.assertEquals(len(result), 1)
         self.assertEquals(result[0]._test_col, "TestA")
 
@@ -165,7 +164,7 @@ class DBMapperTestCase(unittest.TestCase):
 
         result = DBMap.find_all()
         result = result.filter_regex("test_col", "Test[AB]")
-        
+
         self.assertEquals(len(result), 2)
         self.assertEquals(result[0]._test_col, "TestA")
         self.assertEquals(result[1]._test_col, "TestB")
@@ -192,7 +191,7 @@ class DBMapperTestCase(unittest.TestCase):
         self.assertEquals(result[0][1]._id, 2)
         self.assertEquals(result[1][0]._id, 1)
         self.assertEquals(result[1][1]._id, 2)
-    
+
     def recordJoinFilter_test(self):
 
         dbm = DBMap(self.db)
@@ -227,13 +226,13 @@ class DBMapperTestCase(unittest.TestCase):
 
         DBMapLink.new(map_id = id_a, some_text = "This definitely is not a test.", map_val = 'test')
         DBMapLink.new(map_id = id_b, some_text = "This might be a test.", map_val = 'notatest')
-        
+
         self.assertRaises(dbmapper.DBMapperException, DBMapLink.new, **{'map_id' : id_a, 'some_text' : "This could be a test.", 'map_val' : 'test'})
 
     def recordJsonConv_test(self):
 
         dbo = DBMap(self.db)
-        
+
         DBMap.new(test_col = "TestA", example = False, description = "This is not a test.", \
                 stuff = json.dumps(['a', 'b', 'c']))
 
@@ -257,12 +256,13 @@ class DBMapperTestCase(unittest.TestCase):
 
         DBMapLink.new(map_id = id_a, some_text = "This definitely is not a test.", map_val = 'test')
         DBMapLink.new(map_id = id_b, some_text = "This might be a test.", map_val = 'notatest')
-        
+
         matches = DBMap.search("Test")
         self.assertEquals(len(matches), 2)
 
         matches = DBMap.search("still")
         self.assertEquals(len(matches), 1)
+
 
 class DBMap(dbmapper.DBMapper):
 
@@ -278,6 +278,7 @@ class DBMap(dbmapper.DBMapper):
 
         dbmapper.DBMapper.__init__(self, db, keys, ktypes, options = options)
 
+
 class DBMapLink(dbmapper.DBMapper):
 
     def __init__(self, db):
@@ -287,7 +288,7 @@ class DBMapLink(dbmapper.DBMapper):
 
         options = DBMapLink.get_default_options()
         options[dbmapper.DBMapper.INDEX_UNIQUE].add('map_val')
-        
+
         DBMapLink.set_db_options(db, keys, ktypes, options = options)
 
         dbmapper.DBMapper.__init__(self, db, keys, ktypes, options = options)

@@ -45,3 +45,11 @@ class ConfigurationTestCase(unittest.TestCase):
             self.assertIsInstance(test.get('h'), list)
             self.assertListEqual(test.get('h'), [u'list', u'of', u'things'])
 
+    def configSections_test(self):
+
+        with open(self.config_path, 'r') as config_fobj:
+            self.config.load_file(config_fobj)
+            self.assertTrue(self.config.loaded)
+
+            self.assertIn("main", self.config.sections)
+            self.assertIn("test", self.config.sections)

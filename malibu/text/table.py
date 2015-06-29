@@ -149,7 +149,7 @@ class TextTable(object):
         for size in col_sizes:
             s += TextTable.TABLE_CORNER
             if size >= self.min_width:
-                s += (TextTable.TABLE_HZ_BORDER * size)
+                s += (TextTable.TABLE_HZ_BORDER * (size + 2))
             else:
                 s += (TextTable.TABLE_HZ_BORDER * self.min_width)
         s += TextTable.TABLE_CORNER
@@ -186,6 +186,8 @@ class TextTable(object):
         for (text, size) in cd:
             if size < self.min_width:
                 size = self.min_width
+            elif size >= self.min_width:
+                size = size + 2
             text = self.__pad_left(text, size)
             line += TextTable.TABLE_VT_BORDER
             line += text
@@ -208,6 +210,8 @@ class TextTable(object):
             for (text, size) in rd:
                 if size < self.min_width:
                     size = self.min_width
+                elif size >= self.min_width:
+                    size = size + 2
                 text = self.__pad_left(text, size)
                 line += TextTable.TABLE_VT_BORDER
                 line += text

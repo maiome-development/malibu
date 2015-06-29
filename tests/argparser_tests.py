@@ -1,8 +1,7 @@
-#!/usr/bin/env python2.7
-
 import contextlib, malibu, os, unittest
 from malibu.util.args import ArgumentParser
 from nose.tools import *
+
 
 class ArgumentParserTestCase(unittest.TestCase):
 

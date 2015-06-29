@@ -1,9 +1,8 @@
-#!/usr/bin/env python2.7
-
 import malibu, sqlite3, unittest
 from malibu.text.table import TextTable
 from nose.tools import *
 from sqlite3 import IntegrityError
+
 
 class TableTestCase(unittest.TestCase):
 

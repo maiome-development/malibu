@@ -26,6 +26,7 @@ setup(
                 'malibu.config',
                 'malibu.connection',
                 'malibu.database',
+                'malibu.design',
                 'malibu.text',
                 'malibu.util'],
     package_dir = {'malibu': 'malibu'},
