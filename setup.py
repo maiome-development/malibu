@@ -8,7 +8,7 @@ import malibu
 setup(
     name = 'malibu',
     version = malibu.__version__,
-    description = "maiome's library of utilities",
+    description = "maiome library of utilities",
 
     url = "http://phabricator.maio.me/tag/malibu",
     author = "Sean Johnson",
