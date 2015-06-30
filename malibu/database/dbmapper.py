@@ -461,6 +461,7 @@ class DBMapper(object):
                 query = "update %s set %s=? where %s=?" % (
                     self._table, __key, self._primary)
                 self.__execute(cur, query, args = (value, getattr(self, "_%s" % (self._primary)),))
+                self._db.commit()
                 setattr(self, "_%s" % (__key), value)
             setattr(self, "set_%s" % (_key), types.MethodType(setter_templ, self))
 

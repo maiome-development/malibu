@@ -1,55 +1,102 @@
 import datetime, sys, traceback
 from datetime import datetime, timedelta
 
+from malibu.design import borgish
+from malibu.util.decorators import function_registrator
 
-class Scheduler(object):
-    __instance = None
 
-    @staticmethod
-    def get_instance():
-
-        if Scheduler.__instance is None:
-            return Scheduler()
-        else:
-            return Scheduler.__instance
+class Scheduler(borgish.SharedState):
 
     def __init__(self):
 
-        Scheduler.__instance = self
+        super(Scheduler, self).__init__()
 
         self.__jobs = {}
 
-    def create_job(self, name, function, delta, recurring = False):
+    def create_job(self, name, func, delta, recurring = False):
+        """ Creates a new job instance and attaches it to the scheduler.
+            
+            Params
+            ------
+            name : str
+                Name of the job to create.
+            func : function
+                Function that is specified as the execution callback.
+            delta : datetime.timedelta
+                Timedelta to execute on.
+            recurring : bool, optional
+                Whether the job should continue running after first run.
+
+            Raises
+            ------
+            SchedulerException
+                If the job already exists, func is none, or delta is not
+                an instance of datetime.timedelta.
+
+            Returns
+            -------
+            SchedulerJob
+                If job creation was succesful.
+        """
 
         if name in self.__jobs:
             raise SchedulerException("Job already exists; remove it first.")
-        if function is None:
+        if func is None:
             raise SchedulerException("Callback function is non-existent.")
         if not isinstance(delta, timedelta):
             raise SchedulerException("Argument 'delta' was not a timedelta instance.")
 
-        job = SchedulerJob(name, function, delta, recurring)
+        job = SchedulerJob(name, func, delta, recurring)
         self.add_job(job)
 
         return job
 
     def add_job(self, job):
+        """ Adds a job to the list of jobs maintained by the scheduler.
+
+            Params
+            ------
+            job : SchedulerJob
+                Job to add to the list of active jobs.
+
+            Raises
+            ------
+            SchedulerException
+                If the job already exists in the jobs dictionary.
+        """
 
         if job in self.__jobs:
             raise SchedulerException("Job already exists; remove it first.")
+
         job.begin_ticking()
-        self.__jobs.update({ job.get_name() : job })
+        self.__jobs.update({job.get_name() : job})
 
     def remove_job(self, name):
+        """ Removes a job from the list of jobs maintained by the scheduler.
+        
+            Params
+            ------
+            name : str
+                Name of the job to remove from the job list.
 
-        if not name in self.__jobs:
+            Raises
+            ------
+            SchedulerException
+                If the job does not exist.
+        """
+
+        if name not in self.__jobs:
             raise SchedulerException("Job does not exist.")
-
-        job = self.__jobs[name]
 
         self.__jobs.pop(name)
 
     def tick(self):
+        """ Gets the current time and checks the ETA on each job.
+            If the job is ready, it executes and captures any exception
+            that should raise out of the execute call.
+            If an exception is capture, the job's onfail callbacks will be
+            fired with a reference to the job object that was being triggered.
+        """
 
         now = datetime.now()
 
@@ -60,6 +107,7 @@ class Scheduler(object):
                     job.set_traceback(None)
                 except Exception as e:
                     job.set_traceback(e)
+                    job.fire_onfail()
                 if not job.is_recurring():
                     self.remove_job(job.get_name())
                 else:
@@ -69,14 +117,16 @@ class Scheduler(object):
 
 class SchedulerJob(object):
 
-    def __init__(self, name, function, delta, recurring = False):
+    def __init__(self, name, function, delta, state, recurring = False):
 
-        self._scheduler = Scheduler.get_instance()
+        self._scheduler = Scheduler()
         self._name = name
         self._function = function
         self._delta = delta
         self._recurring = recurring
         self._last_traceback = None
+        self._onfail = []
+        self.onfail = function_registrator(self._onfail)
 
         self._eta = delta
 
@@ -95,6 +145,19 @@ class SchedulerJob(object):
     def set_traceback(self, stack):
 
         self._last_traceback = stack
+
+    def attach_onfail(self, func):
+
+        self._onfail.append(func)
+
+    def detach_onfail(self, func):
+
+        self._onfail.remove(func)
+
+    def fire_onfail(self):
+
+        for callback in self._onfail:
+            callback(job = self)
 
     def is_recurring(self):
 
