@@ -65,3 +65,14 @@ class BorgishTestCase(unittest.TestCase):
         b = ClassB()
 
         self.assertRaises(NameError, b.load_state, "disjoint")
+
+    def borgishStateCarry_test(self):
+
+        a = ClassA()
+        a.save_state("carry")
+        a.value = "abab"
+
+        aa = ClassA()
+        aa.load_state("carry")
+
+        self.assertEquals(a.value, aa.value)

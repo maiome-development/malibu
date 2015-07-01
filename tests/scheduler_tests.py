@@ -23,7 +23,7 @@ class SchedulerTestCase(unittest.TestCase):
     def schedulerStateCreation_test(self):
 
         test_func = lambda: True
-        
+
         job = self.scheduler.create_job(
                 name = "SchedulerTestCase__creationTest",
                 func = test_func,
@@ -72,3 +72,4 @@ class SchedulerTestCase(unittest.TestCase):
         self.assertTrue(job.is_ready(datetime.now()))
         self.scheduler.tick()
         self.assertEqual(self.result.pop(), test_id)
+
