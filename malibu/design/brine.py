@@ -37,9 +37,7 @@ class JsonModelledState(object):
     """
 
     # Ratio for fuzzy search. Closer to 1.0 means stricter results.
-    _FUZZ_RATIO = 0.5645
-#    # Bias for string length during fuzzy search.
-#    _LENGTH_BIAS = 0.10
+    _FUZZ_RATIO = 0.535
 
     @classmethod
     def __initialize_cache(cls):
@@ -74,7 +72,11 @@ class JsonModelledState(object):
                 if r >= cls._FUZZ_RATIO:
                     ratios.update({obj: r})
 
-        return sorted(ratios)
+        # TODO - sort by fuzzy search ratio.
+        # We need to ensure the results get properly sorted by match ratio
+        # before returning.
+
+        return ratios.keys()
 
     @classmethod
     def search(cls, ignore_case = False, **kw):
