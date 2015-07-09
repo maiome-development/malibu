@@ -1,3 +1,4 @@
+import pdb
 import difflib, json, time, types, uuid
 from difflib import SequenceMatcher
 
@@ -15,7 +16,7 @@ def fuzzy_ratio(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
 
-class JsonModelledState(object):
+class BrineState(object):
     """ This class is for meta-class use as a semi-state machine.
         It provides a sort of persistence with searchable fields,
         which should end up operating similar to the DBMapper, but
@@ -45,7 +46,7 @@ class JsonModelledState(object):
             searching purposes.
         """
 
-        if not hasattr(cls, "_JsonModelledState__cache"):
+        if not hasattr(cls, "_BrineState__cache"):
             cls.__cache = []
 
     @classmethod
@@ -113,7 +114,8 @@ class JsonModelledState(object):
 
         # For now, lets make this simple and treat fields with no special
         # syntax (underlines, mainly) as our schema.
-        self.__fields = []
+        self._special_fields = ["_timestamp", "_uuid"]
+        self._fields = []
         for field in dir(self):
             if field.startswith("_"):
                 continue
@@ -121,7 +123,7 @@ class JsonModelledState(object):
             if type(getattr(self, field)) in [types.FunctionType,
                                               types.MethodType]:
                 continue
-            self.__fields.append(field)
+            self._fields.append(field)
 
         if kw.get("timestamp", False):
             self._timestamp = int(time.time())
@@ -130,7 +132,6 @@ class JsonModelledState(object):
                 fset = lambda v: None,
                 fdel = None,
                 doc = "Object creation timestamp")
-            self.__fields.append("_timestamp")
 
         if kw.get("uuid", False):
             self._uuid = str(uuid.uuid4())
@@ -139,7 +140,6 @@ class JsonModelledState(object):
                 fset = lambda v: None,
                 fdel = None,
                 doc = "Object UUID")
-            self.__fields.append("_uuid")
 
         self.__cache.append(self)
 
@@ -153,10 +153,10 @@ class JsonModelledState(object):
         """ Returns the dictionary representation of the fields
             in this object.
         """
-        
+
         obj = {}
 
-        for val in self.__fields:
+        for val in self._fields + self._special_fields:
             if not hasattr(self, val):
                 continue
             # Also, make sure this isn't a function.
@@ -187,8 +187,98 @@ class JsonModelledState(object):
 
         for k, v in obj.iteritems():
             # We need to make sure the data is sanitized a little bit.
-            if k.startswith("_") and k not in ["_uuid", "_timestamp"]:
+            if k.startswith("_") and k not in self._special_fields:
                 continue
-            if k in self.__fields:
+            if k in self._fields:
                 setattr(self, k, v)
+
+
+class CachingBrineState(BrineState):
+    """ The caching brine state works a lot like a regular brine state,
+        except that the caching version will maintain a list of "dirty"
+        attributes. This is useful in the case that you are trying to
+        keep your state / models updated and consistent with some sort
+        of upstream datastore.
+    """
+
+    def __init__(self, *args, **kw):
+
+        BrineState.__init__(self, *args, **kw)
+
+        # The "dirty" cache list is just a list of fields that have been
+        # updated.
+        self.__dirty = []
+
+        # After initializing the regular brine state stuff, take the field
+        # list and overwrite the values with getters and setters for tracking
+        # dirty state.
+#        pdb.set_trace()
+        for field in self._fields:
+            field_initial = getattr(self, field, None)
+            field_prop = property(
+                fget = lambda: getattr(self, "_" + field, None),
+                fset = lambda v: self.__update_field(field, v),
+                fdel = None)
+            setattr(self, field, field_prop)
+
+    def __update_field(self, field, value):
+        """ Does the simple update and dirty marking of the field.
+        """
+
+        if field not in self.__dirty:
+            self.__dirty.append(field)
+
+        setattr(self, "_" + field, value)
+
+    def as_dict(self):
+        """ Returns the dictionary representation of the fields
+            in this object.
+        """
+
+        obj = {}
+
+        for val in self._fields + self._special_fields:
+            if not hasattr(self, "_" + val):
+                continue
+            # Also, make sure this isn't a function.
+            if type(getattr(self, "_" + val)) in [types.FunctionType,
+                                                  types.MethodType]:
+                continue
+            obj.update({val: getattr(self, "_" + val)})
+
+        return obj
+    
+    def unmark(self, *fields):
+        """ Unmarks some field as dirty. Should only be called after
+            the upstream is updated or only if you know what you're doing!
+        """
+
+        for field in fields:
+            if field not in self.__dirty:
+                continue
+
+            self.__dirty.remove(field)
+
+    def dirty_dict(self):
+        """ Dumps a dictionary of dirty fields.
+        """
+
+        obj = {}
+        for val in self.__dirty:
+            if not hasattr(self, val):
+                continue
+            # Also, make sure this isn't a function.
+            if type(getattr(self, val)) in [types.FunctionType,
+                                            types.MethodType]:
+                continue
+            obj.update({val: getattr(self, val)})
+
+        return obj
+
+    def dirty_json(self):
+        """ Dumps the dirty dictionary as JSON.
+        """
+
+        return json.dumps(self.dirty_dict())
+
 

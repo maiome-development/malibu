@@ -1,6 +1,8 @@
+.coverage
 *.pyc
 bin
 include
 lib
 dist
+docs
 malibu.egg-info

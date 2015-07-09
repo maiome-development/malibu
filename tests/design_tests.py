@@ -21,12 +21,21 @@ class ClassB(borgish.SharedState):
         self.value = "bbbb"
 
 
-class Person(brine.JsonModelledState):
+class Person(brine.BrineState):
 
     def __init__(self):
 
         self.name = None
-        super(Person, self).__init__(self, timestamp = True)
+        super(Person, self).__init__(self, timestamp = True, uuid = True)
+
+
+class UserProfile(brine.CachingBrineState):
+
+    def __init__(self):
+
+        self.user_id = None
+        self.user_mail = None
+        super(UserProfile, self).__init__(self, timestamp = True, uuid = True)
 
 
 class BorgishTestCase(unittest.TestCase):
@@ -92,8 +101,8 @@ class BrineTestCase(unittest.TestCase):
     def brineInstanceCreate_test(self):
 
         a = Person()
-        self.assertIsInstance(a, brine.JsonModelledState)
-        self.assertIn(a, Person._JsonModelledState__cache)
+        self.assertIsInstance(a, brine.BrineState)
+        self.assertIn(a, Person._BrineState__cache)
         
         a.uncache()
 
@@ -129,3 +138,25 @@ class BrineTestCase(unittest.TestCase):
 
         self.skipTest("Fuzzy search is extremely broken. Needs more validation.")
 
+    def cachingBrineCreate_test(self):
+
+        prof_a = UserProfile()
+        self.assertIsInstance(prof_a, brine.CachingBrineState)
+        self.assertIn(prof_a, UserProfile._BrineState__cache)
+
+        prof_a.uncache()
+
+    def cachingBrineDirtyField_test(self):
+
+        a = Person()
+        a.name = "John Doe"
+
+        self.skipTest("Cache dirtying is currently broken.")
+        
+        prof_a = UserProfile()
+        prof_a.user_id = a.uuid
+        self.assertIn("user_id", prof_a._CachingBrineState__dirty)
+
+        ddump = prof_a.as_dict()
+        self.assertIn("user_id", ddump)
+        self.assertEquals(ddump["uuid"], a.uuid)
