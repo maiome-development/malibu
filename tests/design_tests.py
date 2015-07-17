@@ -1,4 +1,4 @@
-import contextlib, malibu, os, unittest
+import contextlib, malibu, os, unittest, uuid
 from contextlib import closing
 from malibu.design import borgish
 from malibu.design import brine
@@ -21,7 +21,7 @@ class ClassB(borgish.SharedState):
         self.value = "bbbb"
 
 
-class Person(brine.BrineState):
+class Person(brine.BrineObject):
 
     def __init__(self):
 
@@ -29,13 +29,13 @@ class Person(brine.BrineState):
         super(Person, self).__init__(self, timestamp = True, uuid = True)
 
 
-class UserProfile(brine.CachingBrineState):
+class UserProfile(brine.CachingBrineObject):
 
     def __init__(self):
 
         self.user_id = None
         self.user_mail = None
-        super(UserProfile, self).__init__(self, timestamp = True, uuid = True)
+        super(UserProfile, self).__init__(self, timestamp = False, uuid = False)
 
 
 class BorgishTestCase(unittest.TestCase):
@@ -101,32 +101,42 @@ class BrineTestCase(unittest.TestCase):
     def brineInstanceCreate_test(self):
 
         a = Person()
-        self.assertIsInstance(a, brine.BrineState)
-        self.assertIn(a, Person._BrineState__cache)
-        
-        a.uncache()
+        a.name = "John Smith"
+        self.assertIsInstance(a, brine.BrineObject)
+        self.assertIn("name", a.as_dict())
+        self.assertEquals(a.as_dict()["name"], "John Smith")
 
-    def brineSearch_test(self):
+    def brineCacheSearch_test(self):
 
-        Person().name = "John Doe"
+        person = Person()
+        person.name = "John Doe"
+        profile = UserProfile()
+        profile.user_id = person.uuid
+        profile.user_mail = "john.doe@example.com"
         
-        a = Person.search(name = "John Doe")
+        a = UserProfile.search(user_id = person.uuid)
 
         self.assertGreaterEqual(len(a), 1)
-        self.assertEqual(a[0].name, "John Doe")
+        self.assertEqual(a[0].user_mail, "john.doe@example.com")
+        self.assertEqual(a[0].user_id, person.uuid)
 
         a[0].uncache()
 
     def brineFuzzySearch_test(self):
 
-        Person().name = "John Doe"
+        person = Person()
+        person.name = "John Doe"
+        profile = UserProfile()
+        profile.user_id = person.uuid
+        profile.user_mail = "john.doe@example.com"
 
         self.skipTest("Fuzzy search is extremely broken. Needs more validation.")
         
-        a = Person.fuzzy_search(name = "Doe John")
+        a = UserProfile.fuzzy_search(user_mail = "doe.john@example.org")
 
         self.assertGreaterEqual(len(a), 1)
-        self.assertEqual(a[0].name, "John Doe")
+        self.assertEqual(a[0].user_mail, "john.doe@example.com")
+        self.assertEqual(a[0].user_id, person.uuid)
 
         a[0].uncache()
 
@@ -141,8 +151,8 @@ class BrineTestCase(unittest.TestCase):
     def cachingBrineCreate_test(self):
 
         prof_a = UserProfile()
-        self.assertIsInstance(prof_a, brine.CachingBrineState)
-        self.assertIn(prof_a, UserProfile._BrineState__cache)
+        self.assertIsInstance(prof_a, brine.CachingBrineObject)
+        self.assertIn(prof_a, UserProfile._CachingBrineObject__cache)
 
         prof_a.uncache()
 
@@ -151,12 +161,16 @@ class BrineTestCase(unittest.TestCase):
         a = Person()
         a.name = "John Doe"
 
-        self.skipTest("Cache dirtying is currently broken.")
-        
         prof_a = UserProfile()
         prof_a.user_id = a.uuid
-        self.assertIn("user_id", prof_a._CachingBrineState__dirty)
+        self.assertIn("user_id", prof_a._CachingBrineObject__dirty)
 
-        ddump = prof_a.as_dict()
+        ddump = prof_a.dirty_dict()
         self.assertIn("user_id", ddump)
-        self.assertEquals(ddump["uuid"], a.uuid)
+        self.assertEquals(ddump["user_id"], a.uuid)
+
+        prof_a.unmark("user_id")
+        self.assertNotIn("user_id", prof_a.dirty_dict())
+        self.assertIn("user_id", prof_a.as_dict())
+
+        prof_a.uncache()

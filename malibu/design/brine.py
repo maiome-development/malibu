@@ -7,6 +7,9 @@ from difflib import SequenceMatcher
     into JSON, not a binary structure.
 """
 
+# Declare a set of method types that should be filtered for.
+METHOD_TYPES = [types.MethodType, types.FunctionType, types.LambdaType]
+
 
 def fuzzy_ratio(a, b):
     """ Compares two values using the SequenceMatcher from difflib.
@@ -16,25 +19,86 @@ def fuzzy_ratio(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
 
-class BrineState(object):
-    """ This class is for meta-class use as a semi-state machine.
-        It provides a sort of persistence with searchable fields,
-        which should end up operating similar to the DBMapper, but
-        without the database.
+class BrineObject(object):
+    """ This object is for use as a base class for other data.
+        Essentially, it will expose a set of members that can be set
+        and then squashed down to a JSON object through a call to to_json.
 
-        The end-goal for this JSON model is to be able to provide
-        an interface for a class that will serialize easily to JSON
-        to go into a datastore (such as MongoDB) and be searchable
-        without ties back to the database itself.
+        It can also be used as a meta-class for the base of a caching object
+        model or other neat things.
+    """
 
-        Each class that implements the JsonModelledState will maintain
-        a class scoped list of instances that will be used for searching
-        and maintaining a sort of cache that can be modified before the
-        contents get serialized and stored in a database.
+    def __init__(self, *args, **kw):
 
-        Eventually, a subclass may appear within this module which provides
-        cache expiry on items, or at least a time-based flag which can signal
-        that a data set that is stored in one of these objects is `dirty`.
+        # Do this because MRO.
+        super(BrineObject, self).__init__()
+
+        # For now, lets make this simple and treat fields with no special
+        # syntax (underlines, mainly) as our schema.
+        self._special_fields = ["timestamp", "uuid"]
+        self._fields = []
+        for field in dir(self):
+            if field.startswith("_"):
+                continue
+            # Also, make sure this isn't a function.
+            if type(getattr(self, field)) in METHOD_TYPES:
+                continue
+            self._fields.append(field)
+
+        if kw.get("timestamp", False):
+            self.timestamp = int(time.time())
+
+        if kw.get("uuid", False):
+            self.uuid = str(uuid.uuid4())
+
+    def as_dict(self):
+        """ Returns the dictionary representation of the fields
+            in this object.
+        """
+
+        obj = {}
+
+        for val in self._fields + self._special_fields:
+            if not hasattr(self, val):
+                continue
+            # Also, make sure this isn't a function.
+            if type(getattr(self, val)) in METHOD_TYPES:
+                continue
+            obj.update({val: getattr(self, val)})
+
+        return obj
+
+    def to_json(self):
+        """ Converts the object into JSON form.
+            Simple, right?
+        """
+
+        return json.dumps(self.as_dict())
+
+    def from_json(self, data):
+        """ Converts the JSON data back into an object, then loads
+            the data into the model instance.
+        """
+
+        obj = json.loads(data)
+
+        if not isinstance(obj, dict):
+            raise TypeError("Expected JSON serialized dictionary, not %s" % (
+                type(obj)))
+
+        for k, v in obj.iteritems():
+            # We need to make sure the data is sanitized a little bit.
+            if k.startswith("_") and k not in self._special_fields:
+                continue
+            if k in self._fields:
+                setattr(self, k, v)
+
+
+class CachingBrineObject(BrineObject):
+    """ This is a magical class that performs the same function as the
+        BrineObject, but it also adds object caching, searching, and fuzzy
+        searching on the cache. Also provided is cached field invalidation /
+        "dirtying".
     """
 
     # Ratio for fuzzy search. Closer to 1.0 means stricter results.
@@ -46,7 +110,7 @@ class BrineState(object):
             searching purposes.
         """
 
-        if not hasattr(cls, "_BrineState__cache"):
+        if not hasattr(cls, "_CachingBrineObject__cache"):
             cls.__cache = []
 
     @classmethod
@@ -109,39 +173,56 @@ class BrineState(object):
 
     def __init__(self, *args, **kw):
 
+        # Call the parent initializer.
+        super(CachingBrineObject, self).__init__(self, *args, **kw)
+        self._initialized = False
+
         # Make sure the cache is initialized.
         self.__initialize_cache()
 
-        # For now, lets make this simple and treat fields with no special
-        # syntax (underlines, mainly) as our schema.
-        self._special_fields = ["_timestamp", "_uuid"]
-        self._fields = []
-        for field in dir(self):
-            if field.startswith("_"):
-                continue
-            # Also, make sure this isn't a function.
-            if type(getattr(self, field)) in [types.FunctionType,
-                                              types.MethodType]:
-                continue
-            self._fields.append(field)
+        # The "dirty" cache list is just a list of fields that have been
+        # updated.
+        self.__dirty = []
 
-        if kw.get("timestamp", False):
-            self._timestamp = int(time.time())
-            self.timestamp = property(
-                fget = lambda: self._timestamp,
-                fset = lambda v: None,
-                fdel = None,
-                doc = "Object creation timestamp")
-
-        if kw.get("uuid", False):
-            self._uuid = str(uuid.uuid4())
-            self.uuid = property(
-                fget = lambda: self._uuid,
-                fset = lambda v: None,
-                fdel = None,
-                doc = "Object UUID")
-
+        # Throw this object into the cache.
         self.__cache.append(self)
+
+        # Let the attribute handler know we're done loading.
+        self._initialized = True
+
+    def __setattr__(self, attr, value):
+        """ Sets local fields and determines if the cache needs to be
+            marked dirty for that set and ensures that the value can
+            actually be set.
+        """
+
+        # I wish this didn't have to be a special case.
+        if attr == "_initialized":
+            self.__dict__[attr] = value
+            return
+
+        # Check that init has finished.
+        if not getattr(self, "_initialized", False):
+            self.__dict__[attr] = value
+            return
+
+        # Check various conditions used to determine if a variable has been
+        # dirtied or can be set.
+        if attr in self._fields:
+            if attr not in self.__dirty:
+                self.__dirty.append(attr)
+        elif attr in self._special_fields:
+            raise AttributeError("Special field {} is immutable.".format(attr))
+        elif attr not in self.__dict__:
+            raise AttributeError("Field {} does not exist.".format(attr))
+
+        # Verify that the set *will not* overwrite a method.
+        _attr_cur = getattr(self, attr)
+        if type(_attr_cur) in METHOD_TYPES:
+            raise TypeError("Function {} can not be overwritten.".format(attr))
+
+        # Set the variable in the dictionary.
+        self.__dict__[attr] = value
 
     def uncache(self):
         """ Removes the object from the state cache forcibly.
@@ -149,105 +230,6 @@ class BrineState(object):
 
         self.__cache.remove(self)
 
-    def as_dict(self):
-        """ Returns the dictionary representation of the fields
-            in this object.
-        """
-
-        obj = {}
-
-        for val in self._fields + self._special_fields:
-            if not hasattr(self, val):
-                continue
-            # Also, make sure this isn't a function.
-            if type(getattr(self, val)) in [types.FunctionType,
-                                            types.MethodType]:
-                continue
-            obj.update({val: getattr(self, val)})
-
-        return obj
-
-    def to_json(self):
-        """ Converts the object into JSON form.
-            Simple, right?
-        """
-
-        return json.dumps(self.as_dict())
-
-    def from_json(self, data):
-        """ Converts the JSON data back into an object, then loads
-            the data into the model instance.
-        """
-
-        obj = json.loads(data)
-
-        if not isinstance(obj, dict):
-            raise TypeError("Expected JSON serialized dictionary, not %s" % (
-                type(obj)))
-
-        for k, v in obj.iteritems():
-            # We need to make sure the data is sanitized a little bit.
-            if k.startswith("_") and k not in self._special_fields:
-                continue
-            if k in self._fields:
-                setattr(self, k, v)
-
-
-class CachingBrineState(BrineState):
-    """ The caching brine state works a lot like a regular brine state,
-        except that the caching version will maintain a list of "dirty"
-        attributes. This is useful in the case that you are trying to
-        keep your state / models updated and consistent with some sort
-        of upstream datastore.
-    """
-
-    def __init__(self, *args, **kw):
-
-        BrineState.__init__(self, *args, **kw)
-
-        # The "dirty" cache list is just a list of fields that have been
-        # updated.
-        self.__dirty = []
-
-        # After initializing the regular brine state stuff, take the field
-        # list and overwrite the values with getters and setters for tracking
-        # dirty state.
-#        pdb.set_trace()
-        for field in self._fields:
-            field_initial = getattr(self, field, None)
-            field_prop = property(
-                fget = lambda: getattr(self, "_" + field, None),
-                fset = lambda v: self.__update_field(field, v),
-                fdel = None)
-            setattr(self, field, field_prop)
-
-    def __update_field(self, field, value):
-        """ Does the simple update and dirty marking of the field.
-        """
-
-        if field not in self.__dirty:
-            self.__dirty.append(field)
-
-        setattr(self, "_" + field, value)
-
-    def as_dict(self):
-        """ Returns the dictionary representation of the fields
-            in this object.
-        """
-
-        obj = {}
-
-        for val in self._fields + self._special_fields:
-            if not hasattr(self, "_" + val):
-                continue
-            # Also, make sure this isn't a function.
-            if type(getattr(self, "_" + val)) in [types.FunctionType,
-                                                  types.MethodType]:
-                continue
-            obj.update({val: getattr(self, "_" + val)})
-
-        return obj
-    
     def unmark(self, *fields):
         """ Unmarks some field as dirty. Should only be called after
             the upstream is updated or only if you know what you're doing!
@@ -268,8 +250,7 @@ class CachingBrineState(BrineState):
             if not hasattr(self, val):
                 continue
             # Also, make sure this isn't a function.
-            if type(getattr(self, val)) in [types.FunctionType,
-                                            types.MethodType]:
+            if type(getattr(self, val)) in METHOD_TYPES:
                 continue
             obj.update({val: getattr(self, val)})
 
@@ -280,5 +261,4 @@ class CachingBrineState(BrineState):
         """
 
         return json.dumps(self.dirty_dict())
-
 
