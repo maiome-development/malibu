@@ -1,6 +1,4 @@
 image: python:2.7-wheezy
-git:
-  path: github.com/maiome-development/malibu.git
 script:
   - virtualenv .
   - source bin/activate
