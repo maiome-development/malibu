@@ -272,7 +272,7 @@ class Configuration(object):
                     self.add_section(section_name)
                 continue
             elif '=' in line:
-                s = line.split('=')
+                s = line.split('=', 1)
                 l = len(s[0])
                 # strip whitespace
                 option_key = s[0].strip()
