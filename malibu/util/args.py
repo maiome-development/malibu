@@ -12,15 +12,14 @@ class ArgumentParser(object):
     @classmethod
     def from_argv(cls):
         """
-            Creates an ArgumentParser engine with args from 
+            Creates an ArgumentParser engine with args from
             sys.argv[].
         """
         return cls(sys.argv)
 
     def __init__(self, args, mapping = {}):
-        """
-            Initializes an ArgumentParser instance.  Parses out
-            things that we already know, like args[0] (should be the 
+        """ Initializes an ArgumentParser instance.  Parses out
+            things that we already know, like args[0] (should be the
             executable script).
         """
 
@@ -30,7 +29,7 @@ class ArgumentParser(object):
             self.exec_file = ''
 
         self.__args = args
-        
+
         self._default_types = {
                 ArgumentParser.PARAM_SHORT : ArgumentParser.OPTION_SINGLE,
                 ArgumentParser.PARAM_LONG  : ArgumentParser.OPTION_SINGLE
@@ -42,8 +41,7 @@ class ArgumentParser(object):
         self.parameters = []
 
     def set_default_param_type(self, param, opt = OPTION_SINGLE):
-        """
-            Sets the default type map that a parameter will be treated as.
+        """ Sets the default type map that a parameter will be treated as.
             Can help force more uniform arguments without having to pre-define
             options.
         """
@@ -51,16 +49,14 @@ class ArgumentParser(object):
         self._default_types[param] = opt
 
     def add_option_type(self, option, opt = OPTION_SINGLE):
-        """
-            Adds a type mapping to a specific option. Allowed types are 
+        """ Adds a type mapping to a specific option. Allowed types are
             OPTION_SINGLE and OPTION_PARAMETERIZED.
         """
 
         self._opt_types[option] = opt
 
     def add_option_mapping(self, option, map_name):
-        """
-            Maps a option value (-a, -g, --thing, etc.) to a full word or
+        """ Maps a option value (-a, -g, --thing, etc.) to a full word or
             phrase that will be stored in the options dictionary after parsing
             is finished.  Makes option usage easier.
         """
@@ -68,16 +64,14 @@ class ArgumentParser(object):
         self._mapping[option] = map_name
 
     def add_option_description(self, option, description):
-        """
-            Adds a helpful description for an argument. Is returned when 
+        """ Adds a helpful description for an argument. Is returned when
             get_option_descriptions is called.
         """
 
         self._descriptions[option] = description
 
     def get_option_descriptions(self):
-        """
-            Returns a map of options to their respective descriptions.  Good
+        """ Returns a map of options to their respective descriptions.  Good
             for printing out a series of help messages describing usage.
         """
 
@@ -97,8 +91,7 @@ class ArgumentParser(object):
         return processed_descriptions
 
     def parse(self):
-        """ 
-            Parses out the args into the mappings provided in self.mapping,
+        """ Parses out the args into the mappings provided in self.mapping,
             stores the result in self.options.
         """
 
