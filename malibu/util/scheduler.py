@@ -7,15 +7,15 @@ from malibu.util.decorators import function_registrator
 
 class Scheduler(borgish.SharedState):
 
-    def __init__(self):
+    def __init__(self, *args, **kw):
 
-        super(Scheduler, self).__init__()
+        super(Scheduler, self).__init__(*args, **kw)
 
         self.__jobs = {}
 
     def create_job(self, name, func, delta, recurring = False):
         """ Creates a new job instance and attaches it to the scheduler.
-            
+
             Params
             ------
             name : str
@@ -73,7 +73,7 @@ class Scheduler(borgish.SharedState):
 
     def remove_job(self, name):
         """ Removes a job from the list of jobs maintained by the scheduler.
-        
+
             Params
             ------
             name : str

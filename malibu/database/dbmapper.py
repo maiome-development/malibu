@@ -9,7 +9,7 @@ class DBMapper(object):
     FETCH_ONE = 'one'
     FETCH_MANY = 'many'
     FETCH_ALL = 'all'
-   
+
     # INDEX Constants for options dictionary.
 
     INDEX_PRIMARY = 'primaryIndex'
@@ -31,12 +31,12 @@ class DBMapper(object):
     def get_default_options():
         """ DBMapper.get_default_options()
 
-            Returns a deep copy of the default options dictionary for 
+            Returns a deep copy of the default options dictionary for
             modification in subclasses.
         """
 
         return copy.deepcopy(DBMapper.__default_options)
-    
+
     @staticmethod
     def connect_database(dbpath):
         """ DBMapper.connect_database(dbpath)
@@ -77,9 +77,9 @@ class DBMapper(object):
 
             Loads a *single* row from the database and populates it into
             the context cls this method was called under.
-            
+
             If the database returns more than one row for the kwarg query,
-            this method will only return the first result! If you want a 
+            this method will only return the first result! If you want a
             list of matching rows, use find() or search().
         """
 
@@ -114,7 +114,7 @@ class DBMapper(object):
         """ DBMapper.new(**kw)
 
             Creates a new contextual instance and returns the object.
-            Only parameters defined in the kwargs will be passed in to 
+            Only parameters defined in the kwargs will be passed in to
             the record creation query, as there is no support for default
             values yet. (06/11/15)
         """
@@ -136,7 +136,7 @@ class DBMapper(object):
             anonvals.append('?')
         query = "insert into %s (%s) values (%s)" % (obj._table, ','.join(keys), ','.join(anonvals))
         obj.__execute(cur, query, args = vals)
-       
+
         res = cls.find(**kw)
         if len(res) == 0:
             return None
@@ -154,7 +154,7 @@ class DBMapper(object):
 
         if cls._options is None:
             raise DBMapperException('Static database options have not been set.')
-        
+
         dbo = cls._options
         obj = cls(dbo['database'])
         cur = dbo['database'].cursor()
@@ -170,7 +170,7 @@ class DBMapper(object):
             whc.append('%s=?' % (pair[0]))
         query = "select %s from %s where (%s)" % (primaryKey, obj._table, ' and '.join(whc))
         result = obj.__execute(cur, query, args = vals, fetch = DBMapper.FETCH_ALL)
-        
+
         load_pairs = []
         for row in result:
             load_pairs.append({primaryKey : row[dbo['options'][DBMapper.INDEX_PRIMARY]]})
@@ -188,7 +188,7 @@ class DBMapper(object):
 
         if cls._options is None:
             raise DBMapperException('Static database options have not been set.')
-        
+
         dbo = cls._options
         obj = cls(dbo['database'])
         cur = dbo['database'].cursor()
@@ -209,9 +209,9 @@ class DBMapper(object):
 
             This function will return a list of results that match the given
             param for a full text query. The search parameter should be in the
-            form of a sqlite full text query, as defined here: 
+            form of a sqlite full text query, as defined here:
               http://www.sqlite.org/fts3.html#section_3
-            
+
             As an example, suppose your table looked like this:
 
               +----+---------+----------------+
@@ -221,7 +221,7 @@ class DBMapper(object):
               | 2  | freebsd | daemonic magic |
               | 3  | windows |   tomfoolery   |
               +----+---------+----------------+
-            
+
             A full text query for "name:linux magic" would return the first
             row because the name is linux and the description contains "magic".
             A full text query just for "description:magic" would return both
@@ -308,7 +308,7 @@ class DBMapper(object):
                       fetch    => amount of results to fetch
                       limit    => query limit if not use FETCH_ONE
                       args     => query arguments to parse in)
-            
+
             Filters, quotes, and executes the provided sql query and returns
             a list of database rows.
         """
@@ -434,7 +434,7 @@ class DBMapper(object):
     def __generate_getters(self):
         """ __generate_getters(self)
 
-            Generates magical getter methods for pull data from the 
+            Generates magical getter methods for pull data from the
             underlying database.
         """
 
@@ -469,7 +469,7 @@ class DBMapper(object):
 
         for _key in self._keys:
             setattr(self, "_%s" % (_key), None)
-        
+
         for _key in self._keys:
             getf = getattr(self, "get_%s" % (_key))
             setf = getattr(self, "set_%s" % (_key))
@@ -492,14 +492,12 @@ class DBMapper(object):
     def delete(self):
 
         cur = self._db.cursor()
-       
+
         qst = "%s=?" % (self._keys[self._primary_ind])
         primary_val = getattr(self, "_%s" % (self._keys[self._primary_ind]))
 
         query = "delete from %s where (%s)" % (self._table, qst)
         self.__execute(cur, query, args = (primary_val,) )
-
-        del self
 
 
 class DBResultList(list):
