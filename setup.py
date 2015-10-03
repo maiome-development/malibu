@@ -3,7 +3,11 @@ try:
 except ImportError:
     from distutils.core import setup
 
+from pip.req import parse_requirements
 import malibu
+
+install_reqs = parse_requirements("requirements.txt")
+reqs = [str(r.req) for r in install_reqs]
 
 setup(
     name = 'malibu',
@@ -13,9 +17,9 @@ setup(
     url = "http://phabricator.maio.me/tag/malibu",
     author = "Sean Johnson",
     author_email = "sean.johnson@maio.me",
-    
+
     license = "Unlicense",
-    
+
     classifiers = [
         "Development Status :: 3 - Alpha",
         "License :: Public Domain",
@@ -30,5 +34,6 @@ setup(
                 'malibu.text',
                 'malibu.util'],
     package_dir = {'malibu': 'malibu'},
+    install_requires = reqs,
     zip_safe = True
 )
