@@ -3,11 +3,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-from pip.req import parse_requirements
 import malibu
-
-install_reqs = parse_requirements("requirements.txt")
-reqs = [str(r.req) for r in install_reqs]
 
 setup(
     name = 'malibu',
@@ -34,6 +30,10 @@ setup(
                 'malibu.text',
                 'malibu.util'],
     package_dir = {'malibu': 'malibu'},
-    install_requires = reqs,
+    install_requires = [
+        'nose',
+        'coverage',
+        'dill'
+    ],
     zip_safe = True
 )
