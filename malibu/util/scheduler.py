@@ -25,6 +25,11 @@ class Scheduler(borgish.SharedState):
         job_store = job_store[0]
         self.__job_store = job_store(self)
 
+    @property
+    def job_store(self):
+
+        return self.__job_store
+
     def create_job(self, name, func, delta, recurring = False):
         """ Creates a new job instance and attaches it to the scheduler.
 
@@ -51,7 +56,7 @@ class Scheduler(borgish.SharedState):
                 If job creation was succesful.
         """
 
-        if self.__job_store.get_job(name):
+        if self.job_store.get_job(name):
             raise SchedulerException("Job already exists; remove it first.")
         if func is None:
             raise SchedulerException("Callback function is non-existent.")
@@ -77,11 +82,11 @@ class Scheduler(borgish.SharedState):
                 If the job already exists in the jobs dictionary.
         """
 
-        if self.__job_store.get_job(job.get_name()):
+        if self.job_store.get_job(job.get_name()):
             raise SchedulerException("Job already exists; remove it first.")
 
         job.begin_ticking()
-        self.__job_store.store(job)
+        self.job_store.store(job)
 
     def remove_job(self, name):
         """ Removes a job from the list of jobs maintained by the scheduler.
@@ -97,10 +102,10 @@ class Scheduler(borgish.SharedState):
                 If the job does not exist.
         """
 
-        if not self.__job_store.get_job(name):
+        if not self.job_store.get_job(name):
             raise SchedulerException("Job does not exist.")
 
-        self.__job_store.destore(self.__job_store.get_job(name))
+        self.job_store.destore(self.job_store.get_job(name))
 
     def tick(self):
         """ Gets the current time and checks the ETA on each job.
@@ -112,7 +117,7 @@ class Scheduler(borgish.SharedState):
 
         now = datetime.now()
 
-        for job in self.__job_store.get_jobs():
+        for job in self.job_store.get_jobs():
             if job.is_ready(now):
                 try:
                     job.execute()
@@ -137,43 +142,40 @@ class SchedulerJobStore(object):
         self._scheduler = scheduler
 
     @staticmethod
-    def updates_store():
+    def updates_store(func):
         """ Decorator that forces an update of a job in the store after the
             decorated function is run.
         """
 
-        def _func_decorator(func):
-            def _funcarg_decorator(*args, **kw):
-                """ This function chain will call the given function and then
-                    attempt to re-store the job in the job store.
-                """
+        def _funcarg_decorator(*args, **kw):
+            """ This function chain will call the given function and then
+                attempt to re-store the job in the job store.
+            """
 
-                func(*args, **kw)
+            func(*args, **kw)
 
-                # Since we don't know the location of the job in the function
-                # arguments, we can look in two places to sort-of enforce a
-                # structure:
-                #  - In the first *args slot
-                #  - In the 'job' **kw slot.
-                job = None
-                if len(args) > 0:
-                    job = args[0]
+            # Since we don't know the location of the job in the function
+            # arguments, we can look in two places to sort-of enforce a
+            # structure:
+            #  - In the first *args slot
+            #  - In the 'job' **kw slot.
+            job = None
+            if len(args) > 0:
+                job = args[0]
 
-                if not job:
-                    job = kw.get('job', None)
+            if not job:
+                job = kw.get('job', None)
 
-                if not job:
-                    # Best we can do here is just return or warn.
-                    return
-                else:
-                    scheduler = job._scheduler
-                    store = scheduler.__Scheduler_job_store
-                    store.store(job, update = True)
-                    return
+            if not job:
+                # Best we can do here is just return or warn.
+                return
+            else:
+                scheduler = job._scheduler
+                store = scheduler.job_store
+                store.store(job, update = True)
+                return
 
-            return _funcarg_decorator
-
-        return _func_decorator
+        return _funcarg_decorator
 
     @abc.abstractmethod
     def get_jobs(self):
@@ -285,14 +287,17 @@ class SchedulerJob(object):
 
         return self._last_traceback
 
+    @SchedulerJobStore.updates_store
     def set_traceback(self, stack):
 
         self._last_traceback = stack
 
+    @SchedulerJobStore.updates_store
     def attach_onfail(self, func):
 
         self._onfail.append(func)
 
+    @SchedulerJobStore.updates_store
     def detach_onfail(self, func):
 
         self._onfail.remove(func)
@@ -313,10 +318,12 @@ class SchedulerJob(object):
         else:
             return False
 
+    @SchedulerJobStore.updates_store
     def begin_ticking(self):
 
         self._eta = datetime.now() + self._delta
 
+    @SchedulerJobStore.updates_store
     def execute(self):
 
         self._function()

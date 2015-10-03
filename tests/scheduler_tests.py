@@ -5,6 +5,24 @@ from datetime import datetime, timedelta
 from malibu.util import scheduler
 from nose.tools import *
 
+
+@scheduler.job_store
+class TestingJobStore(scheduler.VolatileSchedulerJobStore):
+
+    TYPE = 'testing-volatile'
+
+    def __init__(self, scheduler):
+
+        super(TestingJobStore, self).__init__(scheduler)
+
+        self._called_with_update = False
+
+    def store(self, job, update = False):
+
+        super(TestingJobStore, self).store(job, update)
+
+        job.metadata.update({"store_updated": True})
+
 class SchedulerTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -35,11 +53,11 @@ class SchedulerTestCase(unittest.TestCase):
 
         self.assertIn(
             job.get_name(),
-            [job.get_name() for job in s._Scheduler__job_store.get_jobs()])
+            [job.get_name() for job in s.job_store.get_jobs()])
 
         self.scheduler.remove_job(job.get_name())
 
-        self.assertNotIn(job.get_name(), s._Scheduler__job_store.get_jobs())
+        self.assertNotIn(job.get_name(), s.job_store.get_jobs())
 
     def schedulerJobTicking_test(self):
 
@@ -75,3 +93,33 @@ class SchedulerTestCase(unittest.TestCase):
         self.scheduler.tick()
         self.assertEqual(self.result.pop(), test_id)
 
+
+class SchedulerJobStoreTestCase(unittest.TestCase):
+
+    def setUp(self):
+
+        self.scheduler = scheduler.Scheduler(store = 'testing-volatile')
+        try:
+            self.scheduler.save_state("testing")
+        except NameError:
+            self.scheduler.load_state("testing")
+
+    def storeUpdatesOnJobChange_test(self):
+
+        test_func = lambda: True
+
+        job = self.scheduler.create_job(
+                name = "SchedulerJobStoreTestCase__storeUpdatesOnJobChange",
+                func = test_func,
+                delta = timedelta(seconds = 5),
+                recurring = False)
+
+        # Calling attach_onfail should trigger a job store update.
+        job.attach_onfail(lambda job: job.metadata.update({"failure": True}))
+
+        if not job.metadata.get("store_updated", False):
+            self.fail(msg = "Job store was not updated properly.")
+
+        st_job = self.scheduler.job_store.get_job(job.get_name())
+        if not st_job:
+            self.fail(msg = "Could not grab job from job store.")
