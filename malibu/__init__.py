@@ -6,4 +6,4 @@ from malibu.text import *
 from malibu.util import *
 
 
-__version__ = '0.1.3-12'
+__version__ = '0.1.4'

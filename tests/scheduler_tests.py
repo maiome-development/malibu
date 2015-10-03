@@ -33,11 +33,13 @@ class SchedulerTestCase(unittest.TestCase):
         s = scheduler.Scheduler()
         s.load_state("testing")
 
-        self.assertIn(job.get_name(), s._Scheduler__jobs)
+        self.assertIn(
+            job.get_name(),
+            [job.get_name() for job in s._Scheduler__job_store.get_jobs()])
 
         self.scheduler.remove_job(job.get_name())
 
-        self.assertNotIn(job.get_name(), s._Scheduler__jobs)
+        self.assertNotIn(job.get_name(), s._Scheduler__job_store.get_jobs())
 
     def schedulerJobTicking_test(self):
 

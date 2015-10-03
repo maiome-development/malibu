@@ -1,17 +1,29 @@
-import datetime, sys, traceback
+import abc, datetime, dill, sys, traceback
 from datetime import datetime, timedelta
 
 from malibu.design import borgish
 from malibu.util.decorators import function_registrator
 
+__JOB_STORES__ = []
+job_store = function_registrator(__JOB_STORES__)
+
 
 class Scheduler(borgish.SharedState):
 
-    def __init__(self, *args, **kw):
+    def __init__(self, store = 'volatile', *args, **kw):
 
         super(Scheduler, self).__init__(*args, **kw)
 
-        self.__jobs = {}
+        job_store = filter(lambda st: st.TYPE == store, __JOB_STORES__)
+        if not job_store or len(job_store) == 0:
+            raise SchedulerException("Could not find a job store for type: %s"
+                                     % (store))
+        elif len(job_store) > 1:
+            raise SchedulerException("Selected more than one job store for type: %s"
+                                     % (store))
+
+        job_store = job_store[0]
+        self.__job_store = job_store(self)
 
     def create_job(self, name, func, delta, recurring = False):
         """ Creates a new job instance and attaches it to the scheduler.
@@ -39,7 +51,7 @@ class Scheduler(borgish.SharedState):
                 If job creation was succesful.
         """
 
-        if name in self.__jobs:
+        if self.__job_store.get_job(name):
             raise SchedulerException("Job already exists; remove it first.")
         if func is None:
             raise SchedulerException("Callback function is non-existent.")
@@ -65,11 +77,11 @@ class Scheduler(borgish.SharedState):
                 If the job already exists in the jobs dictionary.
         """
 
-        if job in self.__jobs:
+        if self.__job_store.get_job(job.get_name()):
             raise SchedulerException("Job already exists; remove it first.")
 
         job.begin_ticking()
-        self.__jobs.update({job.get_name() : job})
+        self.__job_store.store(job)
 
     def remove_job(self, name):
         """ Removes a job from the list of jobs maintained by the scheduler.
@@ -85,10 +97,10 @@ class Scheduler(borgish.SharedState):
                 If the job does not exist.
         """
 
-        if name not in self.__jobs:
+        if not self.__job_store.get_job(name):
             raise SchedulerException("Job does not exist.")
 
-        self.__jobs.pop(name)
+        self.__job_store.destore(self.__job_store.get_job(name))
 
     def tick(self):
         """ Gets the current time and checks the ETA on each job.
@@ -100,7 +112,7 @@ class Scheduler(borgish.SharedState):
 
         now = datetime.now()
 
-        for job in self.__jobs.values():
+        for job in self.__job_store.get_jobs():
             if job.is_ready(now):
                 try:
                     job.execute()
@@ -115,6 +127,131 @@ class Scheduler(borgish.SharedState):
                     self.add_job(job)
 
 
+class SchedulerJobStore(object):
+    __metaclass__ = abc.ABCMeta
+
+    def __init__(self, scheduler, *args, **kw):
+        """ Initializes the job store.
+        """
+
+        self._scheduler = scheduler
+
+    @staticmethod
+    def updates_store():
+        """ Decorator that forces an update of a job in the store after the
+            decorated function is run.
+        """
+
+        def _func_decorator(func):
+            def _funcarg_decorator(*args, **kw):
+                """ This function chain will call the given function and then
+                    attempt to re-store the job in the job store.
+                """
+
+                func(*args, **kw)
+
+                # Since we don't know the location of the job in the function
+                # arguments, we can look in two places to sort-of enforce a
+                # structure:
+                #  - In the first *args slot
+                #  - In the 'job' **kw slot.
+                job = None
+                if len(args) > 0:
+                    job = args[0]
+
+                if not job:
+                    job = kw.get('job', None)
+
+                if not job:
+                    # Best we can do here is just return or warn.
+                    return
+                else:
+                    scheduler = job._scheduler
+                    store = scheduler.__Scheduler_job_store
+                    store.store(job, update = True)
+                    return
+
+            return _funcarg_decorator
+
+        return _func_decorator
+
+    @abc.abstractmethod
+    def get_jobs(self):
+        """ Returns all jobs in the job store.
+        """
+
+        return
+
+    @abc.abstractmethod
+    def get_job(self, job_name):
+        """ Returns a job from the store with the given name.
+        """
+
+        return
+
+    @abc.abstractmethod
+    def store(self, job, update = False):
+        """ Serializes a job into the job store.
+        """
+
+        if not isinstance(job, SchedulerJob):
+            raise TypeError("Job argument is not an instance of SchedulerJob")
+
+        return
+
+    @abc.abstractmethod
+    def destore(self, job):
+        """ Removes a job from the job store.
+        """
+
+        if not isinstance(job, SchedulerJob):
+            raise TypeError("Job argument is not an instance of SchedulerJob")
+
+        return
+
+
+@job_store
+class VolatileSchedulerJobStore(SchedulerJobStore):
+    """ Implements a purely in-memory job store backed by a dictionary.
+    """
+
+    TYPE = 'volatile'
+
+    def __init__(self, scheduler):
+
+        super(VolatileSchedulerJobStore, self).__init__(scheduler)
+
+        self.__jobs = {}
+
+    def get_jobs(self):
+
+        return self.__jobs.values()
+
+    def get_job(self, job_name):
+
+        return self.__jobs.get(job_name, None)
+
+    def store(self, job, update = False):
+
+        super(VolatileSchedulerJobStore, self).store(job, update)
+
+        if job.get_name() in self.__jobs and not update:
+            return False
+
+        self.__jobs.update({job.get_name(): job})
+
+        return True
+
+    def destore(self, job):
+
+        super(VolatileSchedulerJobStore, self).destore(job)
+
+        if job.get_name() not in self.__jobs:
+            return False
+
+        return True if self.__jobs.pop(job.get_name()) else False
+
+
 class SchedulerJob(object):
 
     def __init__(self, name, function, delta, state, recurring = False):
@@ -126,9 +263,15 @@ class SchedulerJob(object):
         self._recurring = recurring
         self._last_traceback = None
         self._onfail = []
+        self._metadata = {}
         self.onfail = function_registrator(self._onfail)
 
         self._eta = delta
+
+    @property
+    def metadata(self):
+
+        return self._metadata
 
     def get_name(self):
 
