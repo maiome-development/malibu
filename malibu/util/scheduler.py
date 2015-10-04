@@ -163,17 +163,16 @@ class SchedulerJobStore(object):
             if len(args) > 0:
                 job = args[0]
 
-            if not job:
+            if not job or not isinstance(job, SchedulerJob):
                 job = kw.get('job', None)
 
-            if not job:
+            if not job or not isinstance(job, SchedulerJob):
                 # Best we can do here is just return or warn.
                 return
-            else:
-                scheduler = job._scheduler
-                store = scheduler.job_store
-                store.store(job, update = True)
-                return
+
+            scheduler = job._scheduler
+            store = scheduler.job_store
+            store.store(job, update = True)
 
         return _funcarg_decorator
 
