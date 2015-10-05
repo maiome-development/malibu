@@ -1,6 +1,7 @@
 import abc, datetime, dill, sys, traceback
 from datetime import datetime, timedelta
 
+from malibu.config import configuration
 from malibu.design import borgish
 from malibu.util.decorators import function_registrator
 
@@ -144,6 +145,22 @@ class SchedulerJobStore(object):
 
         self._scheduler = scheduler
 
+        if "config" in kw:
+            self.initialize(kw.get("config"))
+
+    @abc.abstractmethod
+    def initialize(self, config):
+        """ Provides initialization from a Configuration object for job store
+            implementations that need it.
+        """
+
+        if not isinstance(config, configuration.ConfigurationSection):
+            raise TypeError("Expected instance of malibu.config."
+                            "Configuration.ConfigurationSection, not %s" % (
+                            config.__class__.__name__))
+
+        return
+
     @staticmethod
     def updates_store(func):
         """ Decorator that forces an update of a job in the store after the
@@ -217,6 +234,10 @@ class SchedulerJobStore(object):
 @job_store
 class VolatileSchedulerJobStore(SchedulerJobStore):
     """ Implements a purely in-memory job store backed by a dictionary.
+
+        This job store type does not need a set of configurations pass in to it.
+        Any jobs pushed into this store will be lost when the application is shut
+        down!
     """
 
     TYPE = 'volatile'
@@ -226,6 +247,10 @@ class VolatileSchedulerJobStore(SchedulerJobStore):
         super(VolatileSchedulerJobStore, self).__init__(scheduler)
 
         self.__jobs = {}
+
+    def initialize(self, config):
+
+        return
 
     def get_jobs(self):
 
