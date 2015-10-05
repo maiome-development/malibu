@@ -14,21 +14,24 @@ class Scheduler(borgish.SharedState):
 
         super(Scheduler, self).__init__(*args, **kw)
 
-        job_store = filter(lambda st: st.TYPE == store, __JOB_STORES__)
-        if not job_store or len(job_store) == 0:
-            raise SchedulerException("Could not find a job store for type: %s"
-                                     % (store))
-        elif len(job_store) > 1:
-            raise SchedulerException("Selected more than one job store for type: %s"
-                                     % (store))
+        # Make sure the job store doesn't get reinitialized after loading
+        # state through the SharedState mixin.
+        if not getattr(self, "_job_store", None):
+            job_store = filter(lambda st: st.TYPE == store, __JOB_STORES__)
+            if not job_store or len(job_store) == 0:
+                raise SchedulerException("Could not find a job store for type: %s"
+                                         % (store))
+            elif len(job_store) > 1:
+                raise SchedulerException("Selected more than one job store for type: %s"
+                                         % (store))
 
-        job_store = job_store[0]
-        self.__job_store = job_store(self)
+            job_store = job_store[0]
+            self._job_store = job_store(self)
 
     @property
     def job_store(self):
 
-        return self.__job_store
+        return self._job_store
 
     def create_job(self, name, func, delta, recurring = False):
         """ Creates a new job instance and attaches it to the scheduler.

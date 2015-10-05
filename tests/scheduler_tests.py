@@ -123,3 +123,20 @@ class SchedulerJobStoreTestCase(unittest.TestCase):
         st_job = self.scheduler.job_store.get_job(job.get_name())
         if not st_job:
             self.fail(msg = "Could not grab job from job store.")
+
+    def storeRemainsStatefullyConsistent_test(self):
+
+        test_func = lambda: True
+
+        job = self.scheduler.create_job(
+                name = "SchedulerJobStoreTestCase__storeUpdatesOnJobChange",
+                func = test_func,
+                delta = timedelta(seconds = 5),
+                recurring = False)
+
+        sch = scheduler.Scheduler(state = "testing")
+
+        self.assertIn(job, self.scheduler.job_store.get_jobs())
+        self.assertIn(job, sch.job_store.get_jobs())
+
+        sch.remove_job(job.get_name())

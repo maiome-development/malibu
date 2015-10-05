@@ -31,9 +31,12 @@ setup(
                 'malibu.util'],
     package_dir = {'malibu': 'malibu'},
     install_requires = [
-        'nose',
-        'coverage',
         'dill'
+    ],
+    test_suite='nose.collector',
+    tests_require = [
+        'nose',
+        'coverage'
     ],
     zip_safe = True
 )
