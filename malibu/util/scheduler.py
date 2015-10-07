@@ -17,7 +17,7 @@ class Scheduler(borgish.SharedState):
 
         # Make sure the job store doesn't get reinitialized after loading
         # state through the SharedState mixin.
-        if not getattr(self, "_job_store", None):
+        if "state" not in kw:
             job_store = filter(lambda st: st.TYPE == store, __JOB_STORES__)
             if not job_store or len(job_store) == 0:
                 raise SchedulerException("Could not find a job store for type: %s"
