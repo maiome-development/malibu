@@ -21,3 +21,21 @@ def function_registrator(target):
 
     return decorator
 
+
+def function_marker(attr, value):
+    """ function marker generates a simple decorator that will
+        take a function with any set of arguments and set a given
+        attribute on that function with setattr().
+    """
+
+    def decorator(func):
+        """ This is a "flexible" decorator function that sets the
+            attribute on the target function.
+        """
+
+        setattr(func, attr, value)
+
+        return func
+
+    return decorator
+
