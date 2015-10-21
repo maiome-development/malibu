@@ -67,3 +67,19 @@ class UtilTestCase(unittest.TestCase):
         self.assertEquals(does_nothing.f_type, "testing")
         self.assertIn(does_nothing, self._target)
 
+    def decorWrappable_test(self):
+
+        def func_mark(func):
+            self.func_mark(func)
+            self.func_regis(func)
+
+            return func
+
+        @func_mark
+        def does_nothing():
+            pass
+
+        self.assertNotEquals(getattr(does_nothing, "f_type", None), None)
+        self.assertEquals(does_nothing.f_type, "testing")
+        self.assertIn(does_nothing, self._target)
+
