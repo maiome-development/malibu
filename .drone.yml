@@ -1,9 +1,8 @@
 build:
   image: python:2.7-wheezy
   commands:
-    - /bin/bash
     - virtualenv .
-    - source bin/activate
+    - . bin/activate
     - pip install -r requirements.txt
     - python ./setup.py test
     - python ./setup.py sdist --formats gztar -q
