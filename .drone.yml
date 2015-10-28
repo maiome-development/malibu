@@ -11,15 +11,8 @@ notify:
   slack:
     webhook_url: $$SLACK_URL
     channel: $$SLACK_CHANNEL
-    username: drone
     when:
       started: true
       success: true
       failure: true
-  webhook:
-    urls:
-      - $$GITTER_URL
-    when:
-      started: true
-      success: true
-      failure: true
+
