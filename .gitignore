@@ -6,4 +6,4 @@ lib
 dist
 docs
 malibu.egg-info
-.drone.unsec
+.drone.sec.yml
