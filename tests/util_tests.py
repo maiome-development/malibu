@@ -10,8 +10,10 @@ class UtilTestCase(unittest.TestCase):
     def setUp(self):
 
         self._target = []
+        self._d_target = {}
         self.func_regis = decorators.function_registrator(self._target)
         self.func_mark = decorators.function_marker("f_type", "testing")
+        self.func_kw_reg = decorators.function_kw_reg(self._d_target, ["deps"])
 
     def return_caller(self):
 
@@ -82,4 +84,21 @@ class UtilTestCase(unittest.TestCase):
         self.assertNotEquals(getattr(does_nothing, "f_type", None), None)
         self.assertEquals(does_nothing.f_type, "testing")
         self.assertIn(does_nothing, self._target)
+
+    def decorKwReg_test(self):
+
+        try:
+            @self.func_kw_reg(loads=['test'])
+            def just_fails():
+                pass
+        except Exception as e:
+            self.assertIsInstance(e, KeyError)
+
+        try:
+            @self.func_kw_reg(deps=['test'])
+            def just_works():
+                return True
+            self.assertTrue(just_works())
+        except Exception as e:
+            self.fail("This section of the test should not have failed.")
 

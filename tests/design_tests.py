@@ -29,6 +29,15 @@ class Person(brine.BrineObject):
         super(Person, self).__init__(self, timestamp = True, uuid = True)
 
 
+class PersonProfile(brine.BrineObject):
+
+    def __init__(self):
+
+        self.email = None
+        self.person = brine.nested_object(Person)
+        super(PersonProfile, self).__init__(self)
+
+
 class UserProfile(brine.CachingBrineObject):
 
     def __init__(self):
@@ -106,6 +115,29 @@ class BrineTestCase(unittest.TestCase):
         self.assertIn("name", a.as_dict())
         self.assertEquals(a.as_dict()["name"], "John Smith")
 
+    def brineNestedObject_test(self):
+
+        a = Person()
+        a.name = "John Smith"
+        b = PersonProfile()
+        b.email = "jsmith@example.org"
+        b.person = a
+
+        self.assertEquals(b.as_dict()["person"]["name"], a.name)
+
+        a.name = "John Doe"
+
+        self.assertEquals(b.as_dict()["person"]["name"], a.name)
+
+    def brineInstanceFromJson_test(self):
+
+        a = Person()
+        a.name = "John Smith"
+        js = a.to_json()
+
+        b = Person.by_json(js)
+        self.assertEqual(a.name, b.name)
+
     def brineCacheSearch_test(self):
 
         person = Person()
@@ -113,7 +145,7 @@ class BrineTestCase(unittest.TestCase):
         profile = UserProfile()
         profile.user_id = person.uuid
         profile.user_mail = "john.doe@example.com"
-        
+
         a = UserProfile.search(user_id = person.uuid)
 
         self.assertGreaterEqual(len(a), 1)
@@ -124,14 +156,14 @@ class BrineTestCase(unittest.TestCase):
 
     def brineFuzzySearch_test(self):
 
+        self.skipTest("Fuzzy search is extremely broken. Needs more validation.")
+
         person = Person()
         person.name = "John Doe"
         profile = UserProfile()
         profile.user_id = person.uuid
         profile.user_mail = "john.doe@example.com"
 
-        self.skipTest("Fuzzy search is extremely broken. Needs more validation.")
-        
         a = UserProfile.fuzzy_search(user_mail = "doe.john@example.org")
 
         self.assertGreaterEqual(len(a), 1)
@@ -174,3 +206,4 @@ class BrineTestCase(unittest.TestCase):
         self.assertIn("user_id", prof_a.as_dict())
 
         prof_a.uncache()
+

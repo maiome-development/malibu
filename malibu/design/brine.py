@@ -1,6 +1,7 @@
-import pdb
 import difflib, json, time, types, uuid
 from difflib import SequenceMatcher
+
+from malibu.util.decorators import function_marker
 
 """ Brine is a play on Python's pickle module, which is used for
     serializing data. Brine is used for serialization as well, but
@@ -9,6 +10,7 @@ from difflib import SequenceMatcher
 
 # Declare a set of method types that should be filtered for.
 METHOD_TYPES = [types.MethodType, types.FunctionType, types.LambdaType]
+__brine_nested_method = function_marker("_brine", "nested")
 
 
 def fuzzy_ratio(a, b):
@@ -19,6 +21,18 @@ def fuzzy_ratio(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
 
+def nested_object(target_cls):
+    """ Used to do late deserialization of nested brine objects.
+    """
+
+    @__brine_nested_method
+    def nested_dec(data):
+
+        return target_cls.by_json(data)
+
+    return nested_dec
+
+
 class BrineObject(object):
     """ This object is for use as a base class for other data.
         Essentially, it will expose a set of members that can be set
@@ -27,6 +41,19 @@ class BrineObject(object):
         It can also be used as a meta-class for the base of a caching object
         model or other neat things.
     """
+
+    @classmethod
+    def by_json(cls, data, **kw):
+        """ Creates a new instance and calls from_json on the instance.
+
+            Will take kwargs and pass to the underlying instance
+            initializer.
+        """
+
+        inst = cls(**kw)
+        inst.from_json(data)
+
+        return inst
 
     def __init__(self, *args, **kw):
 
@@ -42,6 +69,9 @@ class BrineObject(object):
                 continue
             # Also, make sure this isn't a function.
             if type(getattr(self, field)) in METHOD_TYPES:
+                attrm = getattr(self, field)
+                if getattr(attrm, "_brine", None) == "nested":
+                    self._fields.append(field)
                 continue
             self._fields.append(field)
 
@@ -64,7 +94,11 @@ class BrineObject(object):
             # Also, make sure this isn't a function.
             if type(getattr(self, val)) in METHOD_TYPES:
                 continue
-            obj.update({val: getattr(self, val)})
+            attr = getattr(self, val)
+            if isinstance(attr, BrineObject):
+                obj.update({val: attr.as_dict()})
+            else:
+                obj.update({val: getattr(self, val)})
 
         return obj
 
@@ -91,7 +125,12 @@ class BrineObject(object):
             if k.startswith("_") and k not in self._special_fields:
                 continue
             if k in self._fields:
-                setattr(self, k, v)
+                fval = getattr(self, k, None)
+                if getattr(fval, "_brine", None) == "nested":
+                    # this is a nested object, deserialize the data
+                    setattr(self, k, fval(v))
+                else:
+                    setattr(self, k, v)
 
 
 class CachingBrineObject(BrineObject):

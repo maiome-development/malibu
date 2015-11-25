@@ -39,3 +39,36 @@ def function_marker(attr, value):
 
     return decorator
 
+
+def function_kw_reg(target, req_args):
+    """ function kw reg generates a more complex decorator that
+        must be used with the argument names given in req_args.
+        useful for attribute-based assertion.
+
+        NOTE: target should be a dict-typed class
+
+        example:
+
+            trait = function_kw_reg(target, ['val1', 'val2', 'val3'])
+
+            @trait(val1 = "attr1", val2 = "attr2", val3 = "attr3")
+            def do_thing(...):
+                pass
+    """
+
+    def decorator_outer(**kw):
+
+        for req in req_args:
+            if req not in kw.keys():
+                raise KeyError("Missing required attribute: %s" % (req))
+
+        def decorator(func):
+
+            if func not in target:
+                target.update({ func : kw })
+
+            return func
+
+        return decorator
+
+    return decorator_outer
