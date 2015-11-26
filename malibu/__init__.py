@@ -6,4 +6,4 @@ from malibu import text
 from malibu import util
 
 
-__version__ = '0.1.5'
+__version__ = '0.1.5-1'

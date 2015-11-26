@@ -10,7 +10,7 @@ setup(
     version = malibu.__version__,
     description = "maiome library of utilities",
 
-    url = "http://phabricator.maio.me/tag/malibu",
+    url = "https://phabricator.ramcloud.io/tag/malibu",
     author = "Sean Johnson",
     author_email = "sean.johnson@maio.me",
 
