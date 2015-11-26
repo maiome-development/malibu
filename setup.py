@@ -23,6 +23,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules"
     ],
     packages = ['malibu',
+                'malibu.command',
                 'malibu.config',
                 'malibu.connection',
                 'malibu.database',
