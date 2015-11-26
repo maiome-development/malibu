@@ -30,10 +30,10 @@ class CommandModuleLoader(borgish.SharedState):
 
         instances = filter(lambda mod: isinstance(mod, cls), self.__modules)
         if True in instances:
-            raise ModuleException("Cannot re-register module %s" % (cls.__name__))
+            raise CommandModuleException("Cannot re-register module %s" % (cls.__name__))
 
         if cls in self.__modclasses:
-            raise ModuleException("Cannot re-register module %s" % (cls.__name__))
+            raise CommandModuleException("Cannot re-register module %s" % (cls.__name__))
 
         self.__modclasses.append(cls)
 
@@ -97,6 +97,13 @@ class CommandModuleLoader(borgish.SharedState):
 
         return None
 
+    @property
+    def modules(self):
+        """ Returns the list of modules.
+        """
+
+        return self.__modules
+
     def deregister_module(self, obj):
         """ Removes a module instance from the list of registered
             modules.
@@ -127,7 +134,7 @@ class CommandModuleLoader(borgish.SharedState):
                 return result
             except:
                 traceback.print_exc()
-                raise ModuleException(
+                raise CommandModuleException(
                     "Exception occurred while executing a command: "
                     "[command=%s subcommand=%s args=%s kw=%s]" % (
                         command, subcommand, args, kw))
@@ -207,7 +214,7 @@ class CommandModule(object):
         """
 
         if subcommand in self.__command_map:
-            raise ModuleException("Subcommand is already registered")
+            raise CommandModuleException("Subcommand is already registered")
         else:
             self.__command_map.update({subcommand : function})
             if not function.__doc__:
@@ -223,7 +230,7 @@ class CommandModule(object):
 
         for alias in aliases:
             if alias in self.__command_alias_map:
-                raise ModuleException(
+                raise CommandModuleException(
                     "Alias is already registered for subcommand %s" % (subcommand))
             else:
                 self.__command_alias_map.update({alias : subcommand})
@@ -234,7 +241,7 @@ class CommandModule(object):
         """
 
         if subcommand not in self.__command_map:
-            raise ModuleException("Tried to remove nonexistent subcommand %s" % (subcommand))
+            raise CommandModuleException("Tried to remove nonexistent subcommand %s" % (subcommand))
 
         self.__command_map.pop(subcommand)
 
@@ -247,11 +254,11 @@ class CommandModule(object):
 
     def execute_subcommand(self, subcommand, *args, **kw):
         """ Attempts to fire the subcommand with arguments,
-            and keywords, may throw ModuleException.
+            and keywords, may throw CommandModuleException.
         """
 
         if subcommand not in self.__command_map:
-            raise ModuleException("Tried to execute unknown subcommand %s" % (subcommand))
+            raise CommandModuleException("Tried to execute unknown subcommand %s" % (subcommand))
 
         func = self.__command_map[subcommand]
         func(*args, **kw)

@@ -27,6 +27,7 @@ def get_command_modules(package = None):
         # decorator.
 
     for module, kws in __command_modules.iteritems():
+        module.depend_modules = kws["depends"]
         for depmod in kws["depends"]:
             deps.add(depmod)
         if kws["name"] in modules:
