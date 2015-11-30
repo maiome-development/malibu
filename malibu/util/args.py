@@ -40,6 +40,14 @@ class ArgumentParser(object):
         self.options = {}
         self.parameters = []
 
+    def __enter__(self):
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, traceback):
+
+        return None
+
     def set_default_param_type(self, param, opt = OPTION_SINGLE):
         """ Sets the default type map that a parameter will be treated as.
             Can help force more uniform arguments without having to pre-define
