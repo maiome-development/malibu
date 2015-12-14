@@ -3,6 +3,22 @@ from contextlib import closing
 from urllib2 import urlopen
 
 
+__doc__ = """
+malibu.config.configuration
+---------------------------
+
+.. autoclass:: ConfigurationSection
+   :members:
+
+.. autoclass:: SectionPromise
+   :members:
+
+.. autoclass:: Configuration
+   :members:
+
+"""
+
+
 class ConfigurationSection(dict):
     """ modified dictionary that returns none for invalid keys
     """

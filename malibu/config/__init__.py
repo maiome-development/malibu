@@ -74,13 +74,7 @@ Usage:
     # Or, save to a new file
     conf.save(filename = "/var/data/config2.ini")
 
-.. autoclass:: malibu.config.configuration.ConfigurationSection
-   :members:
-
-.. autoclass:: malibu.config.configuration.SectionPromise
-   :members:
-
-.. autoclass:: malibu.config.configuration.Configuration
+.. automodule:: malibu.config.configuration
    :members:
 
 """
