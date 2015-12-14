@@ -4,6 +4,8 @@ bin
 include
 lib
 dist
-docs
 malibu.egg-info
 .drone.sec.yml
+docs/_build
+docs/_template
+docs/_static

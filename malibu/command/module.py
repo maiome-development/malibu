@@ -3,6 +3,84 @@ from malibu.design import borgish
 from malibu.text import ascii
 
 
+__doc__ = """
+malibu.command.module
+---------------------
+
+A relatively self-contained system for loading and creating command "modules"
+for a CLI-style script.
+
+A command module must extend the :class:`~malibu.command.module.CommandModule`
+and set up the class as such:
+
+.. code-block:: python
+
+    from malibu.command import command_module, module
+
+    @command_module(
+        name = "example",
+        depends = []
+    )
+    class ExampleModule(module.CommandModule):
+
+        BASE = "example"
+
+        def __init__(self, loader):
+
+            super(ExampleModule, self).__init__(base = ExampleModule.BASE)
+            self.__loader = loader
+
+            self.register_subcommand("help", self.show_help)
+
+        def show_help(self, *args, **kw):
+            \"\"\" example:help []
+
+                Does something.
+            \"\"\"
+
+            if "args" in kw:
+                argparser = kw["args"]
+            else:
+                argparser = self.__loader.get_argument_parser()
+
+            pass  # Do stuff...
+
+
+After all modules are implemented, use something similar to the following in
+a console entry point:
+
+.. code-block:: python
+
+    from malibu import command
+    from malibu.util import args
+
+    argparser = args.ArgumentParser.from_argv()
+    # Set up argparser params, mappings, etc here.
+
+    modloader = module.CommandModuleLoader(argparser_
+
+    mods = command.get_command_modules(package = __package__)
+    # Or replace __package__ with your cmd module package path
+    modloader.register_modules(mods.values())
+    modloader.instantiate_modules()
+
+    argparser.parse()
+
+    modloader.parse_command(
+        argparser.parameters[1],  # module base
+        *argparser.parameters[1:],  # subcommand and args
+        args = argparser)
+
+.. autoclass:: CommandModuleLoader
+   :members:
+
+.. autoclass:: CommandModule
+   :members:
+
+.. autoexception:: CommandModuleException
+   :members:
+"""
+
 class CommandModuleLoader(borgish.SharedState):
 
     def __init__(self, argparser, *args, **kw):
