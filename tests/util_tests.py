@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import contextlib, datetime, malibu
 import os, time, unittest
 from malibu import util
@@ -101,4 +102,3 @@ class UtilTestCase(unittest.TestCase):
             self.assertTrue(just_works())
         except Exception as e:
             self.fail("This section of the test should not have failed.")
-

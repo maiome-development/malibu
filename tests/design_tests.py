@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import contextlib, malibu, os, unittest, uuid
 from contextlib import closing
 from malibu.design import borgish
@@ -206,4 +207,3 @@ class BrineTestCase(unittest.TestCase):
         self.assertIn("user_id", prof_a.as_dict())
 
         prof_a.uncache()
-

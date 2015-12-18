@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import contextlib, datetime, malibu
 import os, time, unittest, uuid
 from contextlib import closing

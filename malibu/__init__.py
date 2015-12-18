@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from malibu import config
 from malibu import connection
 from malibu import database

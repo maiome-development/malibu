@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 try:
     from setuptools import setup, find_packages
 except ImportError:
@@ -6,38 +7,38 @@ except ImportError:
 import malibu
 
 setup(
-    name = 'malibu',
-    version = malibu.__version__,
-    description = "maiome library of utilities",
+    name='malibu',
+    version=malibu.__version__,
+    description="maiome library of utilities",
 
-    url = "https://phabricator.ramcloud.io/tag/malibu",
-    author = "Sean Johnson",
-    author_email = "sean.johnson@maio.me",
+    url="https://phabricator.ramcloud.io/tag/malibu",
+    author="Sean Johnson",
+    author_email="sean.johnson@maio.me",
 
-    license = "Unlicense",
+    license="Unlicense",
 
-    classifiers = [
+    classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: Public Domain",
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules"
     ],
-    packages = ['malibu',
-                'malibu.command',
-                'malibu.config',
-                'malibu.connection',
-                'malibu.database',
-                'malibu.design',
-                'malibu.text',
-                'malibu.util'],
-    package_dir = {'malibu': 'malibu'},
-    install_requires = [
+    packages=['malibu',
+              'malibu.command',
+              'malibu.config',
+              'malibu.connection',
+              'malibu.database',
+              'malibu.design',
+              'malibu.text',
+              'malibu.util'],
+    package_dir={'malibu': 'malibu'},
+    install_requires=[
         'dill'
     ],
     test_suite='nose.collector',
-    tests_require = [
+    tests_require=[
         'nose',
         'coverage'
     ],
-    zip_safe = True
+    zip_safe=True
 )

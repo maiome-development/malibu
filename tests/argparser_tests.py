@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import contextlib, malibu, os, unittest
 from malibu.util.args import ArgumentParser
 from nose.tools import *

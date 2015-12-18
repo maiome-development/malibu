@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import malibu, sqlite3, unittest, json
 from malibu.database import dbmapper
 from nose.tools import *

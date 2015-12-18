@@ -2,7 +2,7 @@
   sha: e306ff3
   hooks:
   - id: flake8
-    args: [--ignore=W391 --ignore=F401, --max-line-length=131]
+    args: ["--ignore=W391,F401", "--exclude=docs/*,tests/*", --max-line-length=131]
   - id: check-ast
   - id: debug-statements
   - id: fix-encoding-pragma

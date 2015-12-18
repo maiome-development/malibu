@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import malibu, sqlite3, unittest
 from malibu.text.table import TextTable
 from nose.tools import *
