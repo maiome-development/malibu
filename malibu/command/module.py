@@ -1,6 +1,6 @@
-import malibu, os, sys, traceback
+# -*- coding: utf-8 -*-
+import traceback
 from malibu.design import borgish
-from malibu.text import ascii
 
 
 __doc__ = """
@@ -81,6 +81,7 @@ a console entry point:
    :members:
 """
 
+
 class CommandModuleLoader(borgish.SharedState):
 
     def __init__(self, argparser, *args, **kw):
@@ -108,10 +109,12 @@ class CommandModuleLoader(borgish.SharedState):
 
         instances = filter(lambda mod: isinstance(mod, cls), self.__modules)
         if True in instances:
-            raise CommandModuleException("Cannot re-register module %s" % (cls.__name__))
+            raise CommandModuleException("Cannot re-register module %s" %
+                                         (cls.__name__))
 
         if cls in self.__modclasses:
-            raise CommandModuleException("Cannot re-register module %s" % (cls.__name__))
+            raise CommandModuleException("Cannot re-register module %s" %
+                                         (cls.__name__))
 
         self.__modclasses.append(cls)
 
@@ -123,7 +126,7 @@ class CommandModuleLoader(borgish.SharedState):
 
         [self.register_module(module) for module in clslist]
 
-    def instantiate_modules(self, clslist = []):
+    def instantiate_modules(self, clslist=[]):
         """ Instantiates all module classes that are registered.
             ** Might perform dependency lookup as well.
         """
@@ -205,7 +208,9 @@ class CommandModuleLoader(borgish.SharedState):
         for module in self.__modules:
             if not module.is_command(command):
                 continue
-            if not module.has_subcommand(subcommand) and not module.has_alias(subcommand):
+            if (not module.has_subcommand(subcommand) and not
+                    module.has_alias(subcommand)):
+
                 continue
             try:
                 result = module.execute_subcommand(subcommand, *args, **kw)
@@ -224,7 +229,7 @@ class CommandModule(object):
         Should only be inherited, never instantiated by itself.
     """
 
-    def __init__(self, base = None):
+    def __init__(self, base=None):
         """ Initializes a Module object with the command base,
             maps, and help dictionary.
         """
@@ -270,8 +275,10 @@ class CommandModule(object):
             the subcommand.
         """
 
-        try: return self.__command_alias_map[alias]
-        except: return None
+        try:
+            return self.__command_alias_map[alias]
+        except:
+            return None
 
     def get_base(self):
         """ Returns the command base.
@@ -286,7 +293,7 @@ class CommandModule(object):
 
         return self.__command_help
 
-    def register_subcommand(self, subcommand, function, aliases = []):
+    def register_subcommand(self, subcommand, function, aliases=[]):
         """ Registers a subcommand and its help in
             the internal maps. Updates aliases, subcommands, etc.
         """
@@ -294,24 +301,25 @@ class CommandModule(object):
         if subcommand in self.__command_map:
             raise CommandModuleException("Subcommand is already registered")
         else:
-            self.__command_map.update({subcommand : function})
+            self.__command_map.update({subcommand: function})
             if not function.__doc__:
-                self.__command_help.update({subcommand : None})
+                self.__command_help.update({subcommand: None})
             else:
                 self.__command_help.update({
-                    subcommand :
+                    subcommand:
                     '\n'.join(
                         [line.strip() for line in function.__doc__.splitlines()
                          if line.strip() is not '']
-                        )
-                    })
+                    )
+                })
 
         for alias in aliases:
             if alias in self.__command_alias_map:
                 raise CommandModuleException(
-                    "Alias is already registered for subcommand %s" % (subcommand))
+                    "Alias is already registered for subcommand %s" %
+                    (subcommand))
             else:
-                self.__command_alias_map.update({alias : subcommand})
+                self.__command_alias_map.update({alias: subcommand})
 
     def unregister_subcommand(self, subcommand):
         """ Removes a subcommand, all aliases, and all help
@@ -319,7 +327,9 @@ class CommandModule(object):
         """
 
         if subcommand not in self.__command_map:
-            raise CommandModuleException("Tried to remove nonexistent subcommand %s" % (subcommand))
+            raise CommandModuleException(
+                "Tried to remove nonexistent subcommand %s" %
+                (subcommand))
 
         self.__command_map.pop(subcommand)
 
@@ -336,7 +346,9 @@ class CommandModule(object):
         """
 
         if subcommand not in self.__command_map:
-            raise CommandModuleException("Tried to execute unknown subcommand %s" % (subcommand))
+            raise CommandModuleException(
+                "Tried to execute unknown subcommand %s" %
+                (subcommand))
 
         func = self.__command_map[subcommand]
         func(*args, **kw)
@@ -355,4 +367,3 @@ class CommandModuleException(Exception):
     def __str__(self):
 
         return repr(self.value)
-

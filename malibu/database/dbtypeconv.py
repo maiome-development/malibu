@@ -1,4 +1,6 @@
-import sqlite3, json
+# -*- coding: utf-8 -*-
+import json
+import sqlite3
 
 
 def install_json_converter():

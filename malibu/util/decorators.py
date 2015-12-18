@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 """ This module contains decorator generators.
     Essentially this will be a medley of delicious functions
     to generate relatively useful, reusable, generic decorators for code.
 """
+
 
 def function_registrator(target):
     """ function_registrator generates a simple decorator that will
@@ -65,7 +67,7 @@ def function_kw_reg(target, req_args):
         def decorator(func):
 
             if func not in target:
-                target.update({ func : kw })
+                target.update({func: kw})
 
             return func
 

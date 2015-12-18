@@ -1,5 +1,5 @@
-import os, sys
-from os.path import basename, dirname, expanduser, normpath, realpath
+# -*- coding: utf-8 -*-
+from os.path import dirname, expanduser, normpath, realpath
 
 
 def expand_path(path):
@@ -17,4 +17,3 @@ def get_path_base(path):
     """
 
     return dirname(expand_path(path))
-

@@ -1,0 +1,11 @@
+- repo: git://github.com/pre-commit/pre-commit-hooks
+  sha: e306ff3
+  hooks:
+  - id: flake8
+    args: [--ignore=W391 --ignore=F401, --max-line-length=131]
+  - id: check-ast
+  - id: debug-statements
+  - id: trailing-whitespace
+  - id: fix-encoding-pragma
+  - id: end-of-file-fixer
+  - id: check-merge-conflict

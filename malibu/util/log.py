@@ -1,16 +1,16 @@
-import logging, malibu
+# -*- coding: utf-8 -*-
+import logging
 
 from logging import handlers
-
-from malibu.config import configuration
 from malibu.util import get_caller
+
 
 class LoggingDriver(object):
 
     __instances = {}
 
     @classmethod
-    def get_instance(cls, name = None):
+    def get_instance(cls, name=None):
 
         if name is None:
             name = get_caller().split('.')[0]
@@ -21,7 +21,7 @@ class LoggingDriver(object):
         return cls.__instances.get(name)
 
     @classmethod
-    def find_logger(cls, name = None):
+    def find_logger(cls, name=None):
 
         if name is None:
             name = get_caller()
@@ -29,13 +29,13 @@ class LoggingDriver(object):
         else:
             root = name
 
-        if not cls.get_instance(name = root):
+        if not cls.get_instance(name=root):
             return None
 
-        return cls.get_instance(name = root).get_logger(name = name)
+        return cls.get_instance(name=root).get_logger(name=name)
 
     @classmethod
-    def from_config(cls, config, name = None):
+    def from_config(cls, config, name=None):
 
         if not name:
             name = get_caller().split('.')[0]
@@ -53,11 +53,11 @@ class LoggingDriver(object):
             raise TypeError("Invalid log level: {}".format(
                 config.get_string("loglevel", "INFO").upper()))
 
-        return cls(logfile = logfile, loglevel = loglevel,
-                   stream = stream, name = name)
-    
-    def __init__(self, logfile, loglevel, stream, name = None):
-        """ __init__(self, name = None)
+        return cls(logfile=logfile, loglevel=loglevel,
+                   stream=stream, name=name)
+
+    def __init__(self, logfile, loglevel, stream, name=None):
+        """ __init__(self, name=None)
 
             Initializes the logging driver and loads necessary config
             values from the ConfigurationSection that should be passed
@@ -80,7 +80,7 @@ class LoggingDriver(object):
             if not isinstance(self.__loglevel, int):
                 raise TypeError("Invalid log level: {}".format(loglevel))
 
-        LoggingDriver.__instances.update({self.name :self})
+        LoggingDriver.__instances.update({self.name: self})
 
         self.__setup_logger()
 
@@ -95,12 +95,13 @@ class LoggingDriver(object):
         # configuration.
         logger = logging.getLogger(self.name)
         logger.setLevel(self.__loglevel)
-        formatter = logging.Formatter('%(asctime)s | %(name)-50s %(levelname)s : %(message)s')
+        formatter = logging.Formatter(
+            '%(asctime)s | %(name)-50s %(levelname)s : %(message)s')
 
         file_logger = handlers.RotatingFileHandler(
-                self.__logfile,
-                maxBytes = 8388608, # 8MB
-                backupCount = 4)
+            self.__logfile,
+            maxBytes=8388608,  # 8MB
+            backupCount=4)
         file_logger.setLevel(self.__loglevel)
         file_logger.setFormatter(formatter)
 
@@ -119,8 +120,8 @@ class LoggingDriver(object):
             "enabled" if self.__stream else "disabled"))
         logger.info(" --> Logging at level: {}".format(self.__loglevel))
 
-    def get_logger(self, name = None):
-        """ get_logger(self, name = None)
+    def get_logger(self, name=None):
+        """ get_logger(self, name=None)
 
             Will return a logger object for a specific namespace.
             If name parameter is None, get_logger will use call

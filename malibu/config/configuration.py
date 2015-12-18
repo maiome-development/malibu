@@ -1,4 +1,5 @@
-import copy, urllib2, json
+# -*- coding: utf-8 -*-
+import json
 from contextlib import closing
 from urllib2 import urlopen
 
@@ -31,14 +32,15 @@ class ConfigurationSection(dict):
 
     def __getitem__(self, key):
 
-        try: return dict.__getitem__(self, key)
-        except (IndexError, KeyError) as e:
+        try:
+            return dict.__getitem__(self, key)
+        except (IndexError, KeyError):
             raise KeyError("Unknown configuration key '%s'." % (key))
 
     def __setitem__(self, key, value):
 
         if self.mutable:
-            self.update({ key: value })
+            self.update({key: value})
         else:
             raise AttributeError("This section is not mutable.")
 
@@ -54,27 +56,32 @@ class ConfigurationSection(dict):
 
         return self.__getitem__(key)
 
-    def get_list(self, key, delimiter = ",", default = []):
+    def get_list(self, key, delimiter=",", default=[]):
 
         try:
             val = self.get(key)
             l = val.split(delimiter) if len(val) > 0 else default
             return [item.strip() for item in l]
-        except: return default
+        except:
+            return default
 
-    def get_string(self, key, default = ""):
+    def get_string(self, key, default=""):
 
         try:
-            if str(self.get(key)) == '!None': return None
+            if str(self.get(key)) == '!None':
+                return None
             return str(self.get(key)) or default
-        except: return default
+        except:
+            return default
 
-    def get_int(self, key, default = None):
+    def get_int(self, key, default=None):
 
-        try: return int(self.get(key)) or default
-        except: return default
+        try:
+            return int(self.get(key)) or default
+        except:
+            return default
 
-    def get_bool(self, key, default = False):
+    def get_bool(self, key, default=False):
 
         try:
             val = self.get(key) or default
@@ -89,7 +96,7 @@ class ConfigurationSection(dict):
                     return False
                 else:
                     return default
-            elif isinstanct(val, int):
+            elif isinstance(val, int):
                 if val == 1:
                     self.set(key, True)
                     return True
@@ -100,7 +107,8 @@ class ConfigurationSection(dict):
                     return default
             else:
                 return default
-        except: return default
+        except:
+            return default
 
 
 class SectionPromise(object):
@@ -206,7 +214,10 @@ class Configuration(object):
         """ return a raw/direct reference to a section
         """
 
-        return self.__container[section_name] if self.__container.__contains__(section_name) else None
+        if self.__container.__contains__(section_name):
+            return self.__container[section_name]
+        else:
+            return None
 
     def unload(self):
         """ unload an entire configuration
@@ -222,7 +233,7 @@ class Configuration(object):
         self.unload()
         self.load(self._filename)
 
-    def save(self, filename = None):
+    def save(self, filename=None):
 
         if filename is None:
             filename = self._filename
@@ -262,7 +273,7 @@ class Configuration(object):
             self._filename = filename
             self.load_file(fobj)
             fobj.close()
-        except IOError as e:
+        except IOError:
             raise ValueError("Invalid filename '%s'." % (filename))
         except:
             raise
@@ -271,7 +282,8 @@ class Configuration(object):
         """ load a file and read in the categories and variables
         """
 
-        if self.loaded: self.__container.clear()
+        if self.loaded:
+            self.__container.clear()
         section_name = None
         option_key = None
         option_value = None
@@ -279,7 +291,7 @@ class Configuration(object):
         for line in fobj.readlines():
             line = line.strip('\n').lstrip()
 
-            if line.startswith('#') or line.startswith('//') or line.startswith(';'):
+            if line.startswith('#') or line.startswith(';'):
                 continue
             elif line.startswith('[') and line.endswith(']'):
                 # This is the beginning of a section tag.
@@ -289,7 +301,6 @@ class Configuration(object):
                 continue
             elif '=' in line:
                 s = line.split('=', 1)
-                l = len(s[0])
                 # strip whitespace
                 option_key = s[0].strip()
                 option_value = s[1].strip() if s[1] is not '' else None
@@ -302,7 +313,7 @@ class Configuration(object):
                     section.set(option_key, option_value)
                     continue
 
-                if option_value.startswith('+'): # typed reference / variable
+                if option_value.startswith('+'):  # typed reference / variable
                     dobj_type = option_value.split(':')[0][1:]
                     if len(option_value.split(':')) > 2:
                         dobj_value = ':'.join(option_value.split(':')[1:])
@@ -317,7 +328,7 @@ class Configuration(object):
                                 section.set(option_key, open(dobj_value, 'w+'))
                             except:
                                 section.set(option_key, None)
-                    elif dobj_type.lower() == 'url' or dobj_type.lower() == "uri":
+                    elif dobj_type.lower() in ["url", "uri"]:
                         try:
                             section.set(option_key, urlopen(dobj_value).read())
                         except:
@@ -333,18 +344,30 @@ class Configuration(object):
                             if item.startswith('@'):
                                 link_name = item[1:]
                                 if not self.get_section(link_name):
-                                    dobj_repl.append(SectionPromise(self, section_name, option_key, link_name))
+                                    dobj_repl.append(
+                                        SectionPromise(
+                                            self,
+                                            section_name,
+                                            option_key,
+                                            link_name))
                                 else:
                                     link = self.get_section(link_name)
                                     dobj_repl.append(link)
-                            else: dobj_repl.append(item)
+                            else:
+                                dobj_repl.append(item)
                         section.set(option_key, dobj_repl)
                     else:
                         section.set(option_key, option_value)
-                elif option_value.startswith('@'): # section reference
+                elif option_value.startswith('@'):  # section reference
                     link_name = option_value[1:]
                     if not self.get_section(link_name):
-                        section.set(option_key, SectionPromise(self, section_name, option_key, link_name))
+                        section.set(
+                            option_key,
+                            SectionPromise(
+                                self,
+                                section_name,
+                                option_key,
+                                link_name))
                     else:
                         link = self.get_section(link_name)
                         section.set(option_key, link)

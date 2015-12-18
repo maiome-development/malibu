@@ -1,9 +1,13 @@
-import glob, importlib, os
+# -*- coding: utf-8 -*-
+import glob
+import os
 from importlib import import_module
 from malibu.util.decorators import function_kw_reg
 
 modules = glob.glob(os.path.dirname(__file__) + "/*.py")
-__all__ = [os.path.basename(f)[:-3] for f in modules if not os.path.basename(f).startswith('_') and not f.endswith('__init__.py') and os.path.isfile(f)]
+__all__ = [os.path.basename(f)[:-3] for f in modules
+           if not os.path.basename(f).startswith('_') and
+           not f.endswith('__init__.py') and os.path.isfile(f)]
 
 
 __doc__ = """
@@ -29,7 +33,8 @@ Module for processing commands in a CLI fashion.
 __command_modules = {}
 command_module = function_kw_reg(__command_modules, ["name", "depends"])
 
-def get_command_modules(package = None):
+
+def get_command_modules(package=None):
     """ Reads a package and returns a dictionary of modules decorated with
         the :py:func:`command_module` decorator.
 
@@ -61,7 +66,7 @@ def get_command_modules(package = None):
         if kws["name"] in modules:
             # Module is already in map, don't clobber
             continue
-        modules.update({kws["name"] : module})
+        modules.update({kws["name"]: module})
 
     for module, kws in __command_modules.iteritems():
         for depmod in kws["depends"]:
@@ -69,4 +74,3 @@ def get_command_modules(package = None):
                 modules.pop(kws["name"])
 
     return modules
-

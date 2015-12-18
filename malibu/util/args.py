@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 
 
@@ -17,7 +18,7 @@ class ArgumentParser(object):
         """
         return cls(sys.argv)
 
-    def __init__(self, args, mapping = {}):
+    def __init__(self, args, mapping={}):
         """ Initializes an ArgumentParser instance.  Parses out
             things that we already know, like args[0] (should be the
             executable script).
@@ -31,8 +32,8 @@ class ArgumentParser(object):
         self.__args = args
 
         self._default_types = {
-                ArgumentParser.PARAM_SHORT : ArgumentParser.OPTION_SINGLE,
-                ArgumentParser.PARAM_LONG  : ArgumentParser.OPTION_SINGLE
+            ArgumentParser.PARAM_SHORT: ArgumentParser.OPTION_SINGLE,
+            ArgumentParser.PARAM_LONG: ArgumentParser.OPTION_SINGLE
         }
         self._opt_types = {}
         self._mapping = mapping
@@ -48,7 +49,7 @@ class ArgumentParser(object):
 
         return None
 
-    def set_default_param_type(self, param, opt = OPTION_SINGLE):
+    def set_default_param_type(self, param, opt=OPTION_SINGLE):
         """ Sets the default type map that a parameter will be treated as.
             Can help force more uniform arguments without having to pre-define
             options.
@@ -56,7 +57,7 @@ class ArgumentParser(object):
 
         self._default_types[param] = opt
 
-    def add_option_type(self, option, opt = OPTION_SINGLE):
+    def add_option_type(self, option, opt=OPTION_SINGLE):
         """ Adds a type mapping to a specific option. Allowed types are
             OPTION_SINGLE and OPTION_PARAMETERIZED.
         """
@@ -85,16 +86,19 @@ class ArgumentParser(object):
 
         processed_descriptions = {}
         for option, description in self._descriptions.iteritems():
-            if len(option) == 1: # This is a flag. Append a dash.
+            if len(option) == 1:  # This is a flag. Append a dash.
                 option = '-' + option
-                processed_descriptions.update({ option : description })
-            elif len(option) > 1 and option.startswith('--'): # Option. Append blindly.
-                processed_descriptions.update({ option : description })
-            elif len(option) > 1 and not option.startswith('--'): # Option. Append double-dash.
+                processed_descriptions.update({option: description})
+            elif len(option) > 1 and option.startswith('--'):
+                # Option. Append blindly.
+                processed_descriptions.update({option: description})
+            elif len(option) > 1 and not option.startswith('--'):
+                # Option. Append double-dash.
                 option = '--' + option
-                processed_descriptions.update({ option : description })
-            else: # What is this? Blindly append.
-                processed_descriptions.update({ option : description })
+                processed_descriptions.update({option: description})
+            else:
+                # What is this? Blindly append.
+                processed_descriptions.update({option: description})
 
         return processed_descriptions
 
@@ -106,47 +110,55 @@ class ArgumentParser(object):
         waiting_argument = None
 
         for param in self.__args:
-            if param.startswith('--'): # Long option mapping.
+            if param.startswith('--'):
+                # Long option mapping.
                 paraml = param[2:]
                 if '=' in paraml:
                     param, value = paraml.split('=')
-                    # Automatically store a PARAMETERIZED option type, if none exists.
+                    # Store a PARAMETERIZED option type, if none exists.
                     if param not in self._opt_types:
-                        self.add_option_type(param, ArgumentParser.OPTION_PARAMETERIZED)
+                        self.add_option_type(
+                            param,
+                            ArgumentParser.OPTION_PARAMETERIZED)
                 else:
                     param = paraml
                     if param not in self._opt_types:
-                        self.add_option_type(param, self._default_types[ArgumentParser.PARAM_LONG])
+                        self.add_option_type(
+                            param,
+                            self._default_types[ArgumentParser.PARAM_LONG])
                 store_as = param
                 if param in self._mapping:
-                    self.options.update({ self._mapping[param] : True })
+                    self.options.update({self._mapping[param]: True})
                     store_as = self._mapping[param]
                 else:
-                    self.options.update({ param : True })
+                    self.options.update({param: True})
                 if param in self._opt_types:
                     ptype = self._opt_types[param]
                     if ptype == ArgumentParser.OPTION_PARAMETERIZED:
-                        if '=' in paraml: # Option is long and contains the value.
-                            self.options.update({ store_as : value })
+                        if '=' in paraml:
+                            # Option is long and contains the value.
+                            self.options.update({store_as: value})
                             waiting_argument = None
                         else:
                             waiting_argument = store_as
-            elif param.startswith('-'): # Short option mapping.
+            elif param.startswith('-'):
+                # Short option mapping.
                 param = param[1:]
                 for opt in param:
                     store_as = opt
                     if opt in self._mapping:
-                        self.options.update({ self._mapping[opt] : True })
+                        self.options.update({self._mapping[opt]: True})
                         store_as = self._mapping[opt]
                     else:
-                        self.options.update({ opt : True })
+                        self.options.update({opt: True})
                     if opt in self._opt_types:
                         ptype = self._opt_types[opt]
                         if ptype == ArgumentParser.OPTION_PARAMETERIZED:
                             waiting_argument = store_as
-            else: # Option parameter or command parameter.
+            else:
+                # Option parameter or command parameter.
                 if waiting_argument is not None:
-                    self.options.update({ waiting_argument : param })
+                    self.options.update({waiting_argument: param})
                     waiting_argument = None
                 else:
                     self.parameters.append(param)

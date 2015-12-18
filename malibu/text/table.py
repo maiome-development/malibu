@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 
 class TextTable(object):
@@ -6,25 +7,26 @@ class TextTable(object):
     TABLE_VT_BORDER = "|"
     TABLE_HZ_BORDER = "-"
 
-    def __init__(self, min_width = 12):
+    def __init__(self, min_width=12):
 
         self.min_width = min_width
 
         self._rows = 0
         self._columns = 0
 
-        # Header data should be simple; it should be no more than a list of 
+        # Header data should be simple; it should be no more than a list of
         # strings naming each column header.
         self._header_data = []
 
         # Row data should be internally stored in a zipped-set form, or, as a
-        # list of tuples, which each tuple containing all the entries for a 
+        # list of tuples, which each tuple containing all the entries for a
         # single row.
         self._row_data = []
 
     def add_header_list(self, el):
 
-        if not isinstance(el, list): return
+        if not isinstance(el, list):
+            return
 
         self._columns = len(el)
         self._header_data = el
@@ -36,25 +38,27 @@ class TextTable(object):
 
     def add_data_dict(self, el):
 
-        """ add_data_dict only really makes sense to use when there is a 
+        """ add_data_dict only really makes sense to use when there is a
             single pair mapping (eg., key, value) or a two column
             display.  If that is not that case, add_data_ztup is a better
             choice.
         """
 
-        if not isinstance(el, dict): return
+        if not isinstance(el, dict):
+            return
 
         self._rows = len(el)
 
         for key, value in el.iteritems():
-            self._row_data.append((key,value,))
+            self._row_data.append((key, value,))
 
     def add_data_ztup(self, el):
 
-        """ add_data_ztup will take any as much data as you need and can even 
-            fill the place of add_data_dict.  add_data_ztup takes a list of tuples.
-            each tuple should contain a row of elements, one element for each column.
-            essentially, the argument that will be passed in should look like:
+        """ add_data_ztup will take any as much data as you need and can even
+            fill the place of add_data_dict.  add_data_ztup takes a list of
+            tuples. each tuple should contain a row of elements, one element
+            for each column. essentially, the argument that will be passed
+            in should look like:
               [
                 (x1, y1, z1),
                 (x2, y2, z2),
@@ -63,7 +67,8 @@ class TextTable(object):
               ]
         """
 
-        if not isinstance(el, list): return
+        if not isinstance(el, list):
+            return
 
         self._rows = len(el)
 
@@ -96,15 +101,18 @@ class TextTable(object):
 
     def add_data_csv_file(self, fobj):
 
-        """ add_data_csv_file loads data from a comma-separated value file.  the first
-            row is the header, everything else is actual data.  works if the file is
-            provided or if a string containing the filename is given.
+        """ add_data_csv_file loads data from a comma-separated value file.
+            the first row is the header, everything else is actual data.
+            works if the file is provided or if a string containing the
+            filename is given.
         """
 
         if isinstance(fobj, str):
-            try: fobj = open(fobj, 'r')
-            except: raise
-        
+            try:
+                fobj = open(fobj, 'r')
+            except:
+                raise
+
         data_flag = False
 
         for line in fobj.readlines():
@@ -117,7 +125,7 @@ class TextTable(object):
             self._row_data.append(tuple(line))
 
     def __transpose_list(self, li):
-        
+
         """ performs a simple transposition on a list.
             used for calculating row sizes and maxes.
         """
@@ -181,7 +189,7 @@ class TextTable(object):
         col_sizes = self.__calculate_row_max()
 
         line = ""
-        
+
         cd = zip(self._header_data, col_sizes)
         for (text, size) in cd:
             if size < self.min_width:
@@ -235,4 +243,3 @@ class TextTable(object):
         lines.append(divider)
 
         return lines
-

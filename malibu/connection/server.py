@@ -1,44 +1,57 @@
-import socket, ssl, select, collections, time
+# -*- coding: utf-8 -*-
+import socket
+import ssl
+import select
+import collections
+import time
 from connection import TCPConnection
 
 
 class TCPServer(object):
 
     __instance = None
-    
+
     @staticmethod
     def get_instance():
-    
+
         return TCPServer.__instance
 
-    def __init__(self, host, port, ssl_enabled = False, ssl_keyfile = None, ssl_certfile = None):
-        
+    def __init__(self,
+                 host,
+                 port,
+                 ssl_enabled=False,
+                 ssl_keyfile=None,
+                 ssl_certfile=None):
+
         self._host = host
         self._port = port
-        
+
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        
+
         self._shutdown = False
-        
+
         if ssl_enabled:
             if not ssl_keyfile or not ssl_certfile:
                 ssl_enabled = False
             else:
-                self._socket = ssl.wrap_socket(self._socket, keyfile = self._ssl_keyfile, certfile = self._ssl_certfile)
-        
+                self._socket = ssl.wrap_socket(
+                    self._socket,
+                    keyfile=self._ssl_keyfile,
+                    certfile=self._ssl_certfile)
+
         self._connections = []
         self._queue = collections.deque()
-    
-    def listen(self, backlog = 10):
-    
+
+    def listen(self, backlog=10):
+
         try:
             self._socket.bind((self._host, self._port))
             self._socket.listen(backlog)
         except (Exception) as e:
             self.server_uncaptured_exception(e)
-    
+
     def run(self):
-    
+
         while not self._shutdown:
             time.sleep(0.001)
 
@@ -68,7 +81,7 @@ class TCPServer(object):
                 self._shutdown = True
             except (Exception) as e:
                 self.server_uncaptured_exception(e)
-        
+
         self._socket.shutdown(socket.SHUT_RDWR)
         self._socket.close()
 

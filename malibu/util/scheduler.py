@@ -1,4 +1,5 @@
-import abc, datetime, dill, sys, traceback
+# -*- coding: utf-8 -*-
+import abc
 from datetime import datetime, timedelta
 
 from malibu.config import configuration
@@ -11,7 +12,7 @@ job_store = function_registrator(__JOB_STORES__)
 
 class Scheduler(borgish.SharedState):
 
-    def __init__(self, store = 'volatile', *args, **kw):
+    def __init__(self, store='volatile', *args, **kw):
 
         super(Scheduler, self).__init__(*args, **kw)
 
@@ -20,11 +21,11 @@ class Scheduler(borgish.SharedState):
         if "state" not in kw:
             job_store = filter(lambda st: st.TYPE == store, __JOB_STORES__)
             if not job_store or len(job_store) == 0:
-                raise SchedulerException("Could not find a job store for type: %s"
-                                         % (store))
+                raise SchedulerException(
+                    "Could not find a job store for type: %s" % (store))
             elif len(job_store) > 1:
-                raise SchedulerException("Selected more than one job store for type: %s"
-                                         % (store))
+                raise SchedulerException(
+                    "Selected more than one job store for type: %s" % (store))
 
             job_store = job_store[0]
             self._job_store = job_store(self)
@@ -34,7 +35,7 @@ class Scheduler(borgish.SharedState):
 
         return self._job_store
 
-    def create_job(self, name, func, delta, recurring = False):
+    def create_job(self, name, func, delta, recurring=False):
         """ Creates a new job instance and attaches it to the scheduler.
 
             Params
@@ -65,7 +66,8 @@ class Scheduler(borgish.SharedState):
         if func is None:
             raise SchedulerException("Callback function is non-existent.")
         if not isinstance(delta, timedelta):
-            raise SchedulerException("Argument 'delta' was not a timedelta instance.")
+            raise SchedulerException(
+                "Argument 'delta' was not a timedelta instance.")
 
         job = SchedulerJob(name, func, delta, recurring)
         self.add_job(job)
@@ -157,7 +159,7 @@ class SchedulerJobStore(object):
         if not isinstance(config, configuration.ConfigurationSection):
             raise TypeError("Expected instance of malibu.config."
                             "Configuration.ConfigurationSection, not %s" % (
-                            config.__class__.__name__))
+                                config.__class__.__name__))
 
         return
 
@@ -192,7 +194,7 @@ class SchedulerJobStore(object):
 
             scheduler = job._scheduler
             store = scheduler.job_store
-            store.store(job, update = True)
+            store.store(job, update=True)
 
         return _funcarg_decorator
 
@@ -211,7 +213,7 @@ class SchedulerJobStore(object):
         return
 
     @abc.abstractmethod
-    def store(self, job, update = False):
+    def store(self, job, update=False):
         """ Serializes a job into the job store.
         """
 
@@ -235,9 +237,9 @@ class SchedulerJobStore(object):
 class VolatileSchedulerJobStore(SchedulerJobStore):
     """ Implements a purely in-memory job store backed by a dictionary.
 
-        This job store type does not need a set of configurations pass in to it.
-        Any jobs pushed into this store will be lost when the application is shut
-        down!
+        This job store type does not need a set of configurations pass in to
+        it. Any jobs pushed into this store will be lost when the application
+        is shut down!
     """
 
     TYPE = 'volatile'
@@ -260,7 +262,7 @@ class VolatileSchedulerJobStore(SchedulerJobStore):
 
         return self.__jobs.get(job_name, None)
 
-    def store(self, job, update = False):
+    def store(self, job, update=False):
 
         super(VolatileSchedulerJobStore, self).store(job, update)
 
@@ -283,7 +285,7 @@ class VolatileSchedulerJobStore(SchedulerJobStore):
 
 class SchedulerJob(object):
 
-    def __init__(self, name, function, delta, state, recurring = False):
+    def __init__(self, name, function, delta, state, recurring=False):
 
         self._scheduler = Scheduler()
         self._name = name
@@ -332,7 +334,7 @@ class SchedulerJob(object):
     def fire_onfail(self):
 
         for callback in self._onfail:
-            callback(job = self)
+            callback(job=self)
 
     def is_recurring(self):
 

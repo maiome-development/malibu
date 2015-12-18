@@ -1,4 +1,8 @@
-import difflib, json, time, types, uuid
+# -*- coding: utf-8 -*-
+import json
+import time
+import types
+import uuid
 from difflib import SequenceMatcher
 
 from malibu.util.decorators import function_marker
@@ -153,7 +157,7 @@ class CachingBrineObject(BrineObject):
             cls.__cache = []
 
     @classmethod
-    def fuzzy_search(cls, ignore_case = False, **kw):
+    def fuzzy_search(cls, ignore_case=False, **kw):
         """ Performs a fuzzy search on the cache to find objects that have at
             least a diff ratio of FUZZ_RATIO.
 
@@ -183,7 +187,7 @@ class CachingBrineObject(BrineObject):
         return ratios.keys()
 
     @classmethod
-    def search(cls, ignore_case = False, **kw):
+    def search(cls, ignore_case=False, **kw):
         """ Searches through the cache to find objects with field that match
             those given by the **kw.
 
@@ -300,4 +304,3 @@ class CachingBrineObject(BrineObject):
         """
 
         return json.dumps(self.dirty_dict())
-

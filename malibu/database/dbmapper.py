@@ -1,4 +1,8 @@
-import sqlite3, types, re, json, copy
+# -*- coding: utf-8 -*-
+import copy
+import re
+import sqlite3
+import types
 from malibu.database import dbtypeconv
 
 
@@ -21,10 +25,10 @@ class DBMapper(object):
 
     _options = None
     __default_options = {
-            INDEX_PRIMARY   : 0,
-            INDEX_AUTOINCR  : True,
-            INDEX_UNIQUE    : set(),
-            GENERATE_FTS_VT : False # Do NOT generate FTS by default.
+        INDEX_PRIMARY: 0,
+        INDEX_AUTOINCR: True,
+        INDEX_UNIQUE: set(),
+        GENERATE_FTS_VT: False  # Do NOT generate FTS by default.
     }
 
     @staticmethod
@@ -46,12 +50,12 @@ class DBMapper(object):
         """
 
         dbtypeconv.install_json_converter()
-        __db = sqlite3.connect(dbpath, detect_types = sqlite3.PARSE_DECLTYPES)
+        __db = sqlite3.connect(dbpath, detect_types=sqlite3.PARSE_DECLTYPES)
 
         return __db
 
     @classmethod
-    def set_db_options(cls, db, keys, ktypes, options = __default_options):
+    def set_db_options(cls, db, keys, ktypes, options=__default_options):
         """ DBMapper.set_db_options(db       => database instance
                                     keys     => list of keys
                                     ktypes   => list of key types
@@ -84,7 +88,8 @@ class DBMapper(object):
         """
 
         if cls._options is None:
-            raise DBMapperException('Static database options have not been set.')
+            raise DBMapperException(
+                'Static database options have not been set.')
 
         dbo = cls._options
         obj = cls(dbo['database'])
@@ -99,7 +104,7 @@ class DBMapper(object):
         for pair in zip(keys, vals):
             whc.append("%s=?" % (pair[0]))
         query = "select * from %s where (%s)" % (obj._table, ' and '.join(whc))
-        result = obj.__execute(cur, query, args = vals)
+        result = obj.__execute(cur, query, args=vals)
         if result is None:
             for key in dbo['keys']:
                 setattr(obj, "_%s" % (key), None)
@@ -120,7 +125,8 @@ class DBMapper(object):
         """
 
         if cls._options is None:
-            raise DBMapperException('Static database options have not been set.')
+            raise DBMapperException(
+                'Static database options have not been set.')
 
         dbo = cls._options
         obj = cls(dbo['database'])
@@ -134,8 +140,9 @@ class DBMapper(object):
         anonvals = []
         for val in vals:
             anonvals.append('?')
-        query = "insert into %s (%s) values (%s)" % (obj._table, ','.join(keys), ','.join(anonvals))
-        obj.__execute(cur, query, args = vals)
+        query = "insert into %s (%s) values (%s)" % (
+            obj._table, ','.join(keys), ','.join(anonvals))
+        obj.__execute(cur, query, args=vals)
 
         res = cls.find(**kw)
         if len(res) == 0:
@@ -153,7 +160,8 @@ class DBMapper(object):
         """
 
         if cls._options is None:
-            raise DBMapperException('Static database options have not been set.')
+            raise DBMapperException(
+                'Static database options have not been set.')
 
         dbo = cls._options
         obj = cls(dbo['database'])
@@ -168,12 +176,15 @@ class DBMapper(object):
         whc = []
         for pair in zip(keys, vals):
             whc.append('%s=?' % (pair[0]))
-        query = "select %s from %s where (%s)" % (primaryKey, obj._table, ' and '.join(whc))
-        result = obj.__execute(cur, query, args = vals, fetch = DBMapper.FETCH_ALL)
+        query = "select %s from %s where (%s)" % (
+            primaryKey, obj._table, ' and '.join(whc))
+        result = obj.__execute(cur, query, args=vals, fetch=DBMapper.FETCH_ALL)
 
         load_pairs = []
         for row in result:
-            load_pairs.append({primaryKey : row[dbo['options'][DBMapper.INDEX_PRIMARY]]})
+            load_pairs.append(
+                {primaryKey: row[dbo['options'][DBMapper.INDEX_PRIMARY]]}
+            )
 
         return DBResultList([cls.load(**pair) for pair in load_pairs])
 
@@ -187,7 +198,8 @@ class DBMapper(object):
         """
 
         if cls._options is None:
-            raise DBMapperException('Static database options have not been set.')
+            raise DBMapperException(
+                'Static database options have not been set.')
 
         dbo = cls._options
         obj = cls(dbo['database'])
@@ -195,11 +207,13 @@ class DBMapper(object):
         primaryKey = dbo['keys'][dbo['options'][DBMapper.INDEX_PRIMARY]]
 
         query = "select %s from %s" % (primaryKey, obj._table)
-        result = obj.__execute(cur, query, fetch = DBMapper.FETCH_ALL)
+        result = obj.__execute(cur, query, fetch=DBMapper.FETCH_ALL)
 
         load_pairs = []
         for row in result:
-            load_pairs.append({primaryKey : row[dbo['options'][DBMapper.INDEX_PRIMARY]]})
+            load_pairs.append(
+                {primaryKey: row[dbo['options'][DBMapper.INDEX_PRIMARY]]}
+            )
 
         return DBResultList([cls.load(**pair) for pair in load_pairs])
 
@@ -229,10 +243,12 @@ class DBMapper(object):
         """
 
         if cls._options is None:
-            raise DBMapperException('Static database options have not been set.')
+            raise DBMapperException(
+                'Static database options have not been set.')
 
         if not cls._options['options'][DBMapper.GENERATE_FTS_VT]:
-            raise DBMapperException('Full-text search table not enabled on this table.')
+            raise DBMapperException(
+                'Full-text search table not enabled on this table.')
 
         dbo = cls._options
         obj = cls(dbo['database'])
@@ -241,11 +257,15 @@ class DBMapper(object):
         query = """select docid from _search_%s where _search_%s match \"?\"""" % \
                 (obj._table, obj._table)
 
-        result = obj.__execute(cur, query, args = [param], fetch = DBMapper.FETCH_ALL)
+        result = obj.__execute(
+            cur,
+            query,
+            args=[param],
+            fetch=DBMapper.FETCH_ALL)
 
         load_pairs = []
         for row in result:
-            load_pairs.append({cls._options['keys'][0] : row[0]})
+            load_pairs.append({cls._options['keys'][0]: row[0]})
 
         return DBResultList([cls.load(**pair) for pair in load_pairs])
 
@@ -260,7 +280,8 @@ class DBMapper(object):
         """
 
         if cls._options is None or cond._options is None:
-            raise DBMapperException('Static database options have not been set.')
+            raise DBMapperException(
+                'Static database options have not been set.')
 
         dba = cls._options
         obja = cls(dba['database'])
@@ -271,22 +292,28 @@ class DBMapper(object):
         primaryKeyB = dbb['keys'][dba['options'][DBMapper.INDEX_PRIMARY]]
 
         query = "select A.%s, B.%s from %s as A join %s as B on A.%s=B.%s" % (
-                    primaryKeyA, primaryKeyB, obja._table, objb._table, a, b)
-        result = obja.__execute(cur, query, fetch = DBMapper.FETCH_ALL)
+                primaryKeyA, primaryKeyB, obja._table, objb._table, a, b)
+        result = obja.__execute(cur, query, fetch=DBMapper.FETCH_ALL)
 
         load_pair_a = []
         load_pair_b = []
         for row in result:
-            load_pair_a.append({primaryKeyA : row[0]})
-            load_pair_b.append({primaryKeyB : row[1]})
+            load_pair_a.append({primaryKeyA: row[0]})
+            load_pair_b.append({primaryKeyB: row[1]})
 
-        return (DBResultList([cls.load(**pair) for pair in load_pair_a]), DBResultList([cond.load(**pair) for pair in load_pair_b]),)
+        return (
+            DBResultList([cls.load(**pair) for pair in load_pair_a]),
+            DBResultList([cond.load(**pair) for pair in load_pair_b]),
+        )
 
-    def __init__(self, db, keys, keytypes, options = __default_options):
+    def __init__(self, db, keys, keytypes, options=__default_options):
 
         self._db = db
         self._options = options
-        self._table = self.__class__.__name__.lower() if 'tableName' not in self._options else self._options['tableName']
+        if 'tableName' not in self._options:
+            self._table = self.__class__.__name__.lower()
+        else:
+            self._options['tableName']
 
         self._keys = keys
         self._keytypes = keytypes
@@ -301,7 +328,7 @@ class DBMapper(object):
         self.__generate_setters()
         self.__generate_properties()
 
-    def __execute(self, cur, sql, fetch = FETCH_ONE, limit = -1, args = ()):
+    def __execute(self, cur, sql, fetch=FETCH_ONE, limit=-1, args=()):
         """ __execute(self,
                       cur      => pointer to database cursor
                       sql      => sql query to execute
@@ -316,31 +343,38 @@ class DBMapper(object):
         query = sql
         try:
             if len(args) >= 1:
-                cur.execute("select " + ", ".join(["quote(?)" for i in args]), args)
+                cur.execute("select " + ", ".join(["quote(?)" for i in args]),
+                            args)
                 quoted_values = cur.fetchone()
                 for quoted_value in quoted_values:
                     query = query.replace('?', str(quoted_value), 1)
-        except: pass
+        except:
+            pass
 
-        try: cur.execute(query)
+        try:
+            cur.execute(query)
         except (sqlite3.ProgrammingError):
-            try: cur.execute(query, args)
+            try:
+                cur.execute(query, args)
             except Exception as e:
-                raise DBMapperException("Error while executing query [%s]" % (query), cause = e)
+                raise DBMapperException(
+                    "Error while executing query [%s]" % (query), cause=e)
         except Exception as e:
-            raise DBMapperException("Error while executing query [%s]" % (query), cause = e)
+            raise DBMapperException(
+                "Error while executing query [%s]" % (query), cause=e)
 
         if fetch == DBMapper.FETCH_ONE:
             return cur.fetchone()
         elif fetch == DBMapper.FETCH_MANY:
-            if limit == -1: limit = cur.arraysize
-            return cur.fetchmany(size = limit)
+            if limit == -1:
+                limit = cur.arraysize
+            return cur.fetchmany(size=limit)
         elif fetch == DBMapper.FETCH_ALL:
             return cur.fetchall()
         else:
             return cur.fetchall()
 
-    def __get_table_info(self, table = None):
+    def __get_table_info(self, table=None):
         """ __get_table_info(self, table)
 
             Returns pragma information for a table.
@@ -350,7 +384,7 @@ class DBMapper(object):
         cur = self._db.cursor()
         query = "pragma table_info(%s)" % (table)
 
-        return self.__execute(cur, query, fetch = DBMapper.FETCH_ALL)
+        return self.__execute(cur, query, fetch=DBMapper.FETCH_ALL)
 
     def __generate_structure(self):
         """ __generate_structure(self)
@@ -370,7 +404,8 @@ class DBMapper(object):
                 if pair[0] == self._primary:
                     # identifier type primary key
                     if self._autoincr_ind:
-                        typarr.append("%s %s primary key autoincrement" % (pair[0], pair[1]))
+                        typarr.append("%s %s primary key autoincrement" % (
+                            pair[0], pair[1]))
                     else:
                         typarr.append("%s %s primary key" % (pair[0], pair[1]))
                 elif pair[0] in self._unique_keys:
@@ -404,7 +439,7 @@ class DBMapper(object):
                 cur = self._db.cursor()
                 self.__execute(cur, query)
 
-        # generate full text search table that corresponds with this dbo, if requested
+        # generate full text search table that corresponds with this dbo
         if self._options[DBMapper.GENERATE_FTS_VT]:
             if len(self.__get_table_info("_search_%s" % (self._table))) == 0:
                 cur = self._db.cursor()
@@ -412,7 +447,7 @@ class DBMapper(object):
                 query = "create virtual table _search_%s using fts4(%s, content='%s')" % \
                         (self._table, ','.join(self._keys), self._table)
                 self.__execute(cur, query)
-                # create pre/post update/delete triggers for cascading updates on content mod
+                # create pre/post update/delete triggers for cascading updates
                 # XXX - [trigger warning] DO WE NEED THE TRIGGERS
                 query = "create trigger _%s_bu before update on %s begin delete from _search_%s where docid=old.rowid; end;" % \
                         (self._table, self._table, self._table)
@@ -421,12 +456,14 @@ class DBMapper(object):
                         (self._table, self._table, self._table)
                 self.__execute(cur, query)
                 search_keys = ','.join(['docid'] + self._keys[1:])
-                target_keys = ','.join(['new.%s' % (vkey) for vkey in self._keys])
+                target_keys = ','.join(['new.' + vkey for vkey in self._keys])
                 query = "create trigger _%s_au after update on %s begin insert into _search_%s(%s) values(%s); end;" % \
-                        (self._table, self._table, self._table, search_keys, target_keys)
+                        (self._table, self._table, self._table, search_keys,
+                         target_keys)
                 self.__execute(cur, query)
                 query = "create trigger _%s_ai after insert on %s begin insert into _search_%s(%s) values(%s); end;" % \
-                        (self._table, self._table, self._table, search_keys, target_keys)
+                        (self._table, self._table, self._table, search_keys,
+                         target_keys)
                 self.__execute(cur, query)
 
         self._db.commit()
@@ -439,31 +476,40 @@ class DBMapper(object):
         """
 
         for _key in self._keys:
-            def getter_templ(self, __key = _key):
+            def getter_templ(self, __key=_key):
                 if __key not in self._keys:
                     return
                 cur = self._db.cursor()
                 # select * from table where key=<key>
-                query = "select %s from %s where %s=?" % (__key, self._table, self._primary)
-                result = self.__execute(cur, query, args = (getattr(self, "_%s" % (self._primary)),))
-                try: return result[0]
-                except: return result
-            setattr(self, "get_%s" % (_key), types.MethodType(getter_templ, self))
+                query = "select %s from %s where %s=?" % (
+                    __key, self._table, self._primary)
+                result = self.__execute(
+                    cur,
+                    query,
+                    args=(getattr(self, "_%s" % (self._primary)),))
+                try:
+                    return result[0]
+                except:
+                    return result
+            setattr(self, "get_" + _key, types.MethodType(getter_templ, self))
 
     def __generate_setters(self):
 
         for _key in self._keys:
-            def setter_templ(self, value, __key = _key):
+            def setter_templ(self, value, __key=_key):
                 if __key not in self._keys:
                     return
                 cur = self._db.cursor()
                 # update table set key=value where primary=id
                 query = "update %s set %s=? where %s=?" % (
                     self._table, __key, self._primary)
-                self.__execute(cur, query, args = (value, getattr(self, "_%s" % (self._primary)),))
+                self.__execute(
+                    cur,
+                    query,
+                    args=(value, getattr(self, "_%s" % (self._primary)),))
                 self._db.commit()
                 setattr(self, "_%s" % (__key), value)
-            setattr(self, "set_%s" % (_key), types.MethodType(setter_templ, self))
+            setattr(self, "set_" + _key, types.MethodType(setter_templ, self))
 
     def __generate_properties(self):
 
@@ -481,12 +527,12 @@ class DBMapper(object):
         vals = []
         for key in self._keys:
             if key == self._primary and self._autoincr_ind:
-                vals.append(None) # Put None in for the index since it's going to be autoincr'd
+                vals.append(None)  # Put None in for the index because autoinc
             else:
                 vals.append(getattr(self, "_%s" % (key)))
         qst = ', '.join(["?" for item in vals])
         query = "insert into %s values (%s)" % (self._table, qst)
-        self.__execute(cur, query, args = vals)
+        self.__execute(cur, query, args=vals)
         setattr(self, "_%s" % (self._primary), cur.lastrowid)
 
     def delete(self):
@@ -497,18 +543,19 @@ class DBMapper(object):
         primary_val = getattr(self, "_%s" % (self._keys[self._primary_ind]))
 
         query = "delete from %s where (%s)" % (self._table, qst)
-        self.__execute(cur, query, args = (primary_val,) )
+        self.__execute(cur, query, args=(primary_val,))
 
 
 class DBResultList(list):
 
-    def __init__(self, extend = None):
+    def __init__(self, extend=None):
 
         if isinstance(extend, list):
             for item in extend:
                 if isinstance(item, DBMapper):
                     self.append(item)
-                else: continue
+                else:
+                    continue
 
     def filter_equals(self, key, val):
         """ filter_equals(key, val) ->
@@ -522,8 +569,10 @@ class DBResultList(list):
             try:
                 if getattr(dbo, "_%s" % (key)) == val:
                     res.append(dbo)
-                else: continue
-            except: continue
+                else:
+                    continue
+            except:
+                continue
 
         return res
 
@@ -540,8 +589,10 @@ class DBResultList(list):
             try:
                 if getattr(dbo, "_%s" % (key)).lower() == val.lower():
                     res.append(dbo)
-                else: continue
-            except: continue
+                else:
+                    continue
+            except:
+                continue
 
         return res
 
@@ -557,8 +608,10 @@ class DBResultList(list):
             try:
                 if getattr(dbo, "_%s" % (key)) != val:
                     res.append(dbo)
-                else: continue
-            except: continue
+                else:
+                    continue
+            except:
+                continue
 
         return res
 
@@ -572,20 +625,23 @@ class DBResultList(list):
 
         for dbo in self:
             try:
-                if re.match(regex, getattr(dbo, "_%s" % (key))) != None:
+                if re.match(regex, getattr(dbo, "_%s" % (key))) is not None:
                     res.append(dbo)
-                else: continue
-            except: continue
+                else:
+                    continue
+            except:
+                continue
 
         return res
 
 
 class DBMapperException(Exception):
 
-    def __init__(self, message, cause = None):
+    def __init__(self, message, cause=None):
 
         if cause is not None:
-            super(DBMapperException, self).__init__(message + u', caused by ' + repr(cause))
+            super(DBMapperException, self).__init__(
+                message + u', caused by ' + repr(cause))
         elif cause is None:
             super(DBMapperException, self).__init__(message)
 
