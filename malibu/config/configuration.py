@@ -3,6 +3,8 @@ import json
 from contextlib import closing
 from urllib2 import urlopen
 
+from malibu.text import unicode2str
+
 
 __doc__ = """
 malibu.config.configuration
@@ -56,12 +58,17 @@ class ConfigurationSection(dict):
 
         return self.__getitem__(key)
 
-    def get_list(self, key, delimiter=",", default=[]):
+    def get_list(self, key, delimiter=",", strip=True, default=[]):
 
         try:
             val = self.get(key)
+            if isinstance(val, list):
+                return val
             l = val.split(delimiter) if len(val) > 0 else default
-            return [item.strip() for item in l]
+            if strip:
+                return [item.strip() for item in l]
+            else:
+                return l
         except:
             return default
 
@@ -337,6 +344,7 @@ class Configuration(object):
                     elif dobj_type.lower() == 'list':
                         try:
                             dobj_list = json.loads('%s' % (dobj_value))
+                            dobj_list = unicode2str(dobj_list)
                         except:
                             dobj_list = []
                         dobj_repl = []

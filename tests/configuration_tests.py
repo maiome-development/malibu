@@ -54,3 +54,18 @@ class ConfigurationTestCase(unittest.TestCase):
 
             self.assertIn("main", self.config.sections)
             self.assertIn("test", self.config.sections)
+
+    def configSectionGetList_test(self):
+
+        with open(self.config_path, 'r') as config_fobj:
+            self.config.load_file(config_fobj)
+            self.assertTrue(self.config.loaded)
+
+            test = self.config.get_section('test')
+            self.assertIsNot(test, None)
+
+            l1 = test.get_list('g', default = None)
+            self.assertEquals(l1, ['list', 'of', 'things'])
+
+            l2 = test.get_list('h', default = None)
+            self.assertEquals(l2, ['list', 'of', 'things'])
