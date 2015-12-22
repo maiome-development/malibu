@@ -49,17 +49,50 @@ class ArgumentParser(object):
 
         return None
 
-    def set_default_param_type(self, param, opt=OPTION_SINGLE):
+    def param_defined(self, param):
+        """ Checks all of the various ways a parameter can be a defined to see
+            if the given parameter actually is defined.
+
+            :param str param: Parameter to check for
+            :return: parameter is defined
+            :rtype: bool
+        """
+
+        if param.startswith('-'):
+            param = param.lstrip('-')
+
+        is_typed = param in self._opt_types
+        is_mapped = param in self._mapping
+        is_described = False
+
+        for _p in self.get_option_descriptions().keys():
+            if param in _p:
+                is_described = True
+            continue
+
+        return is_typed or is_mapped or is_described
+
+    def set_default_param_type(self, param_type, opt=OPTION_SINGLE):
         """ Sets the default type map that a parameter will be treated as.
             Can help force more uniform arguments without having to pre-define
             options.
+
+            :param int param_type: Parameter type (PARAM_LONG, PARAM_SHORT)
+            :param int opt: Option type (OPTION_PARAMETERIZED, OPTION_SINGLE)
+            :return: none
+            :rtype: None
         """
 
-        self._default_types[param] = opt
+        self._default_types[param_type] = opt
 
     def add_option_type(self, option, opt=OPTION_SINGLE):
         """ Adds a type mapping to a specific option. Allowed types are
             OPTION_SINGLE and OPTION_PARAMETERIZED.
+
+            :param str option: Option to set type for
+            :param int opt: Option type (OPTION_PARAMETERIZED, OPTION_SINGLE)
+            :return: none
+            :rtype: None
         """
 
         self._opt_types[option] = opt
@@ -68,6 +101,11 @@ class ArgumentParser(object):
         """ Maps a option value (-a, -g, --thing, etc.) to a full word or
             phrase that will be stored in the options dictionary after parsing
             is finished.  Makes option usage easier.
+
+            :param str option: Option to map from
+            :param str map_name: Option name to map to
+            :return: none
+            :rtype: None
         """
 
         self._mapping[option] = map_name
@@ -75,6 +113,11 @@ class ArgumentParser(object):
     def add_option_description(self, option, description):
         """ Adds a helpful description for an argument. Is returned when
             get_option_descriptions is called.
+
+            :param str option: Option to describe
+            :param str description: Description of option
+            :return: none
+            :rtype: None
         """
 
         self._descriptions[option] = description
@@ -82,11 +125,14 @@ class ArgumentParser(object):
     def get_option_descriptions(self):
         """ Returns a map of options to their respective descriptions.  Good
             for printing out a series of help messages describing usage.
+
+            :return: Dictionary of option => description pairs
+            :rtype: dict
         """
 
         processed_descriptions = {}
         for option, description in self._descriptions.iteritems():
-            if len(option) == 1:  # This is a flag. Append a dash.
+            if len(option) == 1:  # This is a flag. Prepend a dash.
                 option = '-' + option
                 processed_descriptions.update({option: description})
             elif len(option) > 1 and option.startswith('--'):
@@ -105,11 +151,30 @@ class ArgumentParser(object):
     def parse(self):
         """ Parses out the args into the mappings provided in self.mapping,
             stores the result in self.options.
+
+            :return: none
+            :rtype: None
         """
 
         waiting_argument = None
 
         for param in self.__args:
+            if param[0] in ['"', "'"]:
+                param = param.lstrip(param[0])
+
+            if param[-1] in ['"', "'"]:
+                param = param.rstrip(param[-1])
+
+            if param.startswith('-') and not self.param_defined(param):
+                # Starts with a -, but is not an option..is a parameter.
+                if waiting_argument is not None:
+                    self.options.update({waiting_argument: param})
+                    waiting_argument = None
+                else:
+                    self.parameters.append(param)
+
+                continue
+
             if param.startswith('--'):
                 # Long option mapping.
                 paraml = param[2:]

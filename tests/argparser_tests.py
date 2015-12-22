@@ -53,6 +53,48 @@ class ArgumentParserTestCase(unittest.TestCase):
         self.assertEquals(ap.options['syntax'], 'plain')
         self.assertEquals(ap.options['watch'], True)
 
+    def argumentParserDashedParms_test(self):
+
+        args = ['--target', '-19000000', '--message', 'Test']
+
+        ap = ArgumentParser(args)
+        ap.add_option_type('target', opt = ArgumentParser.OPTION_PARAMETERIZED)
+        ap.add_option_type('message', opt = ArgumentParser.OPTION_PARAMETERIZED)
+
+        ap.parse()
+
+        self.assertEquals(ap.options['target'], '-19000000')
+        self.assertEquals(ap.options['message'], 'Test')
+
+    def argumentParserQuotedDashedParms_test(self):
+
+        args = ['--target', '"-19000000"', '--message', 'Test']
+
+        ap = ArgumentParser(args)
+        ap.add_option_type('target', opt = ArgumentParser.OPTION_PARAMETERIZED)
+        ap.add_option_type('message', opt = ArgumentParser.OPTION_PARAMETERIZED)
+
+        ap.parse()
+
+        self.assertEquals(ap.options['target'], '-19000000')
+        self.assertEquals(ap.options['message'], 'Test')
+
+    def argumentParserQuotedParms_test(self):
+
+        args = ['--target', '"-19000000"', '--message', "'Test'",
+                '--file', '"unmatched.txt']
+
+        ap = ArgumentParser(args)
+        ap.add_option_type('target', opt = ArgumentParser.OPTION_PARAMETERIZED)
+        ap.add_option_type('message', opt = ArgumentParser.OPTION_PARAMETERIZED)
+        ap.add_option_type('file', opt = ArgumentParser.OPTION_PARAMETERIZED)
+
+        ap.parse()
+
+        self.assertEquals(ap.options['target'], '-19000000')
+        self.assertEquals(ap.options['message'], 'Test')
+        self.assertEquals(ap.options['file'], 'unmatched.txt')
+
     def argumentParserContextMgr_test(self):
 
         args = ['-c', 'filename.txt', '--syntax', 'plain', '-w']
