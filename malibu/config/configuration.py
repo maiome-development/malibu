@@ -10,14 +10,8 @@ __doc__ = """
 malibu.config.configuration
 ---------------------------
 
-.. autoclass:: ConfigurationSection
-   :members:
-
-.. autoclass:: SectionPromise
-   :members:
-
-.. autoclass:: Configuration
-   :members:
+INI-style configuration implementation with some special features
+to make configuration a little simpler.
 
 """
 
