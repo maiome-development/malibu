@@ -72,7 +72,4 @@ Usage:
     # Or, save to a new file
     conf.save(filename = "/var/data/config2.ini")
 
-.. automodule:: malibu.config.configuration
-   :members:
-
 """
