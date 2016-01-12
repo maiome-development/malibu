@@ -13,7 +13,9 @@ def get_class(clsname):
 
 def match_packet(data):
 
-    get_class = lambda cls: globals()[cls]
+    def get_class(cls):
+        return globals()[cls]
+
     for packet in __packets__:
         try:
             packet = get_class(packet)
