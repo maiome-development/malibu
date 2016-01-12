@@ -23,7 +23,9 @@ malibu.config.configuration
 
 
 class ConfigurationSection(dict):
-    """ modified dictionary that returns none for invalid keys
+    """ The ConfigurationSection class is a modified dictionary that
+        provides "helpers" to grab a configuration entry in it's correct
+        "type" form.
     """
 
     def __init__(self):
@@ -47,18 +49,30 @@ class ConfigurationSection(dict):
             raise AttributeError("This section is not mutable.")
 
     def set_mutable(self, mutable):
+        """ Enforces immutability on a configuration section.
+        """
 
         self.mutable = mutable
 
     def set(self, key, value):
+        """ Allows programmatic setting of configuration entries.
+        """
 
         return self.__setitem__(key, value)
 
     def get(self, key):
+        """ The bare "get" on the underlying dictionary that returns the
+            configuration entry in whatever form it was parsed as, typically
+            a string.
+        """
 
         return self.__getitem__(key)
 
     def get_list(self, key, delimiter=",", strip=True, default=[]):
+        """ Attempts to take a something-delimited string and "listify" it.
+            If an error occurs while attempting to listify, :param default:
+            will be returned.
+        """
 
         try:
             val = self.get(key)
@@ -73,6 +87,13 @@ class ConfigurationSection(dict):
             return default
 
     def get_string(self, key, default=""):
+        """ Attempts to take the value stored and retrieve it safely as a
+            string. If the value mapped to by :param key: is "!None", the
+            object returned is NoneType.
+
+            If an error occurs while trying to safely retrieve the string,
+            :param default: is returned.
+        """
 
         try:
             if str(self.get(key)) == '!None':
@@ -82,6 +103,10 @@ class ConfigurationSection(dict):
             return default
 
     def get_int(self, key, default=None):
+        """ Attempts to fetch and intify the value mapped to by
+            :param key:. If an error occurs while trying to intify the value,
+            :param default: will be returned.
+        """
 
         try:
             return int(self.get(key)) or default
@@ -89,6 +114,11 @@ class ConfigurationSection(dict):
             return default
 
     def get_bool(self, key, default=False):
+        """ Attempts to safely fetch the value mapped to by :param key:.
+            After successful retrieval, a conditional coercion to boolean
+            is attempt. If the coercion to boolean fails, :param default: is
+            returned.
+        """
 
         try:
             val = self.get(key) or default
@@ -144,6 +174,9 @@ class SectionPromise(object):
         return '@' + self.link
 
     def resolve(self):
+        """ Resolves a SectionPromise into the proper dictionary
+            value.
+        """
 
         if self.__fulfilled:
             return
@@ -165,8 +198,10 @@ class SectionPromise(object):
 
 
 class Configuration(object):
-    """
-        This definitely needs to be documented.
+    """ Configuration class performs the loading, saving, and parsing
+        of an INI-style configuration file with a few advanced features
+        such as value typing, file inclusion, section references, and
+        JSON-style list definition.
     """
 
     def __init__(self):
@@ -181,7 +216,7 @@ class Configuration(object):
         self.loaded = False
 
     def __resolve_links(self):
-        """ resolves all linked references.
+        """ resolves all linked references (SectionPromise instances).
         """
 
         for promise in SectionPromise.promises:
@@ -190,7 +225,7 @@ class Configuration(object):
         SectionPromise.promises = []
 
     def add_section(self, section_name):
-        """ adds a new configuration section to the main dictionary.
+        """ Adds a new configuration section to the main dictionary.
         """
 
         section = ConfigurationSection()
@@ -199,26 +234,32 @@ class Configuration(object):
         return section
 
     def remove_section(self, section_name):
-        """ removes a section from the main dictionary.
+        """ Removes a section from the main dictionary.
         """
 
         del self.__container[section_name]
 
     @property
     def sections(self):
-        """ returns a list of all sections in the configuration.
+        """ Returns a list of all sections in the configuration.
         """
 
         return self.__container.keys()
 
     def has_section(self, section_name):
-        """ return if x has a section
+        """ Return if this configuration has a section named
+            :param section_name:.
         """
 
         return section_name in self.__container
 
     def get_section(self, section_name):
-        """ return a raw/direct reference to a section
+        """ Return the internal ConfigurationSection representation of a
+            set of configuration entries.
+
+            :param str section_name: Section name to retrieve.
+            :rtype: malibu.config.configuration.ConfigurationSection
+            :return: ConfigurationSection or None
         """
 
         if self.__container.__contains__(section_name):
@@ -227,20 +268,28 @@ class Configuration(object):
             return None
 
     def unload(self):
-        """ unload an entire configuration
+        """ Unload an entire configuration
         """
 
         self.__container.clear()
         self.loaded = False
 
     def reload(self):
-        """ reload the configuration from the initially specified file
+        """ Reload the configuration from the initially specified file
         """
 
         self.unload()
         self.load(self._filename)
 
     def save(self, filename=None):
+        """ Write the loaded configuration into the file specified by
+            :param filename: or to the initially specified filename.
+
+            All linked sections are flattened into SectionPromise instances
+            and written to the configuration properly.
+
+            :raises ValueError: if no save filename available.
+        """
 
         if filename is None:
             filename = self._filename
@@ -269,10 +318,13 @@ class Configuration(object):
                 config.write("\n")
 
     def load(self, filename):
-        """
-            load(filename)
+        """ Loads a INI-style configuration from the given filename.
+            If the file can not be opened from :param filename:,
+            a ValueError is raised. Upon any other error,
+            the exception is simply raised to the top.
 
-            filename -> name of the file to load.
+            :raises ValueError: if no filename provided.
+            :raises Exception: upon other error
         """
 
         try:
@@ -286,11 +338,19 @@ class Configuration(object):
             raise
 
     def load_file(self, fobj):
-        """ load a file and read in the categories and variables
+        """ Performs the full load of the configuration file from
+            the underlying file object. If a file object is not passed in
+            :param fobj:, TypeError is raised.
+
+            :raises TypeError: if :param fobj: is not a file type
         """
+
+        if not fobj or not isinstance(fobj, file):
+            raise TypeError("Invalid file object.")
 
         if self.loaded:
             self.__container.clear()
+
         section_name = None
         option_key = None
         option_value = None
@@ -384,5 +444,6 @@ class Configuration(object):
                 continue
             else:
                 continue
+
         self.__resolve_links()
         self.loaded = True

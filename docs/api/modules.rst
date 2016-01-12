@@ -25,6 +25,12 @@ malibu.database
 .. automodule:: malibu.database
    :members:
 
+malibu.design
+-------------
+
+.. automodule:: malibu.design
+   :members:
+
 malibu.text
 -----------
 
