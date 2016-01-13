@@ -1,5 +1,5 @@
 build:
-  image: python:2.7-wheezy
+  image: python:$$PY_VERSION
   commands:
     - virtualenv .
     - . bin/activate
@@ -9,6 +9,14 @@ build:
     - python ./setup.py test
     - python ./setup.py sdist --formats gztar -q
 
+matrix:
+  PY_VERSION:
+    - 2.7-wheezy
+    - 3.2-wheezy
+    - 3.3-wheezy
+    - 3.4-wheezy
+    - 3.5-wheezy
+
 notify:
   slack:
     webhook_url: $$SLACK_URL
@@ -17,3 +25,12 @@ notify:
       started: true
       success: true
       failure: true
+
+publish:
+  github_release:
+    api_key: $$GITHUB_RELEASE_TOKEN
+    files:
+      - dist/*
+    when:
+      event: tag
+      branch: master
