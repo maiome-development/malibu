@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import contextlib
+import io
 import malibu
 import os
 import pprint

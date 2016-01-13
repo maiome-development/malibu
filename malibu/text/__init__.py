@@ -20,12 +20,14 @@ def unicode2str(obj):
         :rtype: object
     """
 
+    builtins = globals()["__builtins__"]
+
     if isinstance(obj, dict):
         return {unicode2str(k): unicode2str(v) for k, v in
                 obj.iteritems()}
     elif isinstance(obj, list):
         return [unicode2str(i) for i in obj]
-    elif isinstance(obj, unicode):
+    elif isinstance(obj, unicode if "unicode" in dir(builtins) else str):
         return obj.encode("utf-8")
     else:
         return obj

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import io
 
 
 class TextTable(object):
@@ -79,7 +80,7 @@ class TextTable(object):
             elif len(row) < self._columns:
                 col_diff = (self._columns - len(row)) + 1
                 col_fill = len(row)
-                for idx in xrange(col_fill, col_diff):
+                for idx in range(col_fill, col_diff):
                     el[idx] = ''
             self._row_data.append(row)
 
@@ -109,7 +110,7 @@ class TextTable(object):
 
         if isinstance(fobj, str):
             try:
-                fobj = open(fobj, 'r')
+                fobj = io.open(fobj, 'r')
             except:
                 raise
 
@@ -173,7 +174,7 @@ class TextTable(object):
 
         if len(txt) < length:
             diff = length - len(txt) - 1
-            [s.append(" ") for i in xrange(0, diff)]
+            [s.append(" ") for i in range(0, diff)]
             s.append(''.join(txt) + " ")
         elif len(txt) == length:
             s.append(txt)

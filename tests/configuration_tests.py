@@ -1,10 +1,11 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 
-import contextlib, malibu, os, unittest
+import contextlib, io, malibu, os, unittest
 from contextlib import closing
 from malibu.config.configuration import Configuration
 from nose.tools import *
+
 
 class ConfigurationTestCase(unittest.TestCase):
 
@@ -20,13 +21,13 @@ class ConfigurationTestCase(unittest.TestCase):
 
     def configLoadFile_test(self):
 
-        with open(self.config_path, 'r') as config_fobj:
+        with io.open(self.config_path, 'r') as config_fobj:
             self.config.load_file(config_fobj)
             self.assertTrue(self.config.loaded)
 
     def configSectionGetValues_test(self):
 
-        with open(self.config_path, 'r') as config_fobj:
+        with io.open(self.config_path, 'r') as config_fobj:
             self.config.load_file(config_fobj)
             self.assertTrue(self.config.loaded)
 
@@ -37,7 +38,7 @@ class ConfigurationTestCase(unittest.TestCase):
 
             self.assertEquals(main.get_string('a'), 'b')
             self.assertEquals(main.get_int('b'), 2)
-            self.assertIsInstance(main.get('c'), str)
+            self.assertIsInstance(main.get('c'), unicode)
             self.assertIsInstance(main.get('d'), dict)
 
             self.assertEquals(test.get('e'), 'test e')
@@ -48,7 +49,7 @@ class ConfigurationTestCase(unittest.TestCase):
 
     def configSections_test(self):
 
-        with open(self.config_path, 'r') as config_fobj:
+        with io.open(self.config_path, 'r') as config_fobj:
             self.config.load_file(config_fobj)
             self.assertTrue(self.config.loaded)
 
@@ -57,7 +58,7 @@ class ConfigurationTestCase(unittest.TestCase):
 
     def configSectionGetList_test(self):
 
-        with open(self.config_path, 'r') as config_fobj:
+        with io.open(self.config_path, 'r') as config_fobj:
             self.config.load_file(config_fobj)
             self.assertTrue(self.config.loaded)
 

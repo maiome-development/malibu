@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import json
+import io
+
 from contextlib import closing
 from urllib2 import urlopen
 
@@ -118,7 +122,7 @@ class ConfigurationSection(dict):
             val = self.get(key) or default
             if isinstance(val, bool):
                 return val
-            elif isinstance(val, str):
+            elif isinstance(val, str) or isinstance(val, unicode):
                 if val.lower() == 'true':
                     self.set(key, True)
                     return True
@@ -291,7 +295,7 @@ class Configuration(object):
         if filename is None:
             raise ValueError('No filename specified and no stored filename.')
 
-        with closing(open(filename, 'w')) as config:
+        with closing(io.open(filename, 'w')) as config:
             for section, smap in self.__container.iteritems():
                 config.write("[%s]\n" % (section))
                 for key, value in smap.iteritems():
@@ -304,7 +308,7 @@ class Configuration(object):
                             value = str(value)
                     elif isinstance(value, SectionPromise):
                         continue
-                    elif isinstance(value, file):
+                    elif isinstance(value, io.TextIOBase):
                         value = "+file:" + value.name
                     else:
                         value = str(value)
@@ -322,7 +326,7 @@ class Configuration(object):
         """
 
         try:
-            fobj = open(filename, 'r')
+            fobj = io.open(filename, 'r')
             self._filename = filename
             self.load_file(fobj)
             fobj.close()
@@ -339,7 +343,7 @@ class Configuration(object):
             :raises TypeError: if :param fobj: is not a file type
         """
 
-        if not fobj or not isinstance(fobj, file):
+        if not fobj or not isinstance(fobj, io.IOBase):
             raise TypeError("Invalid file object.")
 
         if self.loaded:
@@ -383,10 +387,10 @@ class Configuration(object):
 
                     if dobj_type.lower() == 'file':
                         try:
-                            section.set(option_key, open(dobj_value, 'r'))
+                            section.set(option_key, io.open(dobj_value, 'r'))
                         except:
                             try:
-                                section.set(option_key, open(dobj_value, 'w+'))
+                                section.set(option_key, io.open(dobj_value, 'w+'))
                             except:
                                 section.set(option_key, None)
                     elif dobj_type.lower() in ["url", "uri"]:
