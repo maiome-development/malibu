@@ -7,7 +7,7 @@ import io
 from contextlib import closing
 from urllib2 import urlopen
 
-from malibu.text import unicode2str
+from malibu.text import unicode_type, unicode2str
 
 
 __doc__ = """
@@ -58,13 +58,16 @@ class ConfigurationSection(dict):
 
         return self.__setitem__(key, value)
 
-    def get(self, key):
+    def get(self, key, default=None):
         """ The bare "get" on the underlying dictionary that returns the
             configuration entry in whatever form it was parsed as, typically
             a string.
         """
 
-        return self.__getitem__(key)
+        try:
+            return self.__getitem__(key)
+        except IndexError:
+            return default
 
     def get_list(self, key, delimiter=",", strip=True, default=[]):
         """ Attempts to take a something-delimited string and "listify" it.
@@ -122,7 +125,7 @@ class ConfigurationSection(dict):
             val = self.get(key) or default
             if isinstance(val, bool):
                 return val
-            elif isinstance(val, str) or isinstance(val, unicode):
+            elif isinstance(val, unicode_type()):
                 if val.lower() == 'true':
                     self.set(key, True)
                     return True
@@ -141,6 +144,9 @@ class ConfigurationSection(dict):
                 else:
                     return default
             else:
+                print("get_bool: unknown value type")
+                print("type(val) => ", type(val))
+                print("unicode_type() => ", unicode_type())
                 return default
         except:
             return default

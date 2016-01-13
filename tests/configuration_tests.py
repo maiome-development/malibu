@@ -1,5 +1,5 @@
-#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
 import contextlib, io, malibu, os, unittest
 from contextlib import closing
