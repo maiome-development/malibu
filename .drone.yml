@@ -1,6 +1,7 @@
 build:
   image: python:$$PY_VERSION
   commands:
+    - pip install --upgrade virtualenv
     - virtualenv .
     - . bin/activate
     - pip install -r requirements.txt
