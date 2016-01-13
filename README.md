@@ -10,18 +10,6 @@ config.configuration
 ----------------------
 a "simple" config reader with section promises and special types.
 
-connection.connection
----------------------
-a structured, packet-based connection client.
-
-connection.packets
-------------------
-an extensible packet implementation for use with the other connection classes.
-
-connection.server
------------------
-a structured, packet based connection server.
-
 database.dbmapper
 -----------------
 a reflective/introspective ORM used for simple object relations in SQLite (and maybe others).

@@ -13,12 +13,6 @@ malibu.config
 .. automodule:: malibu.config
    :members:
 
-malibu.connection
------------------
-
-.. automodule:: malibu.connection
-   :members:
-
 malibu.database
 ---------------
 

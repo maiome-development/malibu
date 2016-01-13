@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+from malibu import command
 from malibu import config
-from malibu import connection
 from malibu import database
 from malibu import design
 from malibu import text
