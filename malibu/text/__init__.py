@@ -21,14 +21,16 @@ def unicode_type():
         bytes" as bytes().
     """
 
-    builtins = globals()["__builtins__"]
+    try:
+        import builtins
+        __old_unicode = False
+    except ImportError:
+        __old_unicode = True
 
-    if "unicode" in builtins:
+    if __old_unicode:
         return unicode
-    elif "bytes" in builtins and "unicode" not in builtins:
+    elif not __old_unicode:
         return str
-    else:
-        return str  # This exists between both versions, so fallback
 
 
 def string_type():
@@ -41,14 +43,16 @@ def string_type():
         bytes" as bytes().
     """
 
-    builtins = globals()["__builtins__"]
+    try:
+        import builtins
+        __old_string = True
+    except ImportError:
+        __old_string = False
 
-    if "unicode" in builtins:  # Unicode type only in Py2x
+    if __old_string:
         return str
-    elif "bytes" in builtins:  # Bytes type only in Py3x
+    elif not __old_string:
         return bytes
-    else:
-        return str  # This exists between both versions, so fallback
 
 
 def unicode2str(obj):
