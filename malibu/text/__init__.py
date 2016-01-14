@@ -28,9 +28,9 @@ def unicode_type():
         __old_unicode = True
 
     if __old_unicode:
-        return unicode
+        return unicode  # flake8: noqa
     elif not __old_unicode:
-        return str
+        return str  # flake8: noqa
 
 
 def string_type():
@@ -50,9 +50,9 @@ def string_type():
         __old_string = False
 
     if __old_string:
-        return str
+        return str  # flake8: noqa
     elif not __old_string:
-        return bytes
+        return bytes  # flake8: noqa
 
 
 def unicode2str(obj):

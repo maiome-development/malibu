@@ -13,7 +13,6 @@ build:
 matrix:
   PY_VERSION:
     - 2.7-wheezy
-    - 3.2-wheezy
     - 3.3-wheezy
     - 3.4-wheezy
     - 3.5-wheezy
