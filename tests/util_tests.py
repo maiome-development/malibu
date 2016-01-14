@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import contextlib, datetime, malibu
-import os, time, unittest
+import unittest
+
 from malibu import util
 from malibu.util import decorators
 from nose.tools import *
@@ -26,21 +26,21 @@ class UtilTestCase(unittest.TestCase):
 
     def callerReturn_test(self):
 
-        self.assertEquals(self.return_caller(), "tests.util_tests.UtilTestCase.callerReturn_test")
+        self.assertEqual(self.return_caller(), "tests.util_tests.UtilTestCase.callerReturn_test")
 
     def callerFrame_test(self):
 
         frame = self.return_frame()
-        self.assertEquals(frame.f_code.co_name, "callerFrame_test")
+        self.assertEqual(frame.f_code.co_name, "callerFrame_test")
 
     def currentReturn_test(self):
 
-        self.assertEquals(util.get_current(), "tests.util_tests.UtilTestCase.currentReturn_test")
+        self.assertEqual(util.get_current(), "tests.util_tests.UtilTestCase.currentReturn_test")
 
     def currentFrame_test(self):
 
         frame = util.get_current_frame()
-        self.assertEquals(frame.f_code.co_name, "currentFrame_test")
+        self.assertEqual(frame.f_code.co_name, "currentFrame_test")
 
     def decorFunctionRegistrator_test(self):
 
@@ -56,8 +56,8 @@ class UtilTestCase(unittest.TestCase):
         def does_nothing():
             pass
 
-        self.assertNotEquals(getattr(does_nothing, "f_type", None), None)
-        self.assertEquals(does_nothing.f_type, "testing")
+        self.assertNotEqual(getattr(does_nothing, "f_type", None), None)
+        self.assertEqual(does_nothing.f_type, "testing")
 
     def decorRegistratorMarkerStackable_test(self):
 
@@ -66,8 +66,8 @@ class UtilTestCase(unittest.TestCase):
         def does_nothing():
             pass
 
-        self.assertNotEquals(getattr(does_nothing, "f_type", None), None)
-        self.assertEquals(does_nothing.f_type, "testing")
+        self.assertNotEqual(getattr(does_nothing, "f_type", None), None)
+        self.assertEqual(does_nothing.f_type, "testing")
         self.assertIn(does_nothing, self._target)
 
     def decorWrappable_test(self):
@@ -82,8 +82,8 @@ class UtilTestCase(unittest.TestCase):
         def does_nothing():
             pass
 
-        self.assertNotEquals(getattr(does_nothing, "f_type", None), None)
-        self.assertEquals(does_nothing.f_type, "testing")
+        self.assertNotEqual(getattr(does_nothing, "f_type", None), None)
+        self.assertEqual(does_nothing.f_type, "testing")
         self.assertIn(does_nothing, self._target)
 
     def decorKwReg_test(self):
@@ -102,3 +102,32 @@ class UtilTestCase(unittest.TestCase):
             self.assertTrue(just_works())
         except Exception as e:
             self.fail("This section of the test should not have failed.")
+
+    def decorInterceptor_test(self):
+
+        self.skipTest("Work in progress.")
+
+        def _intercept_func_stuff(*args, **kw):
+
+            if 'thing' in kw:
+                return {'thing': True}
+            else:
+                return {'thing': None}
+
+        func_interceptor = decorators.function_intercept_scope(
+            _intercept_func_stuff,
+            intercept_args=True)
+
+        @func_interceptor
+        def does_stuff(*args, **kw):
+
+            try:
+                thing = thing if thing else None
+            except:
+                self.fail("Injected value did not appear")
+
+            self.assertEqual(thing, "hello")
+            return True
+
+        retv = does_stuff(thing="hello")
+        self.assertTrue(retv)

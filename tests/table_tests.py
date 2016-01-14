@@ -29,10 +29,10 @@ class TableTestCase(unittest.TestCase):
 """
 
         self.table.add_header(*['x', 'y', 'z'])
-        self.table.add_data_ztup(zip(self.x, self.y, self.z))
+        self.table.add_data_ztup(list(zip(self.x, self.y, self.z)))
 
         s = ""
         for line in self.table.format():
             s += line + "\n"
 
-        self.assertEquals(s, result)
+        self.assertEqual(s, result)

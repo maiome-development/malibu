@@ -19,7 +19,7 @@ class Scheduler(borgish.SharedState):
         # Make sure the job store doesn't get reinitialized after loading
         # state through the SharedState mixin.
         if "state" not in kw:
-            job_store = filter(lambda st: st.TYPE == store, __JOB_STORES__)
+            job_store = list(filter(lambda st: st.TYPE == store, __JOB_STORES__))
             if not job_store or len(job_store) == 0:
                 raise SchedulerException(
                     "Could not find a job store for type: %s" % (store))
@@ -117,11 +117,13 @@ class Scheduler(borgish.SharedState):
         """ Gets the current time and checks the ETA on each job.
             If the job is ready, it executes and captures any exception
             that should raise out of the execute call.
-            If an exception is capture, the job's onfail callbacks will be
+            If an exception is captured, the job's onfail callbacks will be
             fired with a reference to the job object that was being triggered.
         """
 
         now = datetime.now()
+
+        mark_removal = []
 
         for job in self.job_store.get_jobs():
             if job.is_ready(now):
@@ -131,11 +133,13 @@ class Scheduler(borgish.SharedState):
                 except Exception as e:
                     job.set_traceback(e)
                     job.fire_onfail()
-                if not job.is_recurring():
-                    self.remove_job(job.get_name())
-                else:
-                    self.remove_job(job.get_name())
-                    self.add_job(job)
+
+                mark_removal.append(job)
+
+        for job in mark_removal:
+            self.remove_job(job.get_name())
+            if job.is_recurring():
+                self.add_job(job)
 
 
 class SchedulerJobStore(object):

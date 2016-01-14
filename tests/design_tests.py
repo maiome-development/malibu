@@ -71,7 +71,7 @@ class BorgishTestCase(unittest.TestCase):
         aa = ClassA()
         aa.load_state("load")
 
-        self.assertEquals(aa.value, "abab")
+        self.assertEqual(aa.value, "abab")
 
     def borgishStateOverwrite_test(self):
 
@@ -103,7 +103,7 @@ class BorgishTestCase(unittest.TestCase):
         aa = ClassA()
         aa.load_state("carry")
 
-        self.assertEquals(a.value, aa.value)
+        self.assertEqual(a.value, aa.value)
 
 
 class BrineTestCase(unittest.TestCase):
@@ -114,7 +114,7 @@ class BrineTestCase(unittest.TestCase):
         a.name = "John Smith"
         self.assertIsInstance(a, brine.BrineObject)
         self.assertIn("name", a.as_dict())
-        self.assertEquals(a.as_dict()["name"], "John Smith")
+        self.assertEqual(a.as_dict()["name"], "John Smith")
 
     def brineNestedObject_test(self):
 
@@ -124,11 +124,11 @@ class BrineTestCase(unittest.TestCase):
         b.email = "jsmith@example.org"
         b.person = a
 
-        self.assertEquals(b.as_dict()["person"]["name"], a.name)
+        self.assertEqual(b.as_dict()["person"]["name"], a.name)
 
         a.name = "John Doe"
 
-        self.assertEquals(b.as_dict()["person"]["name"], a.name)
+        self.assertEqual(b.as_dict()["person"]["name"], a.name)
 
     def brineInstanceFromJson_test(self):
 
@@ -200,7 +200,7 @@ class BrineTestCase(unittest.TestCase):
 
         ddump = prof_a.dirty_dict()
         self.assertIn("user_id", ddump)
-        self.assertEquals(ddump["user_id"], a.uuid)
+        self.assertEqual(ddump["user_id"], a.uuid)
 
         prof_a.unmark("user_id")
         self.assertNotIn("user_id", prof_a.dirty_dict())

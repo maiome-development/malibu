@@ -24,7 +24,7 @@ class ArgumentParserTestCase(unittest.TestCase):
         ap = ArgumentParser(args, mapping = {'c' : 'create'})
         ap.parse()
 
-        self.assertEquals(ap.options['create'], True)
+        self.assertEqual(ap.options['create'], True)
 
     def argumentParserParameterized_test(self):
 
@@ -34,7 +34,7 @@ class ArgumentParserTestCase(unittest.TestCase):
         ap.add_option_type('c', opt = ArgumentParser.OPTION_PARAMETERIZED)
         ap.parse()
 
-        self.assertEquals(ap.options['create'], 'filename.txt')
+        self.assertEqual(ap.options['create'], 'filename.txt')
 
     def argumentParserMultiple_test(self):
 
@@ -49,9 +49,9 @@ class ArgumentParserTestCase(unittest.TestCase):
         ap.add_option_mapping('w', 'watch')
         ap.parse()
 
-        self.assertEquals(ap.options['create'], 'filename.txt')
-        self.assertEquals(ap.options['syntax'], 'plain')
-        self.assertEquals(ap.options['watch'], True)
+        self.assertEqual(ap.options['create'], 'filename.txt')
+        self.assertEqual(ap.options['syntax'], 'plain')
+        self.assertEqual(ap.options['watch'], True)
 
     def argumentParserDashedParms_test(self):
 
@@ -63,8 +63,8 @@ class ArgumentParserTestCase(unittest.TestCase):
 
         ap.parse()
 
-        self.assertEquals(ap.options['target'], '-19000000')
-        self.assertEquals(ap.options['message'], 'Test')
+        self.assertEqual(ap.options['target'], '-19000000')
+        self.assertEqual(ap.options['message'], 'Test')
 
     def argumentParserQuotedDashedParms_test(self):
 
@@ -76,8 +76,8 @@ class ArgumentParserTestCase(unittest.TestCase):
 
         ap.parse()
 
-        self.assertEquals(ap.options['target'], '-19000000')
-        self.assertEquals(ap.options['message'], 'Test')
+        self.assertEqual(ap.options['target'], '-19000000')
+        self.assertEqual(ap.options['message'], 'Test')
 
     def argumentParserQuotedParms_test(self):
 
@@ -91,9 +91,9 @@ class ArgumentParserTestCase(unittest.TestCase):
 
         ap.parse()
 
-        self.assertEquals(ap.options['target'], '-19000000')
-        self.assertEquals(ap.options['message'], 'Test')
-        self.assertEquals(ap.options['file'], 'unmatched.txt')
+        self.assertEqual(ap.options['target'], '-19000000')
+        self.assertEqual(ap.options['message'], 'Test')
+        self.assertEqual(ap.options['file'], 'unmatched.txt')
 
     def argumentParserContextMgr_test(self):
 
@@ -113,6 +113,6 @@ class ArgumentParserTestCase(unittest.TestCase):
 
         ap.parse()
 
-        self.assertEquals(ap.options['create'], 'filename.txt')
-        self.assertEquals(ap.options['syntax'], 'plain')
-        self.assertEquals(ap.options['watch'], True)
+        self.assertEqual(ap.options['create'], 'filename.txt')
+        self.assertEqual(ap.options['syntax'], 'plain')
+        self.assertEqual(ap.options['watch'], True)

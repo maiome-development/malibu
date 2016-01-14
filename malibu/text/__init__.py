@@ -75,3 +75,26 @@ def unicode2str(obj):
         return obj.encode("utf-8")
     else:
         return obj
+
+
+def str2unicode(obj, encoding='utf-8'):
+    """ Recursively convert an object and members to unicode objects
+        instead of str objects, if possible.
+
+        This only exists because of the incoming world of unicode_literals.
+
+        :param object obj: object to recurse
+        :param str encoding: encoding to decode from
+        :return: object with converted values
+        :rtype: object
+    """
+
+    if isinstance(obj, dict):
+        return {str2unicode(k): str2unicode(v) for k, v in
+                obj.items()}
+    elif isinstance(obj, list):
+        return [str2unicode(i) for i in obj]
+    elif isinstance(obj, string_type()):
+        return obj.decode(encoding)
+    else:
+        return obj

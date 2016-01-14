@@ -1,12 +1,14 @@
+# vim: set ts=2 sts=2 sw=2:
+
+---
 build:
   image: python:$$PY_VERSION
   commands:
+    - ( apt-get update && apt-get install -y git ) || ( apk update && apk add git bash )
     - pip install --upgrade virtualenv
     - virtualenv .
     - . bin/activate
     - pip install -r requirements.txt
-    - pip install pre-commit
-    - pre-commit run --all-files
     - python ./setup.py test
     - python ./setup.py sdist --formats gztar -q
 
@@ -15,7 +17,7 @@ matrix:
     - 2.7-wheezy
     - 3.3-wheezy
     - 3.4-wheezy
-    - 3.5-wheezy
+    - 3.5-alpine
 
 notify:
   slack:

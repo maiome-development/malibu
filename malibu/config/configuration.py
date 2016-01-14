@@ -416,7 +416,7 @@ class Configuration(object):
                             dobj_list = []
                         dobj_repl = []
                         for item in dobj_list:
-                            if item.startswith('@'):
+                            if item.startswith(b'@'):
                                 link_name = item[1:]
                                 if not self.get_section(link_name):
                                     dobj_repl.append(
