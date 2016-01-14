@@ -59,7 +59,7 @@ def get_command_modules(package=None):
         # Just importing the code should take care of registration with the
         # decorator.
 
-    for module, kws in __command_modules.iteritems():
+    for module, kws in __command_modules.items():
         module.depend_modules = kws["depends"]
         for depmod in kws["depends"]:
             deps.add(depmod)
@@ -68,7 +68,7 @@ def get_command_modules(package=None):
             continue
         modules.update({kws["name"]: module})
 
-    for module, kws in __command_modules.iteritems():
+    for module, kws in __command_modules.items():
         for depmod in kws["depends"]:
             if depmod not in modules:
                 modules.pop(kws["name"])

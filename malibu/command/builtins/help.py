@@ -41,7 +41,7 @@ class BuiltinHelpModule(module.CommandModule):
             ascii.style_text(ascii.FG_GREEN, 'Arguments')))
 
         args = argparser.get_option_descriptions()
-        for option, description in args.iteritems():
+        for option, description in args.items():
             print("{:>36s}    {:<64s}".format(
                 ascii.style_text(ascii.STYLE_BOLD, option),
                 ascii.style_text(ascii.STYLE_OFF, description)))
@@ -51,7 +51,7 @@ class BuiltinHelpModule(module.CommandModule):
 
         modules = self.__loader.modules
         for mod in sorted(modules, key=lambda m: m.BASE):
-            for sub, helpstr in mod.get_help().iteritems():
+            for sub, helpstr in mod.get_help().items():
                 command = ':'.join([mod.get_base(), sub])
                 helplst = helpstr.splitlines()
                 if len(helplst) == 1:
@@ -99,7 +99,7 @@ class BuiltinHelpModule(module.CommandModule):
         modules = self.__loader.modules
         for mod in modules:
             if mod.get_base() == mod_name:
-                for sub, helpstr in mod.get_help().iteritems():
+                for sub, helpstr in mod.get_help().items():
                     command = ':'.join([mod.get_base(), sub])
                     helplst = helpstr.splitlines()
                     if len(helplst) == 1:

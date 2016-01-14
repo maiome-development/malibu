@@ -124,7 +124,7 @@ class BrineObject(object):
             raise TypeError("Expected JSON serialized dictionary, not %s" % (
                 type(obj)))
 
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             # We need to make sure the data is sanitized a little bit.
             if k.startswith("_") and k not in self._special_fields:
                 continue
@@ -169,7 +169,7 @@ class CachingBrineObject(BrineObject):
 
         ratios = {}
 
-        for k, v in kw.iteritems():
+        for k, v in kw.items():
             for obj in cls.__cache:
                 ob_value = getattr(obj, k, None)
                 if ignore_case:
@@ -196,7 +196,7 @@ class CachingBrineObject(BrineObject):
 
         result = []
 
-        for k, v in kw.iteritems():
+        for k, v in kw.items():
             for obj in cls.__cache:
                 ob_value = getattr(obj, k, None)
                 if ignore_case:

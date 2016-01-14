@@ -334,7 +334,7 @@ class CommandModule(object):
         self.__command_map.pop(subcommand)
 
         remove_aliases = []
-        for alias, sub in self.__command_alias_map.iteritems():
+        for alias, sub in self.__command_alias_map.items():
             if sub == subcommand:
                 remove_aliases.append(alias)
 

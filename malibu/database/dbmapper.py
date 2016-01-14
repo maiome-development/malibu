@@ -97,7 +97,7 @@ class DBMapper(object):
 
         keys = []
         vals = []
-        for key, val in kw.iteritems():
+        for key, val in kw.items():
             keys.append(key)
             vals.append(val)
         whc = []
@@ -134,7 +134,7 @@ class DBMapper(object):
 
         keys = []
         vals = []
-        for key, val in kw.iteritems():
+        for key, val in kw.items():
             keys.append(key)
             vals.append(val)
         anonvals = []
@@ -170,7 +170,7 @@ class DBMapper(object):
 
         keys = []
         vals = []
-        for key, val in kw.iteritems():
+        for key, val in kw.items():
             keys.append(key)
             vals.append(val)
         whc = []

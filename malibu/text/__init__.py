@@ -68,7 +68,7 @@ def unicode2str(obj):
 
     if isinstance(obj, dict):
         return {unicode2str(k): unicode2str(v) for k, v in
-                obj.iteritems()}
+                obj.items()}
     elif isinstance(obj, list):
         return [unicode2str(i) for i in obj]
     elif isinstance(obj, unicode_type()):

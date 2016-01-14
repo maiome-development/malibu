@@ -5,7 +5,10 @@ import json
 import io
 
 from contextlib import closing
-from urllib2 import urlopen
+try:
+    from urllib2 import urlopen
+except ImportError:
+    from urllib.request import urlopen
 
 from malibu.text import unicode_type, unicode2str
 
@@ -302,9 +305,9 @@ class Configuration(object):
             raise ValueError('No filename specified and no stored filename.')
 
         with closing(io.open(filename, 'w')) as config:
-            for section, smap in self.__container.iteritems():
+            for section, smap in self.__container.items():
                 config.write("[%s]\n" % (section))
-                for key, value in smap.iteritems():
+                for key, value in smap.items():
                     if isinstance(value, list):
                         value = "+list:" + json.dumps(value)
                     elif isinstance(value, ConfigurationSection):

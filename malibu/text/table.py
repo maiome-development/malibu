@@ -50,7 +50,7 @@ class TextTable(object):
 
         self._rows = len(el)
 
-        for key, value in el.iteritems():
+        for key, value in el.items():
             self._row_data.append((key, value,))
 
     def add_data_ztup(self, el):

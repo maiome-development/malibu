@@ -131,7 +131,7 @@ class ArgumentParser(object):
         """
 
         processed_descriptions = {}
-        for option, description in self._descriptions.iteritems():
+        for option, description in self._descriptions.items():
             if len(option) == 1:  # This is a flag. Prepend a dash.
                 option = '-' + option
                 processed_descriptions.update({option: description})

@@ -100,7 +100,7 @@ class BuiltinConfigModule(module.CommandModule):
                 section = self._config.get_section(section_name)
                 print("Section [{}]:".format(
                     ascii.style_text(ascii.FG_GREEN, section_name)))
-                for key, value in section.iteritems():
+                for key, value in section.items():
                     print("  {} -> {}".format(key, value))
                 print
         elif len(var_path) == 2:  # Section and key specifier were given.
@@ -212,7 +212,7 @@ class BuiltinConfigModule(module.CommandModule):
             section = self._config.get_section(section_name)
             print("Section [{}]:".format(
                 ascii.style_text(ascii.FG_GREEN, section_name)))
-            for key, value in section.iteritems():
+            for key, value in section.items():
                 print("  {} -> {}".format(
                     ascii.style_text(ascii.FG_LCYAN, key),
                     ascii.style_text(ascii.FG_LPURPLE, value)))
