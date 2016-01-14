@@ -6,16 +6,28 @@ maiome library of utilities
 This is a library of semi-useful and hopefully reusable utilities used within a few
 of the projects that are in development under the maiome namespace.
 
+command.\*
+----------
+a modular, autoloading command line utility development framework.
+
+includes two inheritable, pre-implemented modules:
+ - config.py - for implementing management of an INI-style config created by `malibu.config`
+ - help.py - simple module for displaying help data written in function docstrings
+
 config.configuration
 ----------------------
 a "simple" config reader with section promises and special types.
 
 database.dbmapper
 -----------------
+*DEPRECATED*
+
 a reflective/introspective ORM used for simple object relations in SQLite (and maybe others).
 
 database.dbtypeconv
 -------------------
+*DEPRECATED*
+
 a series of sqlite "middlewares" to do useful type conversions.
 
 design.borgish
@@ -27,6 +39,11 @@ design.brine
 a class mixin used for ORM-like serialization. usable for compressing complex objects down to
 simple JSON strings for storage in a database. also provides a caching object implementation that may some day have
 fuzzy search.
+
+text (functions in `__init__.py`)
+---------------------------------
+series of functions for text conversion and finding the correct string or unicode classes.
+mainly for compatibility between Python versions.
 
 text.ascii
 ----------
