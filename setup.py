@@ -25,6 +25,7 @@ setup(
     ],
     packages=['malibu',
               'malibu.command',
+              'malibu.command.builtins'
               'malibu.config',
               'malibu.database',
               'malibu.design',

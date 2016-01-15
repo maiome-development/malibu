@@ -7,7 +7,7 @@ from malibu import text
 from malibu import util
 
 
-__version__ = '0.1.6'
+__version__ = '0.1.6-0'
 __doc__ = """
 malibu is a collection of classes and utilities that make writing code
 a little bit easier and a little less tedious.
