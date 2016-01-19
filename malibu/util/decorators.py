@@ -132,7 +132,10 @@ def function_intercept_scope(*fs, **kwa):
 
         def decorator_inner(*args, **kw):
 
-            fg = func.func_globals
+            try:
+                fg = func.func_globals
+            except (AttributeError):  # func_globals -> __globals__ on py3x
+                fg = func.__globals__
             restore = {}
             _sentinel = object()
 
