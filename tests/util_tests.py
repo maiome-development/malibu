@@ -105,8 +105,6 @@ class UtilTestCase(unittest.TestCase):
 
     def decorInterceptor_test(self):
 
-        self.skipTest("Work in progress.")
-
         def _intercept_func_stuff(*args, **kw):
 
             if 'thing' in kw:
@@ -121,12 +119,14 @@ class UtilTestCase(unittest.TestCase):
         @func_interceptor
         def does_stuff(*args, **kw):
 
+            global thing
+
             try:
                 thing = thing if thing else None
             except:
                 self.fail("Injected value did not appear")
 
-            self.assertEqual(thing, "hello")
+            self.assertEqual(thing, True)
             return True
 
         retv = does_stuff(thing="hello")
