@@ -15,7 +15,7 @@ Table of Contents
 Contents:
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 10
 
    api/modules.rst
 
