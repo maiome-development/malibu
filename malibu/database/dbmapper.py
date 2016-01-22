@@ -14,17 +14,17 @@ class DBMapper(object):
 
         I've got to be honest, this is probably the worst code I have ever written and read.
         At this point, this code is so difficult to maintain and keep up to date for 2/3 compat that
-            it is almost not worth the work.
+        it is almost not worth the work.
         Especially considering that there are things like Peewee, SQLAlchemy, etc, this is not worth
-            using or maintaining.
+        using or maintaining.
 
         From this point forward, I recommend using some other, cleaner, better maintained solution
-            such as Peewee.
+        such as Peewee.
         This DBMapper code will no longer be maintained and will be deprecated starting
-            with the 0.1.6 release.
+        with the 0.1.6 release.
         The code will be removed as the 1.0.0 release approaches.
         There may be plans to replace this with a SQLite adapter for the malibu.design.brine series
-            of classes that behave similar to this, just without all the cruft.
+        of classes that behave similar to this, just without all the cruft.
     """
 
     # FETCH Constants for __execute()
