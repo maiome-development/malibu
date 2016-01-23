@@ -24,7 +24,7 @@ def fuzzy_ratio(a, b):
 
         :param str a: lhs string
         :param str b: rhs string
-        :rtype int:
+        :rtype: int
         :returns: Integer ration of a <=> b
     """
 
@@ -50,7 +50,7 @@ class BrineObject(object):
             :param class cls: Class method is running on
             :param str data: JSON string to create object from
             :param dict **kw: Object initializer options
-            :rtype cls:
+            :rtype: cls
             :returns: new BrineObject subclass instance
         """
 
@@ -69,7 +69,7 @@ class BrineObject(object):
             :param class cls: BrineObject subclass
             :param dict data: Dictionary to use for fields
             :param dict **kw: BrineObject initializer options
-            :rtype BrineObject:
+            :rtype: BrineObject
             :returns: BrineObject subclass instance
             :raises TypeError: If data is not dict type
         """
@@ -116,7 +116,7 @@ class BrineObject(object):
 
             :param str attr: Local instance attribute to set
             :param object value: Value of instance attribute
-            :rtype None:
+            :rtype: None
             :returns: None
             :raises AttributeError: Immutable or non-existent field
             :raises TypeError: Overwriting function type with object
@@ -152,7 +152,7 @@ class BrineObject(object):
         """ Returns the dictionary representation of the fields
             in this object.
 
-            :rtype dict:
+            :rtype: dict
             :returns: Current object in dictionary form
         """
 
@@ -176,7 +176,7 @@ class BrineObject(object):
         """ Converts the object into JSON form.
             Simple, right?
 
-            :rtype str:
+            :rtype: str
             :returns: Current object in JSON string form.
         """
 
@@ -189,7 +189,7 @@ class BrineObject(object):
             NOTE: This changes the current model *in-place*!
 
             :param str data: JSON string to import
-            :rtype None:
+            :rtype: None
             :returns: None
         """
 
@@ -224,7 +224,7 @@ class BrineObject(object):
             WARNING: This silently ignores "bad" fields.
 
             :param dict data: Dictionary to use for fields
-            :rtype None:
+            :rtype: None
             :returns: None
             :raises TypeError: If data is not dict type
         """
@@ -279,7 +279,7 @@ class CachingBrineObject(BrineObject):
             :param class cls: Class to fuzzy search on
             :param bool ignore_case: Whether searching should ignore case
             :param dict **kw: Fields to search
-            :rtype list:
+            :rtype: list
             :returns: List of matching CachingBrineObjects
         """
 
@@ -311,7 +311,7 @@ class CachingBrineObject(BrineObject):
 
             :param bool ignore_case: Should search ignore case?
             :param dict **kw: Fields to search
-            :rtype list:
+            :rtype: list
             :returns: List of matching CachingBrineObjects
         """
 
@@ -361,7 +361,7 @@ class CachingBrineObject(BrineObject):
 
             :param str attr: Local instance attribute to set
             :param object value: Value of instance attribute
-            :rtype None:
+            :rtype: None
             :returns: None
             :raises AttributeError: Immutable of non-existent field
             :raises TypeError: Overwriting function type with object
@@ -401,7 +401,7 @@ class CachingBrineObject(BrineObject):
     def uncache(self):
         """ Removes the object from the state cache forcibly.
 
-            :rtype None:
+            :rtype: None
             :returns: None
         """
 
@@ -412,7 +412,7 @@ class CachingBrineObject(BrineObject):
             the upstream is updated or only if you know what you're doing!
 
             :param list *fields: Fields to unmark
-            :rtype None:
+            :rtype: None
             :returns: None
         """
 
@@ -425,7 +425,7 @@ class CachingBrineObject(BrineObject):
     def dirty_dict(self):
         """ Dumps a dictionary of dirty fields.
 
-            :rtype dict:
+            :rtype: dict
             :returns: Dictionary of all *dirty* values
         """
 
@@ -443,7 +443,7 @@ class CachingBrineObject(BrineObject):
     def dirty_json(self):
         """ Dumps the dirty dictionary as JSON.
 
-            :rtype str:
+            :rtype: str
             :returns: JSON dictionary of dirty values
         """
 

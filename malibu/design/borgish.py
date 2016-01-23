@@ -9,6 +9,7 @@ Borg design pattern, which aims to provide state consistency similar to
 a singleton design, but without the terribleness of singletons.
 """
 
+
 class SharedState(object):
     """ This class is for meta-class use as a state machine for
         persistence so we don't use any singleton design.
@@ -41,7 +42,7 @@ class SharedState(object):
             previously stored.
 
             :param str state: Name of state to load.
-            :rtype None:
+            :rtype: None
             :returns: None
             :raises NameError: If the named state does not exist.
         """
@@ -56,7 +57,7 @@ class SharedState(object):
             dict.
 
             :param str state: Name of state to save.
-            :rtype None:
+            :rtype: None
             :returns: None
             :raises NameError: If the named state already exists.
         """
