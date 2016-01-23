@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 
+__doc__ = """
+malibu.design.borgish
+---------------------
+
+Borgish was designed as a more extended implementation of Alex Martelli's
+Borg design pattern, which aims to provide state consistency similar to
+a singleton design, but without the terribleness of singletons.
+"""
 
 class SharedState(object):
     """ This class is for meta-class use as a state machine for
@@ -31,6 +39,11 @@ class SharedState(object):
     def load_state(self, state):
         """ Loads state into the class, overwriting all data that was
             previously stored.
+
+            :param str state: Name of state to load.
+            :rtype None:
+            :returns: None
+            :raises NameError: If the named state does not exist.
         """
 
         if state in self.__states:
@@ -41,6 +54,11 @@ class SharedState(object):
     def save_state(self, state):
         """ Saves class state into a namespace on the class' shared state
             dict.
+
+            :param str state: Name of state to save.
+            :rtype None:
+            :returns: None
+            :raises NameError: If the named state already exists.
         """
 
         if state in self.__states:
