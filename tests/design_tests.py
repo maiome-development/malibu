@@ -35,7 +35,7 @@ class PersonProfile(brine.BrineObject):
     def __init__(self):
 
         self.email = None
-        self.person = brine.nested_object(Person)
+        self.person = Person()
         super(PersonProfile, self).__init__(self)
 
 
@@ -45,6 +45,7 @@ class UserProfile(brine.CachingBrineObject):
 
         self.user_id = None
         self.user_mail = None
+        self.profile = PersonProfile()
         super(UserProfile, self).__init__(self, timestamp = False, uuid = False)
 
 
@@ -122,7 +123,17 @@ class BrineTestCase(unittest.TestCase):
         a.name = "John Smith"
         b = PersonProfile()
         b.email = "jsmith@example.org"
-        b.person = a
+
+        def __reassign(*args, **kw):
+            b.person = a
+
+        self.assertRaises(
+            AttributeError,
+            __reassign,
+            "object clobber")
+
+        b.person.name = a.name
+        a = b.person
 
         self.assertEqual(b.as_dict()["person"]["name"], a.name)
 
@@ -138,6 +149,39 @@ class BrineTestCase(unittest.TestCase):
 
         b = Person.by_json(js)
         self.assertEqual(a.name, b.name)
+
+    def brineInstanceFromDict_test(self):
+
+        profile_data = {
+            "email": "jdoe@example.org",
+            "person": {
+                "name": "John Doe",
+            },
+        }
+
+        a = PersonProfile.by_dict(profile_data)
+
+        self.assertEqual(a.email, "jdoe@example.org")
+        self.assertEqual(a.person.name, "John Doe")
+
+    def cachingBrineInstanceFromDict_test(self):
+
+        user_data = {
+            "user_mail": "jdoe@example.org",
+            "user_id": "jdoe214",
+            "profile": {
+                "email": "jdoe@example.org",
+                "person": {
+                    "name": "John Doe",
+                },
+            },
+        }
+
+        a = UserProfile.by_dict(user_data)
+
+        self.assertEqual(a.user_mail, "jdoe@example.org")
+        self.assertEqual(a.profile.email, "jdoe@example.org")
+        self.assertEqual(a.profile.person.name, "John Doe")
 
     def brineCacheSearch_test(self):
 
