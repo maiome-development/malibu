@@ -183,7 +183,7 @@ class BrineTestCase(unittest.TestCase):
         self.assertEqual(a.profile.email, "jdoe@example.org")
         self.assertEqual(a.profile.person.name, "John Doe")
 
-    def brineCacheSearch_test(self):
+    def cachingBrineSearch_test(self):
 
         person = Person()
         person.name = "John Doe"
@@ -199,7 +199,21 @@ class BrineTestCase(unittest.TestCase):
 
         a[0].uncache()
 
-    def brineFuzzySearch_test(self):
+    def cachingBrineSearchUnready_test(self):
+
+        class UnreadyTest(brine.CachingBrineObject):
+            def __init__(self):
+                self.val = None
+                super(UnreadyTest, self).__init__(uuid=True)
+
+        self.assertListEqual(UnreadyTest.search(val=""), [])
+
+        u = UnreadyTest()
+        u.val = "something"
+
+        self.assertIn(u, UnreadyTest.search(val="something"))
+
+    def cachingBrineFuzzySearch_test(self):
 
         self.skipTest("Fuzzy search is extremely broken. Needs more validation.")
 
@@ -217,7 +231,7 @@ class BrineTestCase(unittest.TestCase):
 
         a[0].uncache()
 
-    def brineFuzzyRanking_test(self):
+    def cachingBrineFuzzyRanking_test(self):
 
         Person().name = "John Doe"
         Person().name = "Jim Doe"

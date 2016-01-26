@@ -258,7 +258,7 @@ class CachingBrineObject(BrineObject):
     _FUZZ_RATIO = 0.535
 
     @classmethod
-    def __initialize_cache(cls):
+    def _initialize_cache(cls):
         """ Initialize a class-level cache to store Json models for cache and
             searching purposes.
         """
@@ -285,8 +285,7 @@ class CachingBrineObject(BrineObject):
 
         ratios = {}
 
-        if getattr(cls, "__cache") is None:
-            return []
+        cls._initialize_cache()
 
         for k, v in kw.items():
             for obj in cls.__cache:
@@ -320,8 +319,7 @@ class CachingBrineObject(BrineObject):
 
         result = []
 
-        if getattr(cls, "__cache") is None:
-            return []
+        cls._initialize_cache()
 
         for k, v in kw.items():
             for obj in cls.__cache:
@@ -348,7 +346,7 @@ class CachingBrineObject(BrineObject):
         self._initialized = False
 
         # Make sure the cache is initialized.
-        self.__initialize_cache()
+        self._initialize_cache()
 
         # The "dirty" cache list is just a list of fields that have been
         # updated.
