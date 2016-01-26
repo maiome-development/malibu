@@ -285,6 +285,9 @@ class CachingBrineObject(BrineObject):
 
         ratios = {}
 
+        if getattr(cls, "__cache") is None:
+            return []
+
         for k, v in kw.items():
             for obj in cls.__cache:
                 ob_value = getattr(obj, k, None)
@@ -316,6 +319,9 @@ class CachingBrineObject(BrineObject):
         """
 
         result = []
+
+        if getattr(cls, "__cache") is None:
+            return []
 
         for k, v in kw.items():
             for obj in cls.__cache:
