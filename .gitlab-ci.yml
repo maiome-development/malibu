@@ -7,6 +7,9 @@ stages:
 - package
 - deploy
 
+before_script:
+  - which bash || ( apt-get update && apt-get install -y bash ) || ( apk update && apk add bash )
+
 build-2.7:
   image: python:2.7-wheezy
   stage: build
