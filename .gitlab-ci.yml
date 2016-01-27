@@ -2,58 +2,61 @@
 
 ---
 stages:
-- build
-- test
-- package
-- deploy
+  - build-test
+  - package
+  - deploy
+
+cache:
+  untracked: true
+  paths:
+    - .
 
 build-2.7:
   image: python:2.7-wheezy
-  stage: build
+  stage: build-test
   script:
     - apt-get update && apt-get install -y git
     - pip install --upgrade virtualenv
     - virtualenv .
     - . bin/activate
     - pip install -r requirements.txt
+    - python ./setup.py test
 
 build-3.3:
   image: python:3.3-wheezy
-  stage: build
+  stage: build-test
   script:
     - apt-get update && apt-get install -y git
     - pip install --upgrade virtualenv
     - virtualenv .
     - . bin/activate
     - pip install -r requirements.txt
+    - python ./setup.py test
 
 build-3.4:
   image: python:3.4-wheezy
-  stage: build
+  stage: build-test
   script:
     - apt-get update && apt-get install -y git
     - pip install --upgrade virtualenv
     - virtualenv .
     - . bin/activate
     - pip install -r requirements.txt
+    - python ./setup.py test
 
 build-3.5:
   image: pirogoeth/py3.5-ci:latest
-  stage: build
+  stage: build-test
   script:
     - apk update && apk add git bash
     - pip install --upgrade virtualenv
     - virtualenv .
     - . bin/activate
     - pip install -r requirements.txt
-
-global-test:
-  stage: test
-  script:
-    - . bin/activate
     - python ./setup.py test
 
 global-package:
+  image: pirogoeth/py3.5-ci:latest
   stage: package
   script:
     - python ./setup.py sdist --formats gztar -q
@@ -64,6 +67,7 @@ global-package:
       - dist/
 
 global-deploy:
+  image: pirogoeth/py3.5-ci:latest
   stage: deploy
   script:
     - which ssh-agent || ( apt-get install -y openssh-client ) || ( apk add openssh-client )
