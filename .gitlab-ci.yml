@@ -1,0 +1,77 @@
+# vim: set ts=2 sts=2 sw=2:
+
+---
+stages:
+- build
+- test
+- package
+- deploy
+
+build-2.7:
+  image: python:2.7-wheezy
+  stage: build
+  script:
+    - apt-get update && apt-get install -y git
+    - pip install --upgrade virtualenv
+    - virtualenv .
+    - . bin/activate
+    - pip install -r requirements.txt
+
+build-3.3:
+  image: python:3.3-wheezy
+  stage: build
+  script:
+    - apt-get update && apt-get install -y git
+    - pip install --upgrade virtualenv
+    - virtualenv .
+    - . bin/activate
+    - pip install -r requirements.txt
+
+build-3.4:
+  image: python:3.4-wheezy
+  stage: build
+  script:
+    - apt-get update && apt-get install -y git
+    - pip install --upgrade virtualenv
+    - virtualenv .
+    - . bin/activate
+    - pip install -r requirements.txt
+
+build-3.5:
+  image: python:3.5-alpine
+  stage: build
+  script:
+    - apk update && apk add git bash
+    - pip install --upgrade virtualenv
+    - virtualenv .
+    - . bin/activate
+    - pip install -r requirements.txt
+
+global-test:
+  stage: test
+  script:
+    - . bin/activate
+    - python ./setup.py test
+
+global-package:
+  stage: package
+  script:
+    - python ./setup.py sdist --formats gztar -q
+  only:
+    - master
+  artifacts:
+    paths:
+      - dist/
+
+global-deploy:
+  stage: deploy
+  script:
+    - which ssh-agent || ( apt-get install -y openssh-client ) || ( apk add openssh-client )
+    - eval $(ssh-agent -s)
+    - ssh-add < (echo "$SSH_PRIVATE_KEY")
+    - mkdir -p ~/.ssh
+    - '[[ -f /.dockerinit ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config`'
+    - git remote add origin git@github.com:maiome-development/malibu.git
+    - git push --set-upstream origin master
+  only:
+    - master
