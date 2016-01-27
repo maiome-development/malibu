@@ -3,5 +3,5 @@
 -e .
 
 # Test requirements
-nosetests>=0.1.2
+nose>=0.1.2
 coverage>=4.0.3
