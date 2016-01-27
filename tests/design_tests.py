@@ -35,7 +35,7 @@ class PersonProfile(brine.BrineObject):
     def __init__(self):
 
         self.email = None
-        self.person = brine.nested_object(Person)
+        self.person = Person()
         super(PersonProfile, self).__init__(self)
 
 
@@ -45,6 +45,7 @@ class UserProfile(brine.CachingBrineObject):
 
         self.user_id = None
         self.user_mail = None
+        self.profile = PersonProfile()
         super(UserProfile, self).__init__(self, timestamp = False, uuid = False)
 
 
@@ -122,7 +123,17 @@ class BrineTestCase(unittest.TestCase):
         a.name = "John Smith"
         b = PersonProfile()
         b.email = "jsmith@example.org"
-        b.person = a
+
+        def __reassign(*args, **kw):
+            b.person = a
+
+        self.assertRaises(
+            AttributeError,
+            __reassign,
+            "object clobber")
+
+        b.person.name = a.name
+        a = b.person
 
         self.assertEqual(b.as_dict()["person"]["name"], a.name)
 
@@ -139,7 +150,40 @@ class BrineTestCase(unittest.TestCase):
         b = Person.by_json(js)
         self.assertEqual(a.name, b.name)
 
-    def brineCacheSearch_test(self):
+    def brineInstanceFromDict_test(self):
+
+        profile_data = {
+            "email": "jdoe@example.org",
+            "person": {
+                "name": "John Doe",
+            },
+        }
+
+        a = PersonProfile.by_dict(profile_data)
+
+        self.assertEqual(a.email, "jdoe@example.org")
+        self.assertEqual(a.person.name, "John Doe")
+
+    def cachingBrineInstanceFromDict_test(self):
+
+        user_data = {
+            "user_mail": "jdoe@example.org",
+            "user_id": "jdoe214",
+            "profile": {
+                "email": "jdoe@example.org",
+                "person": {
+                    "name": "John Doe",
+                },
+            },
+        }
+
+        a = UserProfile.by_dict(user_data)
+
+        self.assertEqual(a.user_mail, "jdoe@example.org")
+        self.assertEqual(a.profile.email, "jdoe@example.org")
+        self.assertEqual(a.profile.person.name, "John Doe")
+
+    def cachingBrineSearch_test(self):
 
         person = Person()
         person.name = "John Doe"
@@ -155,7 +199,21 @@ class BrineTestCase(unittest.TestCase):
 
         a[0].uncache()
 
-    def brineFuzzySearch_test(self):
+    def cachingBrineSearchUnready_test(self):
+
+        class UnreadyTest(brine.CachingBrineObject):
+            def __init__(self):
+                self.val = None
+                super(UnreadyTest, self).__init__(uuid=True)
+
+        self.assertListEqual(UnreadyTest.search(val=""), [])
+
+        u = UnreadyTest()
+        u.val = "something"
+
+        self.assertIn(u, UnreadyTest.search(val="something"))
+
+    def cachingBrineFuzzySearch_test(self):
 
         self.skipTest("Fuzzy search is extremely broken. Needs more validation.")
 
@@ -173,7 +231,7 @@ class BrineTestCase(unittest.TestCase):
 
         a[0].uncache()
 
-    def brineFuzzyRanking_test(self):
+    def cachingBrineFuzzyRanking_test(self):
 
         Person().name = "John Doe"
         Person().name = "Jim Doe"
