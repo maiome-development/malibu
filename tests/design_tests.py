@@ -43,6 +43,8 @@ class UserProfile(brine.CachingBrineObject):
 
     def __init__(self):
 
+        self.uuid = None
+        self.timestamp = None
         self.user_id = None
         self.user_mail = None
         self.profile = PersonProfile()
@@ -163,6 +165,22 @@ class BrineTestCase(unittest.TestCase):
 
         self.assertEqual(a.email, "jdoe@example.org")
         self.assertEqual(a.person.name, "John Doe")
+
+    def brineInstanceUseSpecialField_test(self):
+
+        a = UserProfile()
+        a.uuid = "custom-uuid-here"
+        a.timestamp = "now"
+
+        self.assertEqual(a.uuid, "custom-uuid-here")
+        self.assertEqual(a.timestamp, "now")
+
+        b = Person()
+        try:
+            b.uuid = "custom-uuid-here"
+            b.timestamp = "now"
+        except AttributeError as e:
+            self.assertIsInstance(e, AttributeError)
 
     def cachingBrineInstanceFromDict_test(self):
 

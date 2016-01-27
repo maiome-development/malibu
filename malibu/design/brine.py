@@ -104,9 +104,13 @@ class BrineObject(object):
 
         if kw.get("timestamp", False):
             self.timestamp = int(time.time())
+        else:
+            self._special_fields.remove("timestamp")
 
         if kw.get("uuid", False):
             self.uuid = str(uuid.uuid4())
+        else:
+            self._special_fields.remove("uuid")
 
         self._initialized = True
 
