@@ -166,6 +166,41 @@ class BrineTestCase(unittest.TestCase):
         self.assertEqual(a.email, "jdoe@example.org")
         self.assertEqual(a.person.name, "John Doe")
 
+    def brineInstanceUntrackedVars_test(self):
+
+        sentinel = object()
+
+        profile_data = {
+            "_ref": sentinel,
+            "email": "jdoe@example.org",
+            "person": {
+                "name": "John Doe",
+            },
+        }
+
+        a = PersonProfile.by_dict(profile_data)
+
+        self.assertEqual(a._ref, sentinel)
+        self.assertNotIn("sentinel", a.as_dict())
+
+    def cachingBrineInstanceUntrackedVars_test(self):
+
+        sentinel = object()
+
+        profile_data = {
+            "_ref": sentinel,
+            "user_id": "jdoe",
+            "user_mail": "jdoe@example.org",
+            "person": {
+                "name": "John Doe",
+            },
+        }
+
+        a = UserProfile.by_dict(profile_data)
+
+        self.assertEqual(a._ref, sentinel)
+        self.assertNotIn("sentinel", a.as_dict())
+
     def brineInstanceUseSpecialField_test(self):
 
         a = UserProfile()

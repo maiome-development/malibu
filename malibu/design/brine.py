@@ -137,12 +137,17 @@ class BrineObject(object):
             return
 
         if attr in self._special_fields:
-            raise AttributeError("Special field {} is immutable.".format(attr))
+            raise AttributeError("Field {} is immutable.".format(attr))
         elif attr not in self._fields:
-            raise AttributeError("Open field {} does not exist.".format(attr))
+            if attr.startswith("_"):  # Untracked instance variable
+                if attr in ["_fields", "_special_fields"]:
+                    # These fields can NOT be overwritten
+                    raise AttributeError("Field {} is immutable.".format(attr))
+            else:
+                raise AttributeError("Field {} does not exist.".format(attr))
 
         # Verify that the set *will not* overwrite a method or Brine object.
-        _attr_cur = getattr(self, attr)
+        _attr_cur = getattr(self, attr, None)
         if type(_attr_cur) in METHOD_TYPES:
             raise TypeError("Function {} can not be overwritten.".format(attr))
         elif isinstance(_attr_cur, BrineObject):
@@ -225,6 +230,10 @@ class BrineObject(object):
                   in the dictionary that are defined on the original
                   object, they will also be modified *in-place*!
 
+                  Keys prefixed by an underscore will be
+                  inserted into the object, but will not be tracked
+                  in _fields or _special_fields.
+
             WARNING: This silently ignores "bad" fields.
 
             :param dict data: Dictionary to use for fields
@@ -237,6 +246,14 @@ class BrineObject(object):
             raise TypeError("Data parameter must be a dict.")
 
         for k, v in data.items():
+            if k.startswith("_"):  # Untracked instance variable
+                if k in ["_fields", "_special_fields"]:
+                    # These vars can NOT be overwritten
+                    continue
+                else:
+                    setattr(self, k, v)
+                    continue
+
             if k not in self._fields + self._special_fields:
                 continue
 
@@ -393,10 +410,14 @@ class CachingBrineObject(BrineObject):
         elif attr in self._special_fields:
             raise AttributeError("Special field {} is immutable.".format(attr))
         elif attr not in self.__dict__:
-            raise AttributeError("Field {} does not exist.".format(attr))
+            if attr.startswith("_"):  # Untracked instance variable
+                if attr in ["_fields", "_special_fields"]:
+                    raise AttributeError("Field {} is immutable.".format(attr))
+            else:
+                raise AttributeError("Field {} does not exist.".format(attr))
 
         # Verify that the set *will not* overwrite a method.
-        _attr_cur = getattr(self, attr)
+        _attr_cur = getattr(self, attr, None)
         if type(_attr_cur) in METHOD_TYPES:
             raise TypeError("Function {} can not be overwritten.".format(attr))
         elif isinstance(_attr_cur, BrineObject):
