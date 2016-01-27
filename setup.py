@@ -38,7 +38,7 @@ setup(
     test_suite='nose.collector',
     tests_require=[
         'nose',
-        'coverage'
+        'coverage',
     ],
     zip_safe=True
 )
