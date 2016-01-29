@@ -89,6 +89,7 @@ class BrineObject(object):
 
         # Disable custom __setattr__ for the meantime.
         self._initialized = False
+        self._read_only = False
 
         # For now, lets make this simple and treat fields with no special
         # syntax (underlines, mainly) as our schema.
@@ -145,6 +146,8 @@ class BrineObject(object):
                     raise AttributeError("Field {} is immutable.".format(attr))
             else:
                 raise AttributeError("Field {} does not exist.".format(attr))
+        elif attr in self._fields and self._read_only:
+            raise AttributeError("Tracked fields are read-only.")
 
         # Verify that the set *will not* overwrite a method or Brine object.
         _attr_cur = getattr(self, attr, None)
@@ -405,6 +408,9 @@ class CachingBrineObject(BrineObject):
         # Check various conditions used to determine if a variable has been
         # dirtied or can be set.
         if attr in self._fields:
+            if self._read_only:
+                raise AttributeError("Tracked fields are read-only.")
+
             if attr not in self.__dirty:
                 self.__dirty.append(attr)
         elif attr in self._special_fields:
