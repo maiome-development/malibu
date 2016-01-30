@@ -41,7 +41,7 @@ class BrineObject(object):
     """
 
     @classmethod
-    def by_json(cls, data, **kw):
+    def by_json(cls, data, read_only=False, **kw):
         """ Creates a new instance and calls from_json on the instance.
 
             Will take kwargs and pass to the underlying instance
@@ -49,6 +49,7 @@ class BrineObject(object):
 
             :param class cls: Class method is running on
             :param str data: JSON string to create object from
+            :param bool read_only: Set object read-only
             :param dict **kw: Object initializer options
             :rtype: cls
             :returns: new BrineObject subclass instance
@@ -56,11 +57,13 @@ class BrineObject(object):
 
         inst = cls(**kw)
         inst.from_json(data)
+        if read_only:
+            inst.read_only()
 
         return inst
 
     @classmethod
-    def by_dict(cls, data, **kw):
+    def by_dict(cls, data, read_only=False, **kw):
         """ Creates a new instance with fields from the data parameter
             as long as they match what is in _fields.
 
@@ -68,6 +71,7 @@ class BrineObject(object):
 
             :param class cls: BrineObject subclass
             :param dict data: Dictionary to use for fields
+            :param bool read_only: Set object read-only
             :param dict **kw: BrineObject initializer options
             :rtype: BrineObject
             :returns: BrineObject subclass instance
@@ -79,6 +83,8 @@ class BrineObject(object):
 
         o = cls(**kw)
         o.from_dict(data)
+        if read_only:
+            o.read_only()
 
         return o
 
@@ -269,6 +275,17 @@ class BrineObject(object):
                 continue
 
             setattr(self, k, v)
+
+    def read_only(self):
+        """ Set object as read-only. After an object is set
+            read-only, it can not be unset as read-only.
+
+            :rtype: None
+            :returns: None
+
+        """
+
+        self._read_only = True
 
 
 class CachingBrineObject(BrineObject):

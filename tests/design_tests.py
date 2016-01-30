@@ -183,6 +183,49 @@ class BrineTestCase(unittest.TestCase):
         self.assertEqual(a._ref, sentinel)
         self.assertNotIn("sentinel", a.as_dict())
 
+    def brineInstanceReadOnly_test(self):
+
+        sentinel = object()
+
+        profile_data = {
+            "_ref": sentinel,
+            "email": "jdoe@example.org",
+            "person": {
+                "name": "John Doe",
+            },
+        }
+
+        a = PersonProfile.by_dict(
+            profile_data,
+            read_only=True)
+
+        def __set_thing():
+            a.email = "jhdoe@example.org"
+
+        self.assertRaises(AttributeError, __set_thing)
+
+    def cachingBrineInstanceReadOnly_test(self):
+
+        sentinel = object()
+
+        profile_data = {
+            "_ref": sentinel,
+            "user_id": "jdoe",
+            "user_mail": "jdoe@example.org",
+            "person": {
+                "name": "John Doe",
+            },
+        }
+
+        a = UserProfile.by_dict(
+            profile_data,
+            read_only=True)
+
+        def __set_thing():
+            a.user_email = "jhdoe@example.org"
+
+        self.assertRaises(AttributeError, __set_thing)
+
     def cachingBrineInstanceUntrackedVars_test(self):
 
         sentinel = object()
