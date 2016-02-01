@@ -183,6 +183,12 @@ class BrineTestCase(unittest.TestCase):
         self.assertEqual(a._ref, sentinel)
         self.assertNotIn("sentinel", a.as_dict())
 
+        # Try to set an "untracked" main field.
+        def __set_thing():
+            a.thing = sentinel
+
+        self.assertRaises(AttributeError, __set_thing)
+
     def brineInstanceReadOnly_test(self):
 
         sentinel = object()
@@ -203,6 +209,15 @@ class BrineTestCase(unittest.TestCase):
             a.email = "jhdoe@example.org"
 
         self.assertRaises(AttributeError, __set_thing)
+
+        def __overwrite_fields():
+            a._fields = []
+
+        def __overwrite_specials():
+            a._special_fields = []
+
+        self.assertRaises(AttributeError, __overwrite_fields)
+        self.assertRaises(AttributeError, __overwrite_specials)
 
     def cachingBrineInstanceReadOnly_test(self):
 
@@ -226,6 +241,15 @@ class BrineTestCase(unittest.TestCase):
 
         self.assertRaises(AttributeError, __set_thing)
 
+        def __overwrite_fields():
+            a._fields = []
+
+        def __overwrite_specials():
+            a._special_fields = []
+
+        self.assertRaises(AttributeError, __overwrite_fields)
+        self.assertRaises(AttributeError, __overwrite_specials)
+
     def cachingBrineInstanceUntrackedVars_test(self):
 
         sentinel = object()
@@ -243,6 +267,12 @@ class BrineTestCase(unittest.TestCase):
 
         self.assertEqual(a._ref, sentinel)
         self.assertNotIn("sentinel", a.as_dict())
+
+        # Try to set an "untracked" main field.
+        def __set_thing():
+            a.thing = sentinel
+
+        self.assertRaises(AttributeError, __set_thing)
 
     def brineInstanceUseSpecialField_test(self):
 

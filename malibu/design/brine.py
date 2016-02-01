@@ -432,11 +432,10 @@ class CachingBrineObject(BrineObject):
                 self.__dirty.append(attr)
         elif attr in self._special_fields:
             raise AttributeError("Special field {} is immutable.".format(attr))
+        elif attr in ["_fields", "_special_fields"]:
+            raise AttributeError("Field {} is immutable.".format(attr))
         elif attr not in self.__dict__:
-            if attr.startswith("_"):  # Untracked instance variable
-                if attr in ["_fields", "_special_fields"]:
-                    raise AttributeError("Field {} is immutable.".format(attr))
-            else:
+            if not attr.startswith("_"):  # Untracked instance variable
                 raise AttributeError("Field {} does not exist.".format(attr))
 
         # Verify that the set *will not* overwrite a method.
