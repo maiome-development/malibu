@@ -120,6 +120,10 @@ def parse_uri(uri):
         :param str uri: URI to parse
         :rtype: dict
         :returns: Dictionary with parsed URL components
+
+        .. note::
+            This function may move, as the currently location may not
+            be optimal. Location will be finalized by 1.0.0 stable release.
     """
 
     proto = uri.split('://')[0]
