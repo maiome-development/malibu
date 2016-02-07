@@ -66,10 +66,11 @@ global-deploy:
   stage: deploy
   script:
     - which ssh-agent || ( apt-get install -y openssh-client ) || ( apk add openssh-client )
+    - which git || ( apk add git )
     - eval $(ssh-agent -s)
-    - ssh-add < (echo "$SSH_PRIVATE_KEY")
+    - echo "$SSH_PRIVATE_KEY" | ssh-add -
     - mkdir -p ~/.ssh
-    - '[[ -f /.dockerinit ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config`'
+    - '[[ -f /.dockerinit ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
     - git remote add origin git@github.com:maiome-development/malibu.git
     - git push --set-upstream origin master
   only:
