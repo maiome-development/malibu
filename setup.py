@@ -25,6 +25,7 @@ setup(
     ],
     packages=['malibu',
               'malibu.command',
+              'malibu.command.builtins',
               'malibu.config',
               'malibu.database',
               'malibu.design',
@@ -37,7 +38,7 @@ setup(
     test_suite='nose.collector',
     tests_require=[
         'nose',
-        'coverage'
+        'coverage',
     ],
     zip_safe=True
 )

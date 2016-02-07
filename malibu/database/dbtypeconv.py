@@ -2,6 +2,16 @@
 import json
 import sqlite3
 
+__doc__ = """
+malibu.database.dbtypeconv
+--------------------------
+
+This module contains small functions for installing and performing JSON
+conversion on data coming out from a SQLite database.
+
+Pretty much useless-ish without DBMapper.
+"""
+
 
 def install_json_converter():
     """ Installs a json object converter into the sqlite3 module for

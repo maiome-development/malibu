@@ -1,6 +1,9 @@
 malibu API
 ==========
 
+.. toctree::
+   :maxdepth: 4
+
 malibu.command
 --------------
 
