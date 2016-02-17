@@ -9,7 +9,9 @@ build:
     - virtualenv .
     - . bin/activate
     - pip install -r requirements.txt
+    - pip install coveralls
     - nosetests --with-coverage
+    - COVERALLS_REPO_TOKEN="$$COVERALLS_TOKEN" coveralls
     - python ./setup.py sdist --formats gztar -q
 
 matrix:
