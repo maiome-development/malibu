@@ -54,7 +54,7 @@ def function_kw_reg(target, req_args):
 
         NOTE: target should be a dict-typed class
 
-        example:
+        :Example:
 
             trait = function_kw_reg(target, ['val1', 'val2', 'val3'])
 
@@ -93,7 +93,7 @@ def function_intercept_scope(*fs, **kwa):
         If intercept_args is True, *args and **kw going to the function
         be sent to the intercepting functions first.
 
-        example:
+        :Example:
 
             def intercept_argparser_inst(*args, **kw):
 
@@ -119,6 +119,8 @@ def function_intercept_scope(*fs, **kwa):
                     global argparser
                     # 'argparser' will be injected here as a global
                     # do stuff ...
+
+        .. warning:: This decorator is currently EXPERIMENTAL!
     """
 
     intercept_args = kwa.get('intercept_args', False)
