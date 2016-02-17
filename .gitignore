@@ -9,4 +9,3 @@ malibu.egg-info
 docs/_build
 docs/_template
 docs/_static
-.coveralls.yml

@@ -15,9 +15,7 @@ build-2.7:
     - virtualenv .
     - . bin/activate
     - pip install -r requirements.txt
-    - pip install coveralls
     - nosetests --with-coverage
-    - COVERALLS_REPO_TOKEN="$COVERALLS_TOKEN" coveralls
 
 build-3.3:
   image: python:3.3-wheezy
@@ -28,9 +26,7 @@ build-3.3:
     - virtualenv .
     - . bin/activate
     - pip install -r requirements.txt
-    - pip install coveralls
     - nosetests --with-coverage
-    - COVERALLS_REPO_TOKEN="$COVERALLS_TOKEN" coveralls
 
 build-3.4:
   image: python:3.4-wheezy
@@ -41,9 +37,7 @@ build-3.4:
     - virtualenv .
     - . bin/activate
     - pip install -r requirements.txt
-    - pip install coveralls
     - nosetests --with-coverage
-    - COVERALLS_REPO_TOKEN="$COVERALLS_TOKEN" coveralls
 
 build-3.5:
   image: pirogoeth/py3.5-ci:latest
@@ -54,9 +48,7 @@ build-3.5:
     - virtualenv .
     - . bin/activate
     - pip install -r requirements.txt
-    - pip install coveralls
     - nosetests --with-coverage
-    - COVERALLS_REPO_TOKEN="$COVERALLS_TOKEN" coveralls
 
 global-package:
   image: pirogoeth/py3.5-ci:latest
