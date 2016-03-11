@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import abc
+import pkg_resources
 from datetime import datetime, timedelta
 
 from malibu.config import configuration
@@ -8,6 +9,7 @@ from malibu.util.decorators import function_registrator
 
 __JOB_STORES__ = []
 job_store = function_registrator(__JOB_STORES__)
+__LOADED_EXTERNAL_JS = False
 
 
 class Scheduler(borgish.SharedState):
@@ -235,6 +237,15 @@ class SchedulerJobStore(object):
             raise TypeError("Job argument is not an instance of SchedulerJob")
 
         return
+
+
+if not __LOADED_EXTERNAL_JS:
+    __LOADED_EXTERNAL_JS = True
+    # Load job stores marked with the malibu.scheduler.job_stores entry point
+    for st in pkg_resources.iter_entry_points('malibu.scheduler.job_stores'):
+        # Since the job stores are registered automatically with the @job_store
+        # decorator, we simply have to do a load and we're done.
+        st.load()
 
 
 @job_store
