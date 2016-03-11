@@ -6,8 +6,22 @@ from malibu import design
 from malibu import text
 from malibu import util
 
+import subprocess
+
+__git_label__ = ''
+try:
+    __git_label__ = subprocess.check_output(
+        [
+            'git',
+            'rev-parse',
+            '--short',
+            'HEAD'
+        ])
+except subprocess.CalledProcessError:
+    __git_label__ = 'RELEASE'
 
 __version__ = '0.1.7'
+__release__ = '{}-{}'.format(__version__, __git_label__).strip()
 __doc__ = """
 malibu is a collection of classes and utilities that make writing code
 a little bit easier and a little less tedious.

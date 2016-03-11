@@ -4,6 +4,11 @@ try:
 except ImportError:
     from distutils.core import setup
 
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath('src'))
+
 import malibu
 
 setup(
@@ -11,7 +16,7 @@ setup(
     version=malibu.__version__,
     description="maiome library of utilities",
 
-    url="https://phabricator.ramcloud.io/tag/malibu",
+    url="https://glow.dev.ramcloud.io/maiome/malibu",
     author="Sean Johnson",
     author_email="sean.johnson@maio.me",
 
@@ -23,18 +28,17 @@ setup(
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules"
     ],
-    packages=['malibu',
-              'malibu.command',
-              'malibu.command.builtins',
-              'malibu.config',
-              'malibu.database',
-              'malibu.design',
-              'malibu.text',
-              'malibu.util'],
-    package_dir={'malibu': 'malibu'},
+    packages=find_packages('src'),
+    package_dir={
+        '': 'src'
+    },
     install_requires=[
         'dill'
     ],
+    include_package_data=True,
+    exclude_package_data={
+        '': ['README.md'],
+    },
     test_suite='nose.collector',
     tests_require=[
         'nose',

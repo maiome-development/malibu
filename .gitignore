@@ -5,7 +5,14 @@ include
 lib
 dist
 malibu.egg-info
+.coveralls.yml
 .drone.sec.yml
 docs/_build
 docs/_template
 docs/_static
+pkg/
+_doctest
+.eggs
+man
+tmp
+pip-selfcheck.json
