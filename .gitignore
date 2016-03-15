@@ -1,18 +1,27 @@
-.coverage
+## python generated files
+.eggs
 *.pyc
+*.egg-info
+
+## virtualenv directories, pip files
 bin
 include
 lib
 dist
-malibu.egg-info
-.coveralls.yml
-.drone.sec.yml
-docs/_build
-docs/_template
-docs/_static
-pkg/
-_doctest
-.eggs
 man
 tmp
 pip-selfcheck.json
+
+## coverage and testing files
+.coverage
+.coveralls.yml
+.drone.sec.yml
+
+## documentation build files
+docs/_build
+docs/_template
+docs/_static
+_doctest
+
+## extension packages
+pkg/

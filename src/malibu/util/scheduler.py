@@ -9,7 +9,16 @@ from malibu.util.decorators import function_registrator
 
 __JOB_STORES__ = []
 job_store = function_registrator(__JOB_STORES__)
-__LOADED_EXTERNAL_JS = False
+__LOADED_EXTERNAL_JS__ = False
+
+
+def _load_external_jobstores():
+
+    # Load job stores marked with the malibu.scheduler.job_stores entry point
+    for st in pkg_resources.iter_entry_points('malibu.scheduler.job_stores'):
+        # Since the job stores are registered automatically with the @job_store
+        # decorator, we simply have to do a load and we're done.
+        st.load()
 
 
 class Scheduler(borgish.SharedState):
@@ -18,10 +27,15 @@ class Scheduler(borgish.SharedState):
 
         super(Scheduler, self).__init__(*args, **kw)
 
+        global __LOADED_EXTERNAL_JS__
+        if not __LOADED_EXTERNAL_JS__:
+            _load_external_jobstores()
+            __LOADED_EXTERNAL_JS__ = True
+
         # Make sure the job store doesn't get reinitialized after loading
         # state through the SharedState mixin.
         if "state" not in kw:
-            job_store = list(filter(lambda st: st.TYPE == store, __JOB_STORES__))
+            job_store = list(filter(lambda s: s.TYPE == store, __JOB_STORES__))
             if not job_store or len(job_store) == 0:
                 raise SchedulerException(
                     "Could not find a job store for type: %s" % (store))
@@ -237,15 +251,6 @@ class SchedulerJobStore(object):
             raise TypeError("Job argument is not an instance of SchedulerJob")
 
         return
-
-
-if not __LOADED_EXTERNAL_JS:
-    __LOADED_EXTERNAL_JS = True
-    # Load job stores marked with the malibu.scheduler.job_stores entry point
-    for st in pkg_resources.iter_entry_points('malibu.scheduler.job_stores'):
-        # Since the job stores are registered automatically with the @job_store
-        # decorator, we simply have to do a load and we're done.
-        st.load()
 
 
 @job_store

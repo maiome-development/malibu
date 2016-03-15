@@ -82,18 +82,20 @@ class ArgumentParserTestCase(unittest.TestCase):
     def argumentParserQuotedParms_test(self):
 
         args = ['--target', '"-19000000"', '--message', "'Test'",
-                '--file', '"unmatched.txt']
+                '--file', '"unmatched.txt', '--syntax=plain']
 
         ap = ArgumentParser(args)
         ap.add_option_type('target', opt = ArgumentParser.OPTION_PARAMETERIZED)
         ap.add_option_type('message', opt = ArgumentParser.OPTION_PARAMETERIZED)
         ap.add_option_type('file', opt = ArgumentParser.OPTION_PARAMETERIZED)
+        ap.add_option_type('syntax', opt = ArgumentParser.OPTION_PARAMETERIZED)
 
         ap.parse()
 
         self.assertEqual(ap.options['target'], '-19000000')
         self.assertEqual(ap.options['message'], 'Test')
         self.assertEqual(ap.options['file'], 'unmatched.txt')
+        self.assertEqual(ap.options['syntax'], 'plain')
 
     def argumentParserContextMgr_test(self):
 

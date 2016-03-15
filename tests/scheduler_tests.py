@@ -24,6 +24,7 @@ class TestingJobStore(scheduler.VolatileSchedulerJobStore):
 
         job.metadata.update({"store_updated": True})
 
+
 class SchedulerTestCase(unittest.TestCase):
 
     def setUp(self):

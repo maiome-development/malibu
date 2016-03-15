@@ -165,16 +165,6 @@ class ArgumentParser(object):
             if param[-1] in ['"', "'"]:
                 param = param.rstrip(param[-1])
 
-            if param.startswith('-') and not self.param_defined(param):
-                # Starts with a -, but is not an option..is a parameter.
-                if waiting_argument is not None:
-                    self.options.update({waiting_argument: param})
-                    waiting_argument = None
-                else:
-                    self.parameters.append(param)
-
-                continue
-
             if param.startswith('--'):
                 # Long option mapping.
                 paraml = param[2:]
@@ -206,6 +196,15 @@ class ArgumentParser(object):
                             waiting_argument = None
                         else:
                             waiting_argument = store_as
+            elif param.startswith('-') and not self.param_defined(param):
+                # Starts with a -, but is not a defined parameter.
+                if waiting_argument is not None:
+                    self.options.update({waiting_argument: param})
+                    waiting_argument = None
+                else:
+                    self.parameters.append(param)
+
+                continue
             elif param.startswith('-'):
                 # Short option mapping.
                 param = param[1:]
