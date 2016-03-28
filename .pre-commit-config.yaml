@@ -1,8 +1,11 @@
 - repo: git://github.com/pre-commit/pre-commit-hooks
-  sha: e306ff3
+  sha: 44e1753f98b0da305332abe26856c3e621c5c439
   hooks:
   - id: flake8
-    args: ["--ignore=W391,F401", "--exclude=docs/*,tests/*", --max-line-length=131]
+    args:
+    - --ignore=W391,F401
+    - --exclude=docs/*,tests/*
+    - --max-line-length=131
   - id: check-ast
   - id: debug-statements
   - id: fix-encoding-pragma

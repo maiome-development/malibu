@@ -9,3 +9,9 @@ e = test e
 f = True
 g = list, of, things
 h = +list:["list", "of", "things"]
+
+[ns:first]
+value = 1
+
+[ns:second]
+value = 2

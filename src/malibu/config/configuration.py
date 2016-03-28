@@ -274,6 +274,37 @@ class Configuration(object):
         else:
             return None
 
+    def get_namespace(self, namespace):
+        """ Returns a set of ConfigurationSection objects that are prefixed
+            with the namespace specified above.
+
+            If no configuration sections have the requested namespace, None
+            is returned.
+
+            :param str namespace: Namespace to find in section name.
+            :rtype: set
+            :return: dict or None
+        """
+
+        if not namespace:
+            raise ValueError("Namespace can not be none")
+
+        sections = {}
+
+        for section_name in self.sections:
+            if section_name.startswith(namespace + ":"):
+                short_name = section_name.split(":")[1]
+                sections.update({
+                    short_name: self.get_section(section_name),
+                })
+            else:
+                continue
+
+        if len(sections) == 0:
+            return None
+        else:
+            return sections
+
     def unload(self):
         """ Unload an entire configuration
         """
@@ -399,7 +430,9 @@ class Configuration(object):
                             section.set(option_key, io.open(dobj_value, 'r'))
                         except:
                             try:
-                                section.set(option_key, io.open(dobj_value, 'w+'))
+                                section.set(
+                                    option_key,
+                                    io.open(dobj_value, 'w+'))
                             except:
                                 section.set(option_key, None)
                     elif dobj_type.lower() in ["url", "uri"]:
