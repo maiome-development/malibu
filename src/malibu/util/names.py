@@ -59,9 +59,11 @@ def __load_gfycat_wordlists():
 
     nouns = requests.get('http://test.gfycat.com/animals')
     nouns = nouns.text.split("\n")
+    nouns.pop(-1)
 
     adjectives = requests.get('http://test.gfycat.com/adjectives')
     adjectives = adjectives.text.split("\n")
+    adjectives.pop(-1)
 
     wordlists["nouns"] = nouns
     wordlists["adjectives"] = adjectives
