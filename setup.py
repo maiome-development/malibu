@@ -43,6 +43,7 @@ setup(
     tests_require=[
         'nose',
         'coverage',
+        'requests',
     ],
     zip_safe=True
 )
