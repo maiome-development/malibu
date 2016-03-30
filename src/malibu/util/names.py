@@ -94,7 +94,7 @@ def load_external_words(source=None, target_list=None):
     elif source == "default":
         source = __load_default_wordlists
 
-    if isinstance(source, file):
+    if hasattr(source, "read"):  # File-like object
         if not target_list:
             raise ValueError("A target list must be specified when reading "
                              "from a file")
@@ -110,7 +110,7 @@ def load_external_words(source=None, target_list=None):
             _adjectives.extend(data)
         elif target_list == "nouns":
             _nouns.extend(data)
-    elif isinstance(source, types.FunctionType):
+    elif isinstance(source, types.FunctionType):  # Function or lambda
         w = source()
         if "nouns" not in w:
             raise AttributeError("No 'nouns' list in returned data")
