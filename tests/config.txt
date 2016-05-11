@@ -15,3 +15,14 @@ value = 1
 
 [ns:second]
 value = 2
+
+[scheduler]
+job_store = @scheduler:redis
+
+[scheduler:redis]
+type = testing-volatile
+note = yoo rofl
+host = 10.0.0.4
+port = 6379
+database = 1
+secret = ayy lmao

@@ -88,3 +88,15 @@ class ConfigurationTestCase(unittest.TestCase):
                 self.assertIsNotNone(section)
                 self.assertIn(name, ["first", "second"])
                 self.assertIn(section.get_int("value"), [1, 2])
+
+    def configSectionLinkedNamespace_test(self):
+
+        with io.open(self.config_path, 'r') as config_fobj:
+            self.config.load_file(config_fobj)
+            self.assertTrue(self.config.loaded)
+
+            scheduler_conf = self.config.get_section("scheduler")
+            jobstore_conf = scheduler_conf.get("job_store", None)
+            self.assertIsNotNone(jobstore_conf)
+
+            self.assertEquals(jobstore_conf.get_string("type", "volatile"), "testing-volatile")
