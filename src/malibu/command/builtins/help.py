@@ -50,7 +50,7 @@ class BuiltinHelpModule(module.CommandModule):
             ascii.style_text(ascii.FG_GREEN, 'Subcommands')))
 
         modules = self.__loader.modules
-        for mod in sorted(modules, key=lambda m: m.BASE):
+        for mod in sorted(modules, key=lambda m: m.get_base()):
             for sub, helpstr in mod.get_help().items():
                 command = ':'.join([mod.get_base(), sub])
                 helplst = helpstr.splitlines()
