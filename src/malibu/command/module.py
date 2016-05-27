@@ -349,12 +349,22 @@ class CommandModule(object):
         """
 
         if subcommand not in self.__command_map:
-            raise CommandModuleException(
-                "Tried to execute unknown subcommand %s" %
-                (subcommand))
+            if subcommand not in self.__command_alias_map:
+                raise CommandModuleException(
+                    "Tried to execute unknown subcommand %s" %
+                    (subcommand))
+            else:
+                subcommand = self.resolve_alias(subcommand)
 
-        func = self.__command_map[subcommand]
-        func(*args, **kw)
+        try:
+            # If this doesn't work, we've actually tried to execute an unknown
+            # subcommand.
+            func = self.__command_map[subcommand]
+            func(*args, **kw)
+        except IndexError:
+            raise CommandModuleException(
+                "Tried to execute unknown subcommand/alias %s" %
+                (subcommand))
 
 
 class CommandModuleException(Exception):

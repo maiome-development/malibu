@@ -14,7 +14,7 @@ import malibu
 setup(
     name='malibu',
     version=malibu.__version__,
-    description="maiome library of utilities",
+    description="maiome library of utilities - rev %s" % (malibu.__release__),
 
     url="https://glow.dev.ramcloud.io/maiome/malibu",
     author="Sean Johnson",
