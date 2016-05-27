@@ -5,8 +5,10 @@
 
 ## virtualenv directories, pip files
 bin
+build
 include
 lib
+local
 dist
 man
 tmp

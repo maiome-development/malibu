@@ -27,7 +27,7 @@ and set up the class as such:
 
         def __init__(self, loader):
 
-            super(ExampleModule, self).__init__(base = ExampleModule.BASE)
+            super(ExampleModule, self).__init__()
             self.__loader = loader
 
             self.register_subcommand("help", self.show_help)
@@ -57,7 +57,7 @@ a console entry point:
     argparser = args.ArgumentParser.from_argv()
     # Set up argparser params, mappings, etc here.
 
-    modloader = module.CommandModuleLoader(argparser_
+    modloader = module.CommandModuleLoader(argparser)
 
     mods = command.get_command_modules(package = __package__)
     # Or replace __package__ with your cmd module package path
@@ -254,7 +254,7 @@ class CommandModule(object):
             parsing.
         """
 
-        return command == self.__command_base
+        return command == self.get_base()
 
     def has_subcommand(self, subcommand):
         """ Boolean-returning method for if this Module
@@ -284,7 +284,10 @@ class CommandModule(object):
         """ Returns the command base.
         """
 
-        return self.__command_base
+        if self.__command_base:
+            return self.__command_base
+        elif self.__class__.BASE_NAME:
+            return self.__class__.BASE_NAME
 
     def get_help(self):
         """ Returns the help dictionary for this

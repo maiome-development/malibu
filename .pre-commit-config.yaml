@@ -1,5 +1,5 @@
-- repo: git://github.com/pre-commit/pre-commit-hooks
-  sha: 44e1753f98b0da305332abe26856c3e621c5c439
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  sha: master
   hooks:
   - id: flake8
     args:
