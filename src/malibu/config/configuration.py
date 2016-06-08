@@ -301,7 +301,7 @@ class Configuration(object):
                 continue
 
         if len(sections) == 0:
-            return None
+            return {}
         else:
             return sections
 
