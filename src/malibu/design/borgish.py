@@ -65,3 +65,20 @@ class SharedState(object):
         if state in self.__states:
             raise NameError("Can't overwrite stored state '%s'." % (state))
         self.__states.update({state: self.__dict__})
+
+    def drop_state(self, state):
+        """ Drops the state specified from the class' shared state dictionary.
+
+            :param str state: Name of state to drop.
+            :rtype: bool
+            :returns: True if state was dropped, False otherwise.
+        """
+
+        if state not in self.__states:
+            return False
+
+        state_dict = self.__states.pop(state, None)
+        if not state_dict:
+            return False
+
+        return True
