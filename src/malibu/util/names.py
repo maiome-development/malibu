@@ -43,8 +43,8 @@ def __load_default_wordlists():
 
 def __load_gfycat_wordlists():
     """ Pulls wordlists from gfycat.
-            nouns ~> http://test.gfycat.com/animals
-            adjectives ~> http://test.gfycat.com/adjectives
+            nouns ~> http://assets.gfycat.com/animals
+            adjectives ~> http://assets.gfycat.com/adjectives
     """
 
     try:
@@ -57,11 +57,11 @@ def __load_gfycat_wordlists():
         "adjectives": [],
     }
 
-    nouns = requests.get('http://test.gfycat.com/animals')
+    nouns = requests.get('http://assets.gfycat.com/animals')
     nouns = nouns.text.split("\n")
     nouns.pop(-1)
 
-    adjectives = requests.get('http://test.gfycat.com/adjectives')
+    adjectives = requests.get('http://assets.gfycat.com/adjectives')
     adjectives = adjectives.text.split("\n")
     adjectives.pop(-1)
 
