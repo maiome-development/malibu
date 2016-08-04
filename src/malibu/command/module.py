@@ -23,8 +23,6 @@ and set up the class as such:
     )
     class ExampleModule(module.CommandModule):
 
-        BASE = "example"
-
         def __init__(self, loader):
 
             super(ExampleModule, self).__init__()
@@ -360,7 +358,7 @@ class CommandModule(object):
             # If this doesn't work, we've actually tried to execute an unknown
             # subcommand.
             func = self.__command_map[subcommand]
-            func(*args, **kw)
+            return func(*args, **kw)
         except IndexError:
             raise CommandModuleException(
                 "Tried to execute unknown subcommand/alias %s" %

@@ -34,21 +34,25 @@ class BuiltinHelpModule(module.CommandModule):
             arp = self.__loader.get_argument_parser()
 
         exec_name = sys.argv[0] if not arp.exec_file else arp.exec_file
-        print("{:4s}: version {:s}: {:s}".format(
+        print("{:4s}: version {:s}: {:s}\n".format(
             ascii.style_text(ascii.STYLE_BOLD, exec_name),
             ascii.style_text(ascii.STYLE_UNDERSCORE, self.project_version),
             ascii.style_text(ascii.FG_GREEN, self.project_description)))
 
-        print("{:>24s}".format(
+        print("{:s}:".format(
             ascii.style_text(ascii.FG_GREEN, 'Arguments')))
 
         args = arp.get_option_descriptions()
-        for option, description in args.items():
-            print("{:>36s}    {:<64s}".format(
+        for option, description in sorted(args.items(), key=lambda m: m[0]):
+            opt_aliases = arp.get_formatted_option_aliases(option.lstrip('-'))
+            if opt_aliases:
+                option = "%s, %s" % (option, ', '.join(opt_aliases))
+
+            print("  {:<36s}    {:<64s}".format(
                 ascii.style_text(ascii.STYLE_BOLD, option),
                 ascii.style_text(ascii.STYLE_OFF, description)))
 
-        print("{:>24s}".format(
+        print("\n{:s}:".format(
             ascii.style_text(ascii.FG_GREEN, 'Subcommands')))
 
         modules = self.__loader.modules
@@ -57,25 +61,25 @@ class BuiltinHelpModule(module.CommandModule):
                 command = ':'.join([mod.get_base(), sub])
                 helplst = helpstr.splitlines()
                 if len(helplst) == 1:
-                    print("{:>36s}    {:<64s}".format(
+                    print("    {:<34s}    {:<64s}".format(
                         ascii.style_text(ascii.STYLE_UNDERSCORE, command),
-                        helpstr))
+                        ascii.style_text(ascii.STYLE_BOLD, helpstr)))
                 else:
-                    print("{:>36s}    {:<64s}".format(
+                    print("    {:<34s}    {:<64s}".format(
                         ascii.style_text(ascii.STYLE_UNDERSCORE, command),
                         ascii.style_text(
-                            ascii.STYLE_OFF,
+                            ascii.STYLE_BOLD,
                             helplst[0].lstrip()
                         )
                     ))
                     for line in helplst[1:]:
-                        print("{:>28s}    {:<64s}".format(
+                        print("{:>32s}    {:<64s}".format(
                             "",
                             ascii.style_text(ascii.STYLE_OFF, line.lstrip())))
                 print("")
 
     def show_module(self, *args, **kw):
-        """ []
+        """ [module name]
 
             Displays help for a single module.
         """
@@ -96,12 +100,12 @@ class BuiltinHelpModule(module.CommandModule):
             return
 
         exec_name = sys.argv[0]
-        print("{:4s}: version {:s}: {:s}".format(
+        print("{:4s}: version {:s}: {:s}\n".format(
             ascii.style_text(ascii.STYLE_BOLD, exec_name),
             ascii.style_text(ascii.STYLE_UNDERSCORE, self.project_version),
             ascii.style_text(ascii.FG_GREEN, self.project_description)))
 
-        print("{:>24s}".format(
+        print("{:s}:".format(
             ascii.style_text(ascii.FG_GREEN, 'Subcommands')))
 
         modules = self.__loader.modules
@@ -111,19 +115,19 @@ class BuiltinHelpModule(module.CommandModule):
                     command = ':'.join([mod.get_base(), sub])
                     helplst = helpstr.splitlines()
                     if len(helplst) == 1:
-                        print("{:>36s}   {:<64s}".format(
+                        print("  {:<34s}   {:<64s}".format(
                             ascii.style_text(ascii.STYLE_UNDERSCORE, command),
-                            helpstr))
+                            ascii.style_test(ascii.STYLE_BOLD, helpstr)))
                     else:
-                        print("{:>36s}    {:<64s}".format(
+                        print("  {:<34s}    {:<64s}".format(
                             ascii.style_text(ascii.STYLE_UNDERSCORE, command),
                             ascii.style_text(
-                                ascii.STYLE_OFF,
+                                ascii.STYLE_BOLD,
                                 helplst[0].lstrip()
                             )
                         ))
                         for line in helplst[1:]:
-                            print("{:>28s}    {:<64s}".format(
+                            print("{:>32s}    {:<64s}".format(
                                 "",
                                 ascii.style_text(
                                     ascii.STYLE_OFF,

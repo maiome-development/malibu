@@ -37,6 +37,7 @@ class ArgumentParser(object):
         }
         self._opt_types = {}
         self._mapping = mapping
+        self._aliases = {}
         self._descriptions = {}
         self.options = {}
         self.parameters = []
@@ -85,9 +86,47 @@ class ArgumentParser(object):
 
         self._default_types[param_type] = opt
 
-    def add_option_type(self, option, opt=OPTION_SINGLE):
+    def add_option(self, option, desc=None, optype=OPTION_SINGLE, aliases=[],
+                   map_name=None):
+        """ Convenience method which takes care of typing, mapping, describing,
+            and aliasing an option.
+
+            :param str option: Option to add.
+            :param str desc: String description of option.
+            :param int optype: Option type (single or parameterized)
+            :param list aliases: List of aliases to create for this option.
+            :param str map_name: Mapping bucket to map all options to.
+            :return: none
+            :rtype: None
+        """
+
+        if not optype:
+            if len(option) > 1:
+                optype = self._default_types[self.PARAM_LONG]
+            elif len(option) == 1:
+                optype = self._default_types[self.PARAM_SHORT]
+            else:
+                raise ValueError("Length of `option` is less than 1")
+
+        self.add_option_type(option, optype, aliases)
+        self.add_option_description(option, desc) if desc else None
+
+        if not map_name:
+            map_name = option
+
+        self.add_option_mapping(option, map_name, aliases)
+
+        if option not in self._aliases:
+            self._aliases.update({
+                option: set(aliases),
+            })
+        else:
+            self._aliases[option].update(aliases)
+
+    def add_option_type(self, option, opt=OPTION_SINGLE, aliases=[]):
         """ Adds a type mapping to a specific option. Allowed types are
-            OPTION_SINGLE and OPTION_PARAMETERIZED.
+            OPTION_SINGLE and OPTION_PARAMETERIZED. Also accepts aliases, which
+            will be typed the same as `option`.
 
             :param str option: Option to set type for
             :param int opt: Option type (OPTION_PARAMETERIZED, OPTION_SINGLE)
@@ -97,7 +136,10 @@ class ArgumentParser(object):
 
         self._opt_types[option] = opt
 
-    def add_option_mapping(self, option, map_name):
+        for alias in aliases:
+            self._opt_types[alias] = opt
+
+    def add_option_mapping(self, option, map_name, aliases=[]):
         """ Maps a option value (-a, -g, --thing, etc.) to a full word or
             phrase that will be stored in the options dictionary after parsing
             is finished.  Makes option usage easier.
@@ -108,7 +150,13 @@ class ArgumentParser(object):
             :rtype: None
         """
 
+        if not map_name:
+            map_name = option
+
         self._mapping[option] = map_name
+
+        for alias in aliases:
+            self._mapping[alias] = map_name
 
     def add_option_description(self, option, description):
         """ Adds a helpful description for an argument. Is returned when
@@ -122,10 +170,46 @@ class ArgumentParser(object):
 
         self._descriptions[option] = description
 
+    def get_option_aliases(self, option):
+        """ Returns a set of the aliases for `option`.
+
+            :param str option: Option to get aliases for.
+            :return: Set of aliases or none
+            :rtype: set or None
+        """
+
+        return self._aliases.get(option, None)
+
+    def get_formatted_option_aliases(self, option):
+        """ Returns a list of strings, which are option aliases with the
+            appropriate leader (-, --) prepended.
+
+            :param str option: Option to get aliases for.
+            :return: List of aliases or none
+            :rtype: list or None
+        """
+
+        opt_aliases = self.get_option_aliases(option)
+        if not opt_aliases:
+            return None
+
+        aliases = []
+        for alias in opt_aliases:
+            if len(alias) == 1:
+                # flag
+                aliases.append('-' + alias)
+            elif len(alias) > 1 and option.startswith('-'):
+                aliases.append(alias)
+            elif len(alias) > 1 and not option.startswith('--'):
+                aliases.append('--' + alias)
+
+        return aliases
+
     def get_option_descriptions(self):
         """ Returns a map of options to their respective descriptions.  Good
             for printing out a series of help messages describing usage.
 
+            :param bool merge_aliases: Return combined option+alias keys?
             :return: Dictionary of option => description pairs
             :rtype: dict
         """

@@ -234,6 +234,9 @@ class TextTable(object):
         """ format the table and return the string.
         """
 
+        if len(self._row_data) == 0:
+            return None
+
         lines = []
         divider = self.__format_divider()
 
