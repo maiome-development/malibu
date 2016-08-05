@@ -10,8 +10,11 @@ try:
 except ImportError:
     from urllib.request import urlopen
 
-from malibu.text import unicode_type, unicode2str
-
+from malibu.text import (
+    string_type,
+    unicode_type,
+    unicode2str
+)
 
 __doc__ = """
 malibu.config.configuration
@@ -68,7 +71,13 @@ class ConfigurationSection(dict):
         """
 
         try:
-            return self.__getitem__(key)
+            value = self.__getitem__(key)
+            if isinstance(value, unicode_type()) and value.lower() == u'!none':
+                return None
+            elif isinstance(value, string_type()) and value.lower() == '!none':
+                return None
+            else:
+                return value
         except IndexError:
             return default
 
@@ -100,8 +109,6 @@ class ConfigurationSection(dict):
         """
 
         try:
-            if str(self.get(key)) == '!None':
-                return None
             return str(self.get(key)) or default
         except:
             return default
@@ -350,6 +357,8 @@ class Configuration(object):
                         continue
                     elif isinstance(value, io.TextIOBase):
                         value = "+file:" + value.name
+                    elif value is None:
+                        value = "!None"
                     else:
                         value = str(value)
                     config.write("%s = %s\n" % (key, value))

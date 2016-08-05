@@ -3,6 +3,7 @@ a = b
 b = 2
 c = http://genesis.maio.me/crypto.txt
 d = @test
+e = !None
 
 [test]
 e = test e

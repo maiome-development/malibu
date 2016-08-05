@@ -44,6 +44,7 @@ class ConfigurationTestCase(unittest.TestCase):
             self.assertEqual(main.get_int('b'), 2)
             self.assertIsInstance(main.get('c'), unicode_type())
             self.assertIsInstance(main.get('d'), dict)
+            self.assertIsNone(main.get('e', object()))
 
             self.assertEqual(test.get('e'), 'test e')
             self.assertEqual(test.get_bool('f'), True)
