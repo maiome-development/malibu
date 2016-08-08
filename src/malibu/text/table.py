@@ -1,5 +1,239 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
 import io
+import math
+import types
+
+
+class ObjectTable(object):
+
+    TABLE_CORNER = "+"
+    TABLE_VBORDER = "|"
+    TABLE_HBORDER = "-"
+
+    def __init__(self, obj, max_width=-1, delimit_cells=False, title=None):
+
+        if max_width < 0 or not max_width:
+            max_width = 78
+
+        self.max_width = max_width
+        self.actual_width = max_width
+        self._title = title
+        self._delimit_cells = delimit_cells
+
+        if isinstance(obj, dict):
+            self._obj = obj.copy()
+        else:
+            # `obj` can also be any type of object, as long as it has a function
+            # `as_dict() -> dict(...)`.
+            if not hasattr(obj, 'as_dict'):
+                raise TypeError('%s has no `as_dict` function/method' % (obj))
+
+            attr = getattr(obj, 'as_dict')
+            if type(attr) not in [
+                                    types.FunctionType,
+                                    types.MethodType,
+                                    types.LambdaType
+                                 ]:
+                raise AttributeError('%s.as_dict is not a function/method' % (
+                    obj
+                ))
+            else:
+                _obj = obj.as_dict()
+                if not isinstance(_obj, dict):
+                    raise TypeError('%s.as_dict does not return a dict' % (obj))
+                self._obj = _obj
+
+        for k, v in self._obj.copy().items():
+            self._obj.update({
+                k: str(v),
+            })
+
+    def set_title(self, s):
+        """ Sets the table title.
+        """
+
+        self._title = s
+
+    def __render_title(self):
+        """ Renders the title block.
+        """
+
+        if not self._title:
+            return
+
+        title_text = self.__wrap(self._title, self.actual_width)
+        rendered = []
+
+        rendered.append(self.__render_border(self.actual_width))
+        for line in title_text:
+            rendered.append(
+                ("{:s}{:^%d}{:s}" % (self.actual_width)).format(
+                    self.TABLE_VBORDER,
+                    line.strip(),
+                    self.TABLE_VBORDER
+                )
+            )
+
+        return rendered
+
+    def __wrap(self, text, length, keep_pad=True):
+        """ Wraps a string to the specified length.
+            Will return a list with the string wrapped to length.
+        """
+
+        if len(text) > length:
+            pad = length * int(math.ceil(len(text) / float(length))) - len(text)
+            text = text + ' ' * pad
+        elif len(text) < length:
+            pad = length - len(text)
+            text = text + ' ' * pad
+
+        wrapped = []
+        wrapped.extend(zip(*[
+            text[i::length] for i in range(0, length)]
+        ))
+
+        lines = []
+        for line in wrapped:
+            lines.append(''.join(line))
+
+        if not keep_pad:
+            lines[-1] = lines[-1].rstrip()
+
+        return lines
+
+    def __render_border(self, length):
+        """ Renders a border with corners.
+        """
+
+        return "%s%s%s" % (
+            self.TABLE_CORNER,
+            self.TABLE_HBORDER * (length),
+            self.TABLE_CORNER
+        )
+
+    def __render_delimiter(self, key_len, val_len):
+        """ Renders the cell separator / delimiter.
+        """
+
+        return "%s%s%s%s%s" % (
+            self.TABLE_CORNER,
+            self.TABLE_HBORDER * (key_len),
+            self.TABLE_CORNER,
+            self.TABLE_HBORDER * (val_len),
+            self.TABLE_CORNER
+        )
+
+    def __render_body(self, calculate_only=False):
+        """ Renders the body of the table. It's useful to do this first so we
+            know the "actual" rendered width of the table after text wrapping
+            has been applied.
+
+            Best way to do this:
+                1. Iterate through keys to find the best-fit value for the
+                   key column.
+                2. Iterate through values to find the best-fit value for the
+                   value column, which *absolutely* must not exceed
+                   `max_width - key_col_width`.
+                3. Add the values from [1] and [2] to get the "actual" table
+                   width.
+                4. Render cells individually. A cell is a single key-value pair
+                   which may or may not wrap around to the next line.
+        """
+
+        # Find the max key/val lengths
+        max_key_len = max(map(lambda i: len(str(i)), self._obj.keys()))
+        max_val_len = max(map(lambda i: len(str(i)), self._obj.values()))
+
+        # Calculate "actual" width
+        sep_len = (len(self.TABLE_VBORDER) * 3) + 2
+        self.actual_width = max_key_len + max_val_len + sep_len
+
+        # Ensure key and value sizes, with separators, don't exceed max_width
+        if self.actual_width > self.max_width:
+            max_val_len = self.max_width - max_key_len - sep_len
+            self.actual_width = max_key_len + max_val_len + sep_len
+
+        if calculate_only:
+            return []
+
+        cells = []
+        for k, v in self._obj.items():
+            k = self.__wrap(k, max_key_len)
+            v = self.__wrap(v, max_val_len)
+
+            if len(k) > len(v):
+                while len(v) != len(k):
+                    v.append(' ' * max_val_len)
+            elif len(k) < len(v):
+                while len(k) != len(v):
+                    k.append(' ' * max_key_len)
+
+            cells.append((k, v,))
+
+        rendered_cells = []
+        rendered_cells.append(self.__render_delimiter(
+            max_key_len + 2,
+            max_val_len + 2
+        ))
+
+        # Render body cells
+        for cell_keys, cell_vals in cells:
+            for key, value in zip(cell_keys, cell_vals):
+                rendered_cells.append("%s %s %s %s %s" % (
+                    self.TABLE_VBORDER,
+                    key,
+                    self.TABLE_VBORDER,
+                    value,
+                    self.TABLE_VBORDER
+                ))
+
+            if self._delimit_cells:
+                rendered_cells.append(self.__render_delimiter(
+                    max_key_len, max_val_len
+                ))
+
+        rendered_cells.append(self.__render_delimiter(
+            max_key_len + 2,
+            max_val_len + 2
+        ))
+
+        return rendered_cells
+
+    def render(self):
+        """ Renders the object table. The reference object should be stored in
+            `self._obj` and should *only* be a dictionary.
+
+            The rendered table will look like this:
+
+                +---------------------------------+
+                |   ... title data, if given ...  |
+                +-----+---------------------------+
+                | key | value info......          |
+                | ... | ...                       |
+                +-----+---------------------------+
+        """
+
+        cells = []
+        if self._obj and self._title:
+            self.__render_body(calculate_only=True)
+
+        if self._title:
+            cells.extend(self.__render_title())
+
+        if self._obj:
+            cells.extend(self.__render_body())
+
+        return cells
+
+    def print_table(self):
+        """ Takes the rendered output and prints it directly to the screen.
+        """
+
+        for cell in self.render():
+            print(cell)
 
 
 class TextTable(object):
@@ -38,7 +272,6 @@ class TextTable(object):
         self._header_data = [arg for arg in args]
 
     def add_data_dict(self, el):
-
         """ add_data_dict only really makes sense to use when there is a
             single pair mapping (eg., key, value) or a two column
             display.  If that is not that case, add_data_ztup is a better
@@ -54,7 +287,6 @@ class TextTable(object):
             self._row_data.append((key, value,))
 
     def add_data_ztup(self, el):
-
         """ add_data_ztup will take any as much data as you need and can even
             fill the place of add_data_dict.  add_data_ztup takes a list of
             tuples. each tuple should contain a row of elements, one element
@@ -85,7 +317,6 @@ class TextTable(object):
             self._row_data.append(row)
 
     def add_data_kv(self, k, v):
-
         """ add_data_kv is a simplified add_data_dict for pushing a data pair onto the
             row list on-the-fly. only effective for two-column data sets.
         """
@@ -93,7 +324,6 @@ class TextTable(object):
         self._row_data.append((k, v,))
 
     def add_data_list(self, el):
-
         """ add_data_list adds a list of data to the table. this is primarily
             suitable for single-column data sets.
         """
@@ -101,7 +331,6 @@ class TextTable(object):
         [self._row_data.append((elm,)) for elm in el]
 
     def add_data_csv_file(self, fobj):
-
         """ add_data_csv_file loads data from a comma-separated value file.
             the first row is the header, everything else is actual data.
             works if the file is provided or if a string containing the
@@ -126,16 +355,15 @@ class TextTable(object):
             self._row_data.append(tuple(line))
 
     def __transpose_list(self, li):
-
-        """ performs a simple transposition on a list.
-            used for calculating row sizes and maxes.
+        """ Performs a simple transposition on a list.
+            Used for calculating row sizes and maxes.
         """
 
         return map(list, zip(*li))
 
     def __calculate_row_max(self):
-
-        """ calculates the max size of the rows so the table has uniform column sizes.
+        """ Calculates the max size of the rows so the table can uniformly
+            render all the columns.
         """
 
         __sizes = []
@@ -148,8 +376,7 @@ class TextTable(object):
         return [max(cols) for cols in __sizes]
 
     def __format_divider(self):
-
-        """ returns the table divider.
+        """ Returns the table divider.
         """
 
         s = ""
@@ -166,8 +393,7 @@ class TextTable(object):
         return s
 
     def __pad_left(self, txt, length):
-
-        """ pads a string to be length characters long, from left.
+        """ Pads a string to be `length` characters long, from left.
         """
 
         s = []
@@ -182,8 +408,7 @@ class TextTable(object):
         return ''.join(s)
 
     def __format_header_data(self):
-
-        """ formats the header data.
+        """ Formats the header data.
         """
 
         lines = []
@@ -206,8 +431,7 @@ class TextTable(object):
         return lines
 
     def __format_table_data(self):
-
-        """ formats the table data.
+        """ Formats the table data.
         """
 
         lines = []
@@ -230,8 +454,7 @@ class TextTable(object):
         return lines
 
     def format(self):
-
-        """ format the table and return the string.
+        """ Format the table and return the string.
         """
 
         if len(self._row_data) == 0:
