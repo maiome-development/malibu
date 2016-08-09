@@ -5,6 +5,11 @@ import io
 import math
 import types
 
+from malibu.text import (
+    string_type,
+    unicode_type
+)
+
 
 class ObjectTable(object):
 
@@ -12,15 +17,21 @@ class ObjectTable(object):
     TABLE_VBORDER = "|"
     TABLE_HBORDER = "-"
 
-    def __init__(self, obj, max_width=-1, delimit_cells=False, title=None):
+    def __init__(self, obj, max_width=-1, delimit_cells=False, title=None,
+                 render_subtables=False, subtable_depth=1):
 
-        if max_width < 0 or not max_width:
+        if max_width == 0 or not max_width:
             max_width = 78
 
         self.max_width = max_width
         self.actual_width = max_width
         self._title = title
         self._delimit_cells = delimit_cells
+        self._render_subtables = render_subtables
+        self._subtable_depth = subtable_depth
+
+        self._max_key_col_width = None
+        self._max_val_col_width = None
 
         if isinstance(obj, dict):
             self._obj = obj.copy()
@@ -45,10 +56,60 @@ class ObjectTable(object):
                     raise TypeError('%s.as_dict does not return a dict' % (obj))
                 self._obj = _obj
 
-        for k, v in self._obj.copy().items():
-            self._obj.update({
+        self._obj = self.__stringify_dict(self._obj)
+
+    def __len__(self):
+        """ Returns the actual width (length) of the table.
+        """
+
+        return self.actual_width + 2
+
+    def __stringify_dict(self, d):
+        """ Turns all values in a dict into strings.
+            If `render_subtables` is set, dictionary values will not be
+            stringified.
+        """
+
+        conv = d.copy()
+
+        for k, v in conv.copy().items():
+            if isinstance(v, dict) and self._render_subtables:
+                continue
+
+            conv.update({
                 k: str(v),
             })
+
+        return conv
+
+    def __recurse_subtables(self):
+        """ Creates all subtables from nested dictionaries.
+
+            Subtables will inherit all properties from the parent table except
+            for the title and max_width.
+        """
+
+        if self._subtable_depth == 0:
+            return
+
+        for k, v in self._obj.copy().items():
+            if isinstance(v, dict):
+                st = ObjectTable(
+                    v,
+                    delimit_cells=self._delimit_cells,
+                    render_subtables=self._render_subtables,
+                    subtable_depth=self._subtable_depth - 1
+                )
+
+                # Do the rendering calculations on the subtable
+                st._ObjectTable__recurse_subtables()
+                st._ObjectTable__render_body(calculate_only=True)
+
+                self._obj.update({
+                    k: st,
+                })
+
+        self.__render_body(calculate_only=True)
 
     def set_title(self, s):
         """ Sets the table title.
@@ -104,6 +165,20 @@ class ObjectTable(object):
 
         return lines
 
+    def __pad_right(self, s, length, char=' '):
+        """ Pads a string up to length on the right side.
+        """
+
+        if type(s) not in [string_type(), unicode_type()]:
+            raise TypeError('s must be a string')
+
+        slen = len(s)
+        pad_len = length - slen
+        if pad_len <= 0:
+            return s
+
+        return s + (char * pad_len)
+
     def __render_border(self, length):
         """ Renders a border with corners.
         """
@@ -144,25 +219,33 @@ class ObjectTable(object):
         """
 
         # Find the max key/val lengths
-        max_key_len = max(map(lambda i: len(str(i)), self._obj.keys()))
-        max_val_len = max(map(lambda i: len(str(i)), self._obj.values()))
+        max_key_len = max(map(lambda i: len(i), self._obj.keys()))
+        max_val_len = max(map(lambda i: len(i), self._obj.values()))
 
         # Calculate "actual" width
         sep_len = (len(self.TABLE_VBORDER) * 3) + 2
         self.actual_width = max_key_len + max_val_len + sep_len
+        if self.max_width == -1:
+            self.max_width = self.actual_width
 
         # Ensure key and value sizes, with separators, don't exceed max_width
-        if self.actual_width > self.max_width:
-            max_val_len = self.max_width - max_key_len - sep_len
-            self.actual_width = max_key_len + max_val_len + sep_len
+        # if self.actual_width > self.max_width:
+        # max_val_len = self.max_width - max_key_len - sep_len
+        # self.actual_width = max_key_len + max_val_len + sep_len
 
         if calculate_only:
+            self._max_key_col_width = max_key_len
+            self._max_val_col_width = max_val_len
+
             return []
 
         cells = []
         for k, v in self._obj.items():
             k = self.__wrap(k, max_key_len)
-            v = self.__wrap(v, max_val_len)
+            if isinstance(v, str):
+                v = self.__wrap(v, max_val_len)
+            elif self._render_subtables and isinstance(v, ObjectTable):
+                v = [self.__pad_right(s, max_val_len) for s in v.render()]
 
             if len(k) > len(v):
                 while len(v) != len(k):
@@ -219,6 +302,11 @@ class ObjectTable(object):
         cells = []
         if self._obj and self._title:
             self.__render_body(calculate_only=True)
+
+        if self._render_subtables:
+            self.__recurse_subtables()
+
+        self._prerender_obj = self._obj.copy()
 
         if self._title:
             cells.extend(self.__render_title())
