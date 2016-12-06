@@ -1,0 +1,110 @@
+#!python
+# -*- coding: utf-8 -*-
+# vim: set ai et ts=4 sts=4 sw=4 syntax=python:
+
+from __future__ import print_function
+
+import io
+import json
+import sys
+
+from malibu.text import table
+from malibu.util.args import ArgumentParser
+
+
+def initialize_argparser():
+    """ Sets up the argparser for this script.
+    """
+
+    ap = ArgumentParser.from_argv()
+    ap.add_option(
+        option="help",
+        desc="Show help information",
+        optype=ap.OPTION_SINGLE,
+        aliases=["h"],
+        map_name="help"
+    )
+    ap.add_option(
+        option="infile",
+        desc="Input file instead of stdin",
+        optype=ap.OPTION_PARAMETERIZED,
+        aliases=["f"],
+        map_name="input_file"
+    )
+    ap.add_option(
+        option="title",
+        desc="Header name for object table",
+        optype=ap.OPTION_PARAMETERIZED,
+        aliases=["T"],
+        map_name="header_title"
+    )
+
+    ap.parse()
+
+    return ap
+
+
+def dump_usage_info(argparser):
+    """ Generates and dumps help/usage information from the argparser.
+    """
+
+    helpstr = """usage: {binary} [OPTIONS] < somefile.json
+       {binary} [OPTIONS] -f somefile.json
+
+Options:
+    {:>10}     {:<}
+    {:>10}     {:<}
+    {:>10}     {:<}
+"""
+
+    optdescs = [[k, v] for k, v in argparser.get_option_descriptions().items()]
+    l = []
+    [l.extend(i) for i in optdescs]
+    print(helpstr.format(*l, binary=argparser.exec_file))
+
+
+def data_from_stdin():
+    """ Reads data from stdin until EOF.
+    """
+
+    lines = []
+    for line in sys.stdin.readlines():
+        lines.append(line)
+
+    return json.loads(''.join(lines))
+
+
+def data_from_file(filename):
+    """ Reads data from a file.
+    """
+
+    lines = []
+    with io.open(filename, 'r') as infile:
+        lines = infile.readlines()
+
+    return json.loads(''.join(lines))
+
+
+if __name__ == '__main__':
+
+    ap = initialize_argparser()
+    if ap.options.get("help", False):
+        dump_usage_info(ap)
+        exit(1)
+
+    indata = None
+    if ap.options.get("input_file", None):
+        indata = data_from_file(ap.options["input_file"])
+    else:
+        indata = data_from_stdin()
+
+    header = None
+    if ap.options.get("header_title", None):
+        header = ap.options["header_title"]
+
+    table.ObjectTable(
+        indata,
+        render_subtables=True,
+        subtable_depth=2,
+        title=header
+    ).print_table()

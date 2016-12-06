@@ -32,6 +32,9 @@ setup(
     package_dir={
         '': 'src'
     },
+    scripts=[
+        'src/bin/jsontable',
+    ],
     install_requires=[
         'dill'
     ],
