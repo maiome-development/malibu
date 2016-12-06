@@ -57,7 +57,7 @@ coveralls:
   script:
     - apk update && apk add git bash
     - pip install --upgrade virtualenv
-    - pip install --upgrade python-coveralls
+    - pip install --upgrade coveralls
     - virtualenv .
     - . bin/activate
     - pip install -r requirements.txt
