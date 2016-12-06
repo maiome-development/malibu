@@ -62,7 +62,7 @@ coveralls:
     - . bin/activate
     - pip install -r requirements.txt
     - nosetests --with-coverage
-    - COVERALLS_REPO_TOKEN=$COVERALL_TOKENS coveralls
+    - COVERALLS_REPO_TOKEN=$COVERALLS_TOKEN coveralls
 
 global-package:
   image: pirogoeth/py3.5-ci:latest
