@@ -3,6 +3,7 @@
 ---
 stages:
   - build-test
+  - code-metrics
   - package
   - deploy
 
@@ -49,6 +50,19 @@ build-3.5:
     - . bin/activate
     - pip install -r requirements.txt
     - nosetests --with-coverage
+
+coveralls:
+  image: pirogoeth/py3.5-ci:latest
+  stage: code-metrics
+  script:
+    - apk update && apk add git bash
+    - pip install --upgrade virtualenv
+    - pip install --upgrade python-coveralls
+    - virtualenv .
+    - . bin/activate
+    - pip install -r requirements.txt
+    - nosetests --with-coverage
+    - COVERALLS_REPO_TOKEN=$COVERALL_TOKENS coveralls
 
 global-package:
   image: pirogoeth/py3.5-ci:latest
