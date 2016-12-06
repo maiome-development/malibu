@@ -66,6 +66,7 @@ def get_command_modules(package=None):
         if kws["name"] in modules:
             # Module is already in map, don't clobber
             continue
+        module.BASE_NAME = kws["name"]
         modules.update({kws["name"]: module})
 
     for module, kws in __command_modules.items():

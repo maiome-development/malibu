@@ -3,9 +3,27 @@ a = b
 b = 2
 c = http://genesis.maio.me/crypto.txt
 d = @test
+e = !None
 
 [test]
 e = test e
 f = True
 g = list, of, things
 h = +list:["list", "of", "things"]
+
+[ns:first]
+value = 1
+
+[ns:second]
+value = 2
+
+[scheduler]
+job_store = @scheduler:redis
+
+[scheduler:redis]
+type = testing-volatile
+note = yoo rofl
+host = 10.0.0.4
+port = 6379
+database = 1
+secret = ayy lmao

@@ -3,6 +3,7 @@ import unittest
 
 from malibu import util
 from malibu.util import decorators
+from malibu.util import names
 from nose.tools import *
 
 
@@ -131,3 +132,27 @@ class UtilTestCase(unittest.TestCase):
 
         retv = does_stuff(thing="hello")
         self.assertTrue(retv)
+
+    def namesExternalFetch_test(self):
+
+        nouns_len = len(names._nouns)
+        adjs_len = len(names._adjectives)
+
+        names.load_external_words(source="gfycat")
+
+        self.assertGreater(len(names._nouns), nouns_len)
+        self.assertGreater(len(names._adjectives), adjs_len)
+
+    def namesSimple_test(self):
+
+        n = names.get_simple_name()
+
+        n = n.split("_")
+        self.assertEqual(len(n), 2)
+
+    def namesComplex_test(self):
+
+        n = names.get_complex_name(4)
+
+        n = n.split("_")
+        self.assertEqual(len(n), 5)

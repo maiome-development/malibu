@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from __future__ import print_function
 
-import contextlib, io, malibu, os, unittest
-from contextlib import closing
+import io
+import os
+import unittest
+
 from malibu.config.configuration import Configuration
 from malibu.text import str2unicode, unicode_type
 from nose.tools import *
@@ -41,6 +44,7 @@ class ConfigurationTestCase(unittest.TestCase):
             self.assertEqual(main.get_int('b'), 2)
             self.assertIsInstance(main.get('c'), unicode_type())
             self.assertIsInstance(main.get('d'), dict)
+            self.assertIsNone(main.get('e', object()))
 
             self.assertEqual(test.get('e'), 'test e')
             self.assertEqual(test.get_bool('f'), True)
@@ -66,8 +70,34 @@ class ConfigurationTestCase(unittest.TestCase):
             test = self.config.get_section('test')
             self.assertIsNot(test, None)
 
-            l1 = test.get_list('g', default = None)
+            l1 = test.get_list('g', default=None)
             self.assertEqual(l1, ['list', 'of', 'things'])
 
-            l2 = str2unicode(test.get_list('h', default = None))
+            l2 = str2unicode(test.get_list('h', default=None))
             self.assertEqual(l2, [b'list', b'of', b'things'])
+
+    def configSectionNamespace_test(self):
+
+        with io.open(self.config_path, 'r') as config_fobj:
+            self.config.load_file(config_fobj)
+            self.assertTrue(self.config.loaded)
+
+            namespaced = self.config.get_namespace('ns')
+            self.assertEqual(len(namespaced), 2)
+
+            for name, section in namespaced.items():
+                self.assertIsNotNone(section)
+                self.assertIn(name, ["first", "second"])
+                self.assertIn(section.get_int("value"), [1, 2])
+
+    def configSectionLinkedNamespace_test(self):
+
+        with io.open(self.config_path, 'r') as config_fobj:
+            self.config.load_file(config_fobj)
+            self.assertTrue(self.config.loaded)
+
+            scheduler_conf = self.config.get_section("scheduler")
+            jobstore_conf = scheduler_conf.get("job_store", None)
+            self.assertIsNotNone(jobstore_conf)
+
+            self.assertEquals(jobstore_conf.get_string("type", "volatile"), "testing-volatile")

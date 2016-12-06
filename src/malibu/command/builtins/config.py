@@ -1,16 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import contextlib
-import io
-import malibu
 import os
-import pprint
-import sys
 
 from contextlib import closing
 from malibu.config import configuration
-from malibu.text import table
 from os.path import exists
 
 from malibu.command import module
@@ -24,7 +18,9 @@ class BuiltinConfigModule(module.CommandModule):
 
     def __init__(self, loader):
 
-        super(BuiltinConfigModule, self).__init__(base=BuiltinConfigModule.BASE)
+        super(BuiltinConfigModule, self).__init__(
+            base=BuiltinConfigModule.BASE
+        )
 
         self.__loader = loader
 
@@ -54,17 +50,23 @@ class BuiltinConfigModule(module.CommandModule):
                             config.write("")
                     except:
                         continue
+
                 if os.access(path, os.R_OK | os.W_OK):
                     self._config_path = path
                     self._config = configuration.Configuration()
                     self._config.load(path)
+
+                    # Created a config. Stop here.
+                    break
                 else:
                     continue
 
         if self._config is None:
             paths = ', '.join(self._config_paths)
             raise module.CommandModuleException(
-                "Could not open or create configuration file at paths: {}".format(paths))
+                "Could not open or create configuration file at paths: {}"
+                .format(paths)
+            )
 
     def get_configuration(self):
         """ Returns the Configuration instance used by
@@ -74,7 +76,7 @@ class BuiltinConfigModule(module.CommandModule):
         return self._config
 
     def config_get(self, *args, **kw):
-        """ config:get [section].[key]
+        """ [section].[key]
 
             Returns the named variable from the loaded configuration.
         """
@@ -127,7 +129,7 @@ class BuiltinConfigModule(module.CommandModule):
         pass
 
     def config_init(self, *args, **kw):
-        """ config:init []
+        """ []
 
             Initializes a default configuration in the current config path
             that has been opened.
@@ -155,7 +157,7 @@ class BuiltinConfigModule(module.CommandModule):
         self._config.save(self._config_path)
 
     def config_set(self, *args, **kw):
-        """ config:set [section].[key] [value]
+        """ [section].[key] [value]
 
             Sets the named variable in the user configuration.
         """
@@ -177,8 +179,12 @@ class BuiltinConfigModule(module.CommandModule):
             var_path = var_path[0:2]
 
         if len(var_path) == 1:  # Only the section specifier is given
-            print("Must provide a configuration node in the form of {} to set a value.".format(
-                ascii.style_text(ascii.BG_YELLOW, "section.key")))
+            print(
+                "Must provide a configuration node in the form of {} "
+                "to set a value.".format(
+                    ascii.style_text(ascii.BG_YELLOW, "section.key")
+                )
+            )
             return
         elif len(var_path) == 2:  # Section and key specifier were given.
             section_name = var_path[0]
@@ -203,7 +209,7 @@ class BuiltinConfigModule(module.CommandModule):
         self._config.save(self._config_path)
 
     def config_show(self, *args, **kw):
-        """ config:show []
+        """ []
 
             Prints the current configuration.
         """

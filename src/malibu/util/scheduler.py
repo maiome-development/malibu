@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import abc
+import pkg_resources
 from datetime import datetime, timedelta
 
 from malibu.config import configuration
@@ -8,6 +9,16 @@ from malibu.util.decorators import function_registrator
 
 __JOB_STORES__ = []
 job_store = function_registrator(__JOB_STORES__)
+__LOADED_EXTERNAL_JS__ = False
+
+
+def _load_external_jobstores():
+
+    # Load job stores marked with the malibu.scheduler.job_stores entry point
+    for st in pkg_resources.iter_entry_points('malibu.scheduler.job_stores'):
+        # Since the job stores are registered automatically with the @job_store
+        # decorator, we simply have to do a load and we're done.
+        st.load()
 
 
 class Scheduler(borgish.SharedState):
@@ -16,10 +27,36 @@ class Scheduler(borgish.SharedState):
 
         super(Scheduler, self).__init__(*args, **kw)
 
+        global __LOADED_EXTERNAL_JS__
+        if not __LOADED_EXTERNAL_JS__:
+            _load_external_jobstores()
+            __LOADED_EXTERNAL_JS__ = True
+
+        self._config = None
+        self._jsconfig = None
+
+        # Load the Scheduler configuration if it was provided.
+        if "config" in kw:
+            c = kw.get("config", None)
+            if c and c.has_section("scheduler"):
+                self._config = c.get_section("scheduler")
+
+            # Check for the job store configuration
+            if self._config and self._config.get("job_store", None):
+                jsc = self._config.get("job_store")
+                # The type of job store set in the config should override
+                # the `store` param, always.
+                if jsc:
+                    # Set the job store config immutable.
+                    jsc.set_mutable(False)
+                    # Store the job store config and store type
+                    self._jsconfig = jsc
+                    store = jsc.get_string("type", "volatile")
+
         # Make sure the job store doesn't get reinitialized after loading
         # state through the SharedState mixin.
         if "state" not in kw:
-            job_store = list(filter(lambda st: st.TYPE == store, __JOB_STORES__))
+            job_store = list(filter(lambda s: s.TYPE == store, __JOB_STORES__))
             if not job_store or len(job_store) == 0:
                 raise SchedulerException(
                     "Could not find a job store for type: %s" % (store))
@@ -27,8 +64,12 @@ class Scheduler(borgish.SharedState):
                 raise SchedulerException(
                     "Selected more than one job store for type: %s" % (store))
 
+            kwa = {
+                "config": self._jsconfig,
+            }
+
             job_store = job_store[0]
-            self._job_store = job_store(self)
+            self._job_store = job_store(self, **kwa)
 
     @property
     def job_store(self):
@@ -248,7 +289,7 @@ class VolatileSchedulerJobStore(SchedulerJobStore):
 
     TYPE = 'volatile'
 
-    def __init__(self, scheduler):
+    def __init__(self, scheduler, *args, **kw):
 
         super(VolatileSchedulerJobStore, self).__init__(scheduler)
 

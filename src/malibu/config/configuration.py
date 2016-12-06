@@ -10,8 +10,11 @@ try:
 except ImportError:
     from urllib.request import urlopen
 
-from malibu.text import unicode_type, unicode2str
-
+from malibu.text import (
+    string_type,
+    unicode_type,
+    unicode2str
+)
 
 __doc__ = """
 malibu.config.configuration
@@ -68,7 +71,13 @@ class ConfigurationSection(dict):
         """
 
         try:
-            return self.__getitem__(key)
+            value = self.__getitem__(key)
+            if isinstance(value, unicode_type()) and value.lower() == u'!none':
+                return None
+            elif isinstance(value, string_type()) and value.lower() == '!none':
+                return None
+            else:
+                return value
         except IndexError:
             return default
 
@@ -100,8 +109,6 @@ class ConfigurationSection(dict):
         """
 
         try:
-            if str(self.get(key)) == '!None':
-                return None
             return str(self.get(key)) or default
         except:
             return default
@@ -274,6 +281,37 @@ class Configuration(object):
         else:
             return None
 
+    def get_namespace(self, namespace):
+        """ Returns a set of ConfigurationSection objects that are prefixed
+            with the namespace specified above.
+
+            If no configuration sections have the requested namespace, None
+            is returned.
+
+            :param str namespace: Namespace to find in section name.
+            :rtype: set
+            :return: dict or None
+        """
+
+        if not namespace:
+            raise ValueError("Namespace can not be none")
+
+        sections = {}
+
+        for section_name in self.sections:
+            if section_name.startswith(namespace + ":"):
+                short_name = section_name.split(":")[1]
+                sections.update({
+                    short_name: self.get_section(section_name),
+                })
+            else:
+                continue
+
+        if len(sections) == 0:
+            return {}
+        else:
+            return sections
+
     def unload(self):
         """ Unload an entire configuration
         """
@@ -319,6 +357,8 @@ class Configuration(object):
                         continue
                     elif isinstance(value, io.TextIOBase):
                         value = "+file:" + value.name
+                    elif value is None:
+                        value = "!None"
                     else:
                         value = str(value)
                     config.write("%s = %s\n" % (key, value))
@@ -399,7 +439,9 @@ class Configuration(object):
                             section.set(option_key, io.open(dobj_value, 'r'))
                         except:
                             try:
-                                section.set(option_key, io.open(dobj_value, 'w+'))
+                                section.set(
+                                    option_key,
+                                    io.open(dobj_value, 'w+'))
                             except:
                                 section.set(option_key, None)
                     elif dobj_type.lower() in ["url", "uri"]:

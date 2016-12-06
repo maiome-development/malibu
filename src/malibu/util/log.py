@@ -10,7 +10,17 @@ class LoggingDriver(object):
     __instances = {}
 
     @classmethod
+    def clear_loggers(cls):
+        """ Clears all stored logger instances.
+        """
+
+        cls.__instances.clear()
+
+    @classmethod
     def get_instance(cls, name=None):
+        """ Returns the root logger for a given package.
+            If `name` is not provided, the caller's base package name is used.
+        """
 
         if name is None:
             name = get_caller().split('.')[0]
@@ -22,6 +32,12 @@ class LoggingDriver(object):
 
     @classmethod
     def find_logger(cls, name=None):
+        """ Finds a cached root logger in the instances cache and returns it. If
+            there is no logger, None will be returned. If the root logger is
+            found, a child logger with name=`name` will be returned.
+
+            If `name` is not specified, the FQDN of the caller will be used.
+        """
 
         if name is None:
             name = get_caller()
@@ -36,6 +52,12 @@ class LoggingDriver(object):
 
     @classmethod
     def from_config(cls, config, name=None):
+        """ Creates a LoggingDriver instance from a specified config file.
+
+            The `config` parameter should be a malibu `ConfigurationSection`
+            instance. If `name` is not specified, the base name of the caller's
+            FQDN will be used.
+        """
 
         if not name:
             name = get_caller().split('.')[0]

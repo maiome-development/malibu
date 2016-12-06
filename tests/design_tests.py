@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import contextlib, malibu, os, unittest, uuid
-from contextlib import closing
+import unittest
+
 from malibu.design import borgish
 from malibu.design import brine
 from nose.tools import *
@@ -27,7 +27,7 @@ class Person(brine.BrineObject):
     def __init__(self):
 
         self.name = None
-        super(Person, self).__init__(self, timestamp = True, uuid = True)
+        super(Person, self).__init__(self, timestamp=True, uuid=True)
 
 
 class PersonProfile(brine.BrineObject):
@@ -48,7 +48,7 @@ class UserProfile(brine.CachingBrineObject):
         self.user_id = None
         self.user_mail = None
         self.profile = PersonProfile()
-        super(UserProfile, self).__init__(self, timestamp = False, uuid = False)
+        super(UserProfile, self).__init__(self, timestamp=False, uuid=False)
 
 
 class BorgishTestCase(unittest.TestCase):
@@ -107,6 +107,20 @@ class BorgishTestCase(unittest.TestCase):
         aa.load_state("carry")
 
         self.assertEqual(a.value, aa.value)
+
+    def borgishStateDrop_test(self):
+
+        a = ClassA()
+        a.value = "ayyy lmao"
+        a.save_state("drop")
+
+        b = ClassA(state="drop")
+        b.drop_state("drop")
+
+        self.assertRaises(
+            NameError,
+            lambda: ClassA(state="drop")
+        )
 
 
 class BrineTestCase(unittest.TestCase):
@@ -317,7 +331,7 @@ class BrineTestCase(unittest.TestCase):
         profile.user_id = person.uuid
         profile.user_mail = "john.doe@example.com"
 
-        a = UserProfile.search(user_id = person.uuid)
+        a = UserProfile.search(user_id=person.uuid)
 
         self.assertGreaterEqual(len(a), 1)
         self.assertEqual(a[0].user_mail, "john.doe@example.com")
@@ -349,7 +363,7 @@ class BrineTestCase(unittest.TestCase):
         profile.user_id = person.uuid
         profile.user_mail = "john.doe@example.com"
 
-        a = UserProfile.fuzzy_search(user_mail = "doe.john@example.org")
+        a = UserProfile.fuzzy_search(user_mail="doe.john@example.org")
 
         self.assertGreaterEqual(len(a), 1)
         self.assertEqual(a[0].user_mail, "john.doe@example.com")
