@@ -54,7 +54,7 @@ global-package:
   image: pirogoeth/py3.5-ci:latest
   stage: package
   script:
-    - apt update && apt add git bash
+    - apk update && apk add git bash
     - python ./setup.py sdist --formats gztar -q
   only:
     - master
