@@ -11,6 +11,20 @@ import sys
 from malibu.text import table
 from malibu.util.args import ArgumentParser
 
+__description__ = """
+    `jsontable` is a simple command-line utility written in Python on top of
+    `malibu.text.table.ObjectTable`. It takes parameters that nearly match the
+    `ObjectTable` constructor one-to-one.
+
+    Any *valid* JSON document is accepted over stdin or via the
+    `filename / --infile / -f` option.
+
+    A table header can be provided through the `title / --title / -T` option.
+
+    A delimiter can be place between each value cell with the `delimit-cells /
+    --delimit-cells / -D` option.
+"""
+
 
 def initialize_argparser():
     """ Sets up the argparser for this script.
@@ -38,6 +52,13 @@ def initialize_argparser():
         aliases=["T"],
         map_name="header_title"
     )
+    ap.add_option(
+        option="delimit-cells",
+        desc="Insert a delimiter line between cells",
+        optype=ap.OPTION_SINGLE,
+        aliases=["D"],
+        map_name="delimit_cells"
+    )
 
     ap.parse()
 
@@ -48,19 +69,33 @@ def dump_usage_info(argparser):
     """ Generates and dumps help/usage information from the argparser.
     """
 
-    helpstr = """usage: {binary} [OPTIONS] < somefile.json
-       {binary} [OPTIONS] -f somefile.json
+    helpstr = """USAGE:
 
-Options:
-    {:>10}     {:<}
-    {:>10}     {:<}
-    {:>10}     {:<}
+    {binary} [OPTIONS] < somefile.json
+    {binary} [OPTIONS] -f somefile.json
+
+SYNOPSIS:
+{program_description}
+OPTIONS:
+
 """
 
     optdescs = [[k, v] for k, v in argparser.get_option_descriptions().items()]
-    l = []
-    [l.extend(i) for i in optdescs]
-    print(helpstr.format(*l, binary=argparser.exec_file))
+
+    for pair in optdescs:
+        option = pair[0].lstrip('-')
+        aliases = argparser.get_formatted_option_aliases(option)
+        if not aliases:
+            all_keys = pair[0]
+        else:
+            all_keys = ', '.join([pair[0]] + aliases)
+
+        helpstr += "    {:<20}  {:<}\n".format(*(all_keys, pair[1]))
+
+    print(helpstr.format(
+        binary=argparser.exec_file,
+        program_description=__description__
+    ))
 
 
 def data_from_stdin():
@@ -102,9 +137,14 @@ if __name__ == '__main__':
     if ap.options.get("header_title", None):
         header = ap.options["header_title"]
 
+    delimit_cells = False
+    if ap.options.get("delimit_cells", False):
+        delimit_cells = True
+
     table.ObjectTable(
         indata,
         render_subtables=True,
         subtable_depth=2,
-        title=header
+        title=header,
+        delimit_cells=delimit_cells
     ).print_table()

@@ -275,13 +275,17 @@ class ObjectTable(object):
 
             if self._delimit_cells:
                 rendered_cells.append(self.__render_delimiter(
-                    max_key_len, max_val_len
+                    max_key_len + 2,
+                    max_val_len + 2
                 ))
 
-        rendered_cells.append(self.__render_delimiter(
-            max_key_len + 2,
-            max_val_len + 2
-        ))
+        if not self._delimit_cells:
+            # If cells are being delimited, the final line will already
+            # be printed when this happens.
+            rendered_cells.append(self.__render_delimiter(
+                max_key_len + 2,
+                max_val_len + 2
+            ))
 
         return rendered_cells
 
