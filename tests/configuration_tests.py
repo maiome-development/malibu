@@ -100,4 +100,17 @@ class ConfigurationTestCase(unittest.TestCase):
             jobstore_conf = scheduler_conf.get("job_store", None)
             self.assertIsNotNone(jobstore_conf)
 
-            self.assertEquals(jobstore_conf.get_string("type", "volatile"), "testing-volatile")
+            self.assertEquals(
+                jobstore_conf.get_string("type", "volatile"),
+                "testing-volatile"
+            )
+
+    def configSectionAsContextManager_test(self):
+        
+        with io.open(self.config_path, 'r') as config_fobj:
+            self.config.load_file(config_fobj)
+            self.assertTrue(self.config.loaded)
+            
+            with self.config.get_section('scheduler') as sched_cfg:
+                jobstore_conf = sched_cfg.get('job_store', None)
+                self.assertIsNotNone(jobstore_conf)
