@@ -38,6 +38,14 @@ class ConfigurationSection(dict):
 
         self.mutable = True
 
+    def __enter__(self):
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, traceback):
+
+        return None
+
     def __getitem__(self, key):
 
         try:
