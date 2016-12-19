@@ -20,8 +20,8 @@ try:
 except subprocess.CalledProcessError:
     __git_label__ = 'RELEASE'
 
-__version__ = '0.1.8-4'
-__release__ = '{}-{}'.format(__version__, __git_label__).strip()
+__version__ = '0.1.8-5'
+__release__ = '{}-{}'.format(__version__, __git_label__).strip('\n')
 __doc__ = """
 malibu is a collection of classes and utilities that make writing code
 a little bit easier and a little less tedious.
