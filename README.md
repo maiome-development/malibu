@@ -1,7 +1,10 @@
 maiome library of utilities
 =============================
 
-[![Build Status](https://ci.maio.me/api/badges/maiome-development/malibu/status.svg)](https://ci.maio.me/maiome-development/malibu) [![PyPI version](https://badge.fury.io/py/malibu.svg)](https://badge.fury.io/py/malibu) [![Documentation Status](https://readthedocs.org/projects/malibu/badge/?version=latest)](http://malibu.readthedocs.org/en/latest/?badge=latest)
+[![build status](https://glow.dev.ramcloud.io/maiome/malibu/badges/master/build.svg)](https://glow.dev.ramcloud.io/maiome/malibu/commits/master)
+[![coverage report](https://glow.dev.ramcloud.io/maiome/malibu/badges/master/coverage.svg)](https://glow.dev.ramcloud.io/maiome/malibu/commits/master)
+[![PyPI version](https://badge.fury.io/py/malibu.svg)](https://badge.fury.io/py/malibu)
+[![Documentation Status](https://readthedocs.org/projects/malibu/badge/?version=latest)](http://malibu.readthedocs.org/en/latest/?badge=latest)
 
 This is a library of semi-useful and hopefully reusable utilities used within a few
 of the projects that are in development under the maiome namespace.
