@@ -28,7 +28,7 @@ class BuiltinConfigModule(module.CommandModule):
         self.__ap.add_option(
             option='config',
             desc='Override default configuration path(s)',
-            optype=ap.OPTION_PARAMETERIZED,
+            optype=self.__ap.OPTION_PARAMETERIZED,
             map_name='config',
             aliases=[
                 'C',
@@ -90,12 +90,18 @@ class BuiltinConfigModule(module.CommandModule):
             this module.
         """
 
+        if not self._config:
+            self.config_open()
+
         return self._config
 
     @property
     def configuration_path(self):
         """ Returns the path to the active configuration
         """
+
+        if not self._config:
+            self.config_open()
 
         return self._config_path
 
@@ -104,6 +110,9 @@ class BuiltinConfigModule(module.CommandModule):
 
             Returns the named variable from the loaded configuration.
         """
+
+        if not self._config:
+            self.config_open()
 
         args = args[1:]
 
@@ -150,6 +159,9 @@ class BuiltinConfigModule(module.CommandModule):
             the application.
         """
 
+        if not self._config:
+            self.config_open()
+
         pass
 
     def config_init(self, *args, **kw):
@@ -158,6 +170,9 @@ class BuiltinConfigModule(module.CommandModule):
             Initializes a default configuration in the current config path
             that has been opened.
         """
+
+        if not self._config:
+            self.config_open()
 
         try:
             self.config_do_create()
@@ -185,6 +200,9 @@ class BuiltinConfigModule(module.CommandModule):
 
             Sets the named variable in the user configuration.
         """
+
+        if not self._config:
+            self.config_open()
 
         args = args[1:]
 
@@ -237,6 +255,9 @@ class BuiltinConfigModule(module.CommandModule):
 
             Prints the current configuration.
         """
+
+        if not self._config:
+            self.config_open()
 
         for section_name in self._config.sections:
             section = self._config.get_section(section_name)
