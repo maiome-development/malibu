@@ -23,15 +23,32 @@ class BuiltinConfigModule(module.CommandModule):
         )
 
         self.__loader = loader
+        self.__ap = loader.get_argument_parser()
+
+        self.__ap.add_option(
+            option='config',
+            desc='Override default configuration path(s)',
+            optype=ap.OPTION_PARAMETERIZED,
+            map_name='config',
+            aliases=[
+                'C',
+            ]
+        )
 
         self.register_subcommand('get', self.config_get)
         self.register_subcommand('init', self.config_init)
         self.register_subcommand('set', self.config_set)
         self.register_subcommand('show', self.config_show)
 
+    def config_open(self):
+
         # Need to set self._config_paths in any subclasses of this module.
         if not self._config_paths:
             raise AttributeError("Unspecified configuration paths.")
+
+        cfg_override = self.__ap.options.get('config', None)
+        if cfg_override:
+            self._config_paths.insert(0, cfg_override)
 
         self._config = None
         self._config_path = ''
@@ -74,6 +91,13 @@ class BuiltinConfigModule(module.CommandModule):
         """
 
         return self._config
+
+    @property
+    def configuration_path(self):
+        """ Returns the path to the active configuration
+        """
+
+        return self._config_path
 
     def config_get(self, *args, **kw):
         """ [section].[key]
