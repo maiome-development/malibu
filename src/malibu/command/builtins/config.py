@@ -24,6 +24,8 @@ class BuiltinConfigModule(module.CommandModule):
 
         self.__loader = loader
         self.__ap = loader.get_argument_parser()
+        self._config = None
+        self._config_path = ''
 
         self.__ap.add_option(
             option='config',
@@ -50,8 +52,6 @@ class BuiltinConfigModule(module.CommandModule):
         if cfg_override:
             self._config_paths.insert(0, cfg_override)
 
-        self._config = None
-        self._config_path = ''
         for path in self._config_paths:
             path = pathutil.expand_path(path)
             fdir = pathutil.get_path_base(path)
