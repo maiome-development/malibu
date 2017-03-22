@@ -1,8 +1,8 @@
 maiome library of utilities
 =============================
 
-[![build status](https://glow.dev.ramcloud.io/maiome/malibu/badges/master/build.svg)](https://glow.dev.ramcloud.io/maiome/malibu/commits/master)
-[![coverage report](https://glow.dev.ramcloud.io/maiome/malibu/badges/master/coverage.svg)](https://glow.dev.ramcloud.io/maiome/malibu/commits/master)
+[![build status](https://glow.dev.maio.me/maiome/malibu/badges/master/build.svg)](https://glow.dev.maio.me/maiome/malibu/commits/master)
+[![coverage report](https://glow.dev.maio.me/maiome/malibu/badges/master/coverage.svg)](https://glow.dev.maio.me/maiome/malibu/commits/master)
 [![PyPI version](https://badge.fury.io/py/malibu.svg)](https://badge.fury.io/py/malibu)
 [![Documentation Status](https://readthedocs.org/projects/malibu/badge/?version=latest)](http://malibu.readthedocs.org/en/latest/?badge=latest)
 
