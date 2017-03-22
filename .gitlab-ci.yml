@@ -78,6 +78,7 @@ github:
   image: python:alpine
   stage: mirror
   script:
+    - apk update
     - which ssh-agent || ( apk add openssh-client )
     - which git || ( apk add git )
     - eval $(ssh-agent -s)
