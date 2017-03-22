@@ -3,6 +3,7 @@
 ---
 stages:
   - build-test
+  - package
   - mirror
   - deploy
 
@@ -61,6 +62,18 @@ build-3.6:
     - pip install -r requirements.txt
     - nosetests --with-coverage
 
+build-dists:
+  image: python:alpine
+  stage: package
+  script:
+    - apk update && apk add git bash
+    - pip install --upgrade wheel
+    - python ./setup.py sdist --formats gztar -q
+    - python ./setup.py bdist_wheel -q
+  artifacts:
+    paths:
+      - dist/
+
 github:
   image: python:alpine
   stage: mirror
@@ -81,10 +94,7 @@ dists:
     - apk update && apk add git bash
     - pip install --upgrade wheel
     - echo "$PYPIRC" > ~/.pypirc
-    - python ./setup.py sdist --formats gztar -q
-    - python ./setup.py bdist_wheel -q
     - python ./setup.py sdist bdist_wheel upload -q
-  artifacts:
-    paths:
-      - dist/
+  only:
+    - master
 
