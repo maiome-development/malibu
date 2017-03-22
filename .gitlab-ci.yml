@@ -3,7 +3,7 @@
 ---
 stages:
   - build-test
-  - package
+  - mirror
   - deploy
 
 build-2.7:
@@ -61,21 +61,9 @@ build-3.6:
     - pip install -r requirements.txt
     - nosetests --with-coverage
 
-global-package:
-  image: pirogoeth/py3.5-ci:latest
-  stage: package
-  script:
-    - apk update && apk add git bash
-    - python ./setup.py sdist --formats gztar -q
-  only:
-    - master
-  artifacts:
-    paths:
-      - dist/
-
-global-deploy:
-  image: pirogoeth/py3.5-ci:latest
-  stage: deploy
+github:
+  image: python:alpine
+  stage: mirror
   script:
     - which ssh-agent || ( apk add openssh-client )
     - which git || ( apk add git )
@@ -84,6 +72,19 @@ global-deploy:
     - mkdir -p ~/.ssh
     - '[[ -f /.dockerenv || -f /.dockerinit ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
     - git remote add deploy git@github.com:maiome-development/malibu.git
-    - git push deploy master
-  only:
-    - master
+    - git push deploy "$CI_COMMIT_REF_NAME"
+
+dists:
+  image: python:alpine
+  stage: deploy
+  script:
+    - apk update && apk add git bash
+    - pip install --upgrade wheel
+    - echo "$PYPIRC" > ~/.pypirc
+    - python ./setup.py sdist --formats gztar -q
+    - python ./setup.py bdist_wheel -q
+    - python ./setup.py sdist bdist_wheel upload -q
+  artifacts:
+    paths:
+      - dist/
+
