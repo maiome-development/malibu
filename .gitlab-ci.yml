@@ -7,10 +7,10 @@ stages:
   - deploy
 
 build-2.7:
-  image: python:2.7-wheezy
+  image: python:2.7-alpine
   stage: build-test
   script:
-    - apt-get update && apt-get install -y git
+    - apk update && apk add git bash
     - pip install --upgrade virtualenv
     - virtualenv .
     - . bin/activate
@@ -18,10 +18,10 @@ build-2.7:
     - nosetests --with-coverage
 
 build-3.3:
-  image: python:3.3-wheezy
+  image: python:3.3-alpine
   stage: build-test
   script:
-    - apt-get update && apt-get install -y git
+    - apk update && apk add git bash
     - pip install --upgrade virtualenv
     - virtualenv .
     - . bin/activate
@@ -29,10 +29,10 @@ build-3.3:
     - nosetests --with-coverage
 
 build-3.4:
-  image: python:3.4-wheezy
+  image: python:3.4-alpine
   stage: build-test
   script:
-    - apt-get update && apt-get install -y git
+    - apk update && apk add git bash
     - pip install --upgrade virtualenv
     - virtualenv .
     - . bin/activate
@@ -40,7 +40,18 @@ build-3.4:
     - nosetests --with-coverage
 
 build-3.5:
-  image: pirogoeth/py3.5-ci:latest
+  image: python:3.5-alpine
+  stage: build-test
+  script:
+    - apk update && apk add git bash
+    - pip install --upgrade virtualenv
+    - virtualenv .
+    - . bin/activate
+    - pip install -r requirements.txt
+    - nosetests --with-coverage
+
+build-3.6:
+  image: python:3.6-alpine
   stage: build-test
   script:
     - apk update && apk add git bash
