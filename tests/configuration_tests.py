@@ -74,7 +74,8 @@ class ConfigurationTestCase(unittest.TestCase):
             self.assertEqual(l1, ['list', 'of', 'things'])
 
             l2 = str2unicode(test.get_list('h', default=None))
-            self.assertEqual(l2, [b'list', b'of', b'things'])
+            r2 = str2unicode(['list', 'of', 'things'])
+            self.assertEqual(l2, r2)
 
     def configSectionNamespace_test(self):
 

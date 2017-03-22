@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import glob
 import os
+import sys
 
 try:
     from urlparse import parse_qs
@@ -25,16 +26,11 @@ def unicode_type():
         bytes" as bytes().
     """
 
-    try:
-        import builtins
-        __old_unicode = False
-    except ImportError:
-        __old_unicode = True
-
-    if __old_unicode:
-        return unicode  # flake8: noqa
-    elif not __old_unicode:
+    if sys.version_info.major >= 3:
         return str  # flake8: noqa
+    else:
+        # Python 2 or lower
+        return unicode  # flake8: noqa
 
 
 def string_type():
@@ -47,16 +43,11 @@ def string_type():
         bytes" as bytes().
     """
 
-    try:
-        import builtins
-        __old_string = True
-    except ImportError:
-        __old_string = False
-
-    if __old_string:
-        return str  # flake8: noqa
-    elif not __old_string:
+    if sys.version_info.major >= 3:
         return bytes  # flake8: noqa
+    else:
+        # Python 2 or lower
+        return str  # flake8: noqa
 
 
 def unicode2str(obj):
