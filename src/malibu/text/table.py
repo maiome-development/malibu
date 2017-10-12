@@ -229,9 +229,9 @@ class ObjectTable(object):
             self.max_width = self.actual_width
 
         # Ensure key and value sizes, with separators, don't exceed max_width
-        # if self.actual_width > self.max_width:
-        # max_val_len = self.max_width - max_key_len - sep_len
-        # self.actual_width = max_key_len + max_val_len + sep_len
+        if self.max_width != -1 and self.actual_width > self.max_width:
+            max_val_len = self.max_width - max_key_len - sep_len
+            self.actual_width = max_key_len + max_val_len + sep_len
 
         if calculate_only:
             self._max_key_col_width = max_key_len
@@ -242,7 +242,10 @@ class ObjectTable(object):
         cells = []
         for k, v in self._obj.items():
             k = self.__wrap(k, max_key_len)
-            if isinstance(v, str):
+            if isinstance(v, list):
+                v = str(v)
+
+            if type(v) in [string_type(), unicode_type()]:
                 v = self.__wrap(v, max_val_len)
             elif self._render_subtables and isinstance(v, ObjectTable):
                 v = [self.__pad_right(s, max_val_len) for s in v.render()]

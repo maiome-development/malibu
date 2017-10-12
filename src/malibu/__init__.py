@@ -16,12 +16,14 @@ try:
             'rev-parse',
             '--short',
             'HEAD'
-        ])
+        ],
+        stderr=subprocess.PIPE
+    )
     __git_label__ = __git_label__.decode('utf-8').strip()
 except (subprocess.CalledProcessError, AttributeError, IOError):
     __git_label__ = 'RELEASE'
 
-__version__ = '0.1.8-9'
+__version__ = '0.1.8-10'
 __release__ = '{}-{}'.format(__version__, __git_label__)
 __doc__ = """
 malibu is a collection of classes and utilities that make writing code
