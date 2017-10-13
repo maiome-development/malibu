@@ -85,12 +85,13 @@ github:
     - echo "$SSH_PRIVATE_KEY" | ssh-add -
     - mkdir -p ~/.ssh
     - '[[ -f /.dockerenv || -f /.dockerinit ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-    - git remote add deploy git@github.com:maiome-development/malibu.git
+    - git remote add deploy git@github.com:pirogoeth/malibu.git
     - git push deploy "$CI_COMMIT_REF_NAME"
 
 dists:
   image: python:alpine
   stage: deploy
+  allow_failure: true
   script:
     - apk update && apk add git bash
     - pip install --upgrade wheel
